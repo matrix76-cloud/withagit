@@ -1,0 +1,584 @@
+/* eslint-disable */
+// src/components/CheckoutAgitDialog.jsx
+// 아지트 멤버십 상세/구매 안내 모달
+
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import { createPortal } from "react-dom";
+import { MEMBERSHIP_KIND } from "../constants/membershipDefine";
+
+/* ===== Layout ===== */
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+`;
+
+const AGIT_ACCENT = "#F97316";        // 메인 오렌지
+const AGIT_ACCENT_LIGHT = "#FF8A2A";  // 조금 밝은 오렌지
+const AGIT_ACCENT_BG = "#FFF3E8";     // 배경에 사용하는 연한 오렌지톤
+
+const Dialog = styled.div`
+  width: min(460px, 100vw - 24px);
+  max-height: min(720px, 100vh - 24px);
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  box-shadow: none;
+  font-family: "NanumSquareRound", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+`;
+
+/* ===== Header / Tabs ===== */
+const Header = styled.div`
+  background: #ffffff;
+  padding: 10px 18px 0;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+`;
+
+const HeaderTop = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+`;
+
+const TabsBar = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const Tabs = styled.div`
+  display: inline-flex;
+  gap: 40px;
+  padding-bottom: 6px;
+`;
+
+const Tab = styled.button`
+  position: relative;
+  min-width: 120px;
+  border: 0;
+  background: transparent;
+  padding: 10px 0 12px;
+  font-size: 14px;
+  font-weight: ${({ $active }) => ($active ? 800 : 600)};
+  color: ${({ $active }) => ($active ? "#111111" : "#9ca3af")};
+  cursor: pointer;
+  text-align: center;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -2px;
+    height: 2px;
+    border-radius: 999px;
+    background: ${({ $active }) =>
+        $active ? "#F97316" : "transparent"};   /* ← 오렌지 컬러 */
+  }
+`;
+
+const CloseBtn = styled.button`
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  color: #9ca3af;
+  padding: 8px;
+`;
+
+/* ===== Body (scroll 영역) ===== */
+const Body = styled.div`
+  padding: 20px 24px 24px;
+  background: #ffffff;
+  overflow-y: auto;
+`;
+
+/* ===== 상세정보 탭 스타일 ===== */
+const BadgeRow = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
+`;
+
+const Pill = styled.span`
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: ${AGIT_ACCENT};
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+`;
+
+const PillGhost = styled.span`
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: ${AGIT_ACCENT_LIGHT};
+    border-color: ${AGIT_ACCENT};
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 800;
+
+`;
+
+const Title = styled.h3`
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 900;
+  color: #111827;
+`;
+
+const SummaryList = styled.ul`
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+
+  li {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.8;
+  }
+
+  li::before {
+    content: "✓";
+    color: #111827;
+    margin-right: 8px;
+    font-weight: 900;
+  }
+
+  li.orange strong {
+    color: #fb923c;
+  }
+`;
+
+const BenefitCard = styled.div`
+  margin-top: 4px;
+  padding: 14px 16px 12px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: none;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: #374151;
+  border: 1px solid #f3f4f6;
+`;
+
+const BenefitItem = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.7;
+`;
+
+const BenefitEmoji = styled.span`
+  font-size: 16px;
+  line-height: 1.4;
+`;
+
+const CheckTitle = styled.div`
+  margin: 22px 0 10px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+`;
+
+const CheckList = styled.ul`
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: #4b5563;
+
+  li {
+    line-height: 1.7;
+  }
+
+  li strong {
+    font-weight: 900;
+  }
+`;
+
+const FAQSection = styled.div`
+  margin-top: 28px;
+`;
+
+const FAQTitle = styled.div`
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+  margin-bottom: 12px;
+`;
+
+
+const FAQCard = styled.div`
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #f3f4f6;
+  display: grid;
+  
+  gap: 10px;
+`;
+
+const FAQBox = styled.div`
+  padding: 18px 20px;
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 20px;
+  box-shadow: none;
+  display: grid;
+  gap: 18px;
+`;
+
+const FAQItem = styled.div`
+  line-height: 1.6;
+  font-size: 13px;
+  color: #374151;   /* 딱 피그마 텍스트 컬러 */
+
+  & > strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+`;
+
+/* ===== 구매하기 탭 ===== */
+const PurchaseWrap = styled.div`
+  padding: 0 18px;
+`;
+
+const Block = styled.div`
+  margin-bottom: 18px;
+`;
+
+const SectionLabel = styled.div`
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+`;
+
+const SelectBox = styled.button`
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: ${({ $placeholder }) => ($placeholder ? "#9ca3af" : "#111827")};
+  cursor: pointer;
+`;
+
+const ChevronDown = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#9ca3af" d="M7 9l5 5 5-5H7z" />
+    </svg>
+);
+
+const BottomNoteWrap = styled.div`
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #f3f4f6;
+  font-size: 12px;
+  color: #4b5563;
+  line-height: 1.7;
+`;
+
+const RowBetween = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+/* ===== CTA ===== */
+const Footer = styled.div`
+  padding: 12px 22px 18px;
+  background: #f5f5f5;
+  border-top: 1px solid #e5e7eb;
+`;
+
+const CTAButton = styled.button`
+  width: 100%;
+  height: 56px;
+  border-radius: 999px;
+  border: 0;
+  background: ${AGIT_ACCENT};
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: none;
+  transition: transform 0.1s ease, filter 0.12s ease;
+
+  &:hover {
+    filter: brightness(1.03);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
+
+/* ===== Component ===== */
+export default function CheckoutAgitDialog({
+    open,
+    onClose,
+    onProceed, // CTA 클릭 → 상위에서 결제창 오픈
+}) {
+    const [portalEl, setPortalEl] = useState(null);
+    const [activeTab, setActiveTab] = useState("detail");
+
+    // 구매하기 탭 state (기능은 나중에 연결)
+    const [childLabel, setChildLabel] = useState("선택해주세요");
+    const [agitLabel, setAgitLabel] = useState("선택해주세요");
+    const [methodLabel, setMethodLabel] = useState("선택해주세요");
+
+    useEffect(() => {
+        let el = document.getElementById("modal-root");
+        if (!el) {
+            el = document.createElement("div");
+            el.id = "modal-root";
+            document.body.appendChild(el);
+        }
+        setPortalEl(el);
+    }, []);
+
+    useEffect(() => {
+        if (!open) return;
+        setActiveTab("detail");
+    }, [open]);
+
+    if (!open || !portalEl) return null;
+
+    const handleCTA = () => {
+        const payload = {
+            product: {
+                id: "agitz-basic-1m",
+                name: "아지트 멤버십 (1개월)",
+                kind: MEMBERSHIP_KIND.AGITZ,
+            },
+            price: { total: 59900 },
+            months: 1,
+        };
+        onProceed?.(payload);
+    };
+
+    const handleBackdrop = (e) => {
+        if (e.target === e.currentTarget) onClose?.();
+    };
+
+    /* ===== 상세정보 탭 ===== */
+    const renderDetail = () => (
+        <>
+            <BadgeRow>
+                <Pill>구독권</Pill>
+                <PillGhost>Best!</PillGhost>
+            </BadgeRow>
+            <Title>아지트 멤버십</Title>
+
+            <SummaryList>
+                <li>평일 주 5회, 하루 최대 2시간 무료</li>
+                <li className="orange">
+                    인기 프로그램 <strong>우선 예약</strong>
+                </li>
+                <li>실시간 알림 & 보험으로 안심 돌봄</li>
+                <li>자동 결제 옵션으로 편리한 구독</li>
+            </SummaryList>
+
+            <BenefitCard>
+                <BenefitItem>
+                    <BenefitEmoji>🏅</BenefitEmoji>
+                    우선 예약권: 인기 클래스 선오픈 시 우선 신청
+                </BenefitItem>
+                <BenefitItem>
+                    <BenefitEmoji>🛡️</BenefitEmoji>
+                    안전 보장: 배상책임보험, 안전 픽업 및 실시간 알림 제공
+                </BenefitItem>
+                <BenefitItem>
+                    <BenefitEmoji>🔄</BenefitEmoji>
+                    자동 갱신 옵션: 결제 번거로움 최소화
+                </BenefitItem>
+            </BenefitCard>
+
+            <CheckTitle>확인하세요!</CheckTitle>
+            <CheckList>
+                <li>
+                    이용 요건: 평일 매일 이용<br />1일 최대 2시간 무료{" "}
+                    <strong>(1시간 추가 시 15,000원)</strong>
+                </li>
+                <li>입장·퇴장, 픽업 출발·도착, 간식 및 공간 이용 실시간 알림</li>
+                <li>
+                    포함 서비스: 아지트 공간 & 교구 무제한 이용{" "}
+                    <span style={{ color: "#6b7280" }}> (픽업 서비스는 제외)</span>
+                </li>
+                <li>추가 결제 항목: 간식, 픽업, 유료 교구 및 프로그램</li>
+            </CheckList>
+
+            <FAQSection>
+                <FAQTitle>FAQ</FAQTitle>
+
+                <FAQBox>
+                    <FAQItem>
+                        <strong>이용시간 초과시</strong>
+                        추가 이용은 현장 여석/상황에 따라 정액권 차감 또는 별도 결제
+                    </FAQItem>
+
+                    <FAQItem>
+                        <strong>당일 이용</strong>
+                        가능한 경우 있음. 단, 픽업 신청은 전날 마감 원칙으로 당일 신청 불가
+                    </FAQItem>
+
+                    <FAQItem>
+                        <strong>양도/공유</strong>
+                        동일 자녀 기준 사용, 타인 양도 불가
+                    </FAQItem>
+                </FAQBox>
+            </FAQSection>
+
+
+     
+        </>
+    );
+
+    /* ===== 구매하기 탭 ===== */
+    const renderPurchase = () => (
+        <PurchaseWrap>
+            <Block>
+                <SectionLabel>자녀 연결</SectionLabel>
+                <SelectBox
+                    $placeholder={childLabel === "선택해주세요"}
+                    onClick={() => alert("자녀 선택 드롭다운 연결 예정")}
+                >
+                    <span>{childLabel}</span>
+                    <ChevronDown />
+                </SelectBox>
+            </Block>
+
+            <Block>
+                <SectionLabel>가격</SectionLabel>
+                <SelectBox $placeholder={false}>
+                    <span>월 59,900원</span>
+                </SelectBox>
+            </Block>
+
+            <Block>
+                <SectionLabel>아지트</SectionLabel>
+                <SelectBox
+                    $placeholder={agitLabel === "선택해주세요"}
+                    onClick={() => alert("아지트 지점 선택 연결 예정")}
+                >
+                    <span>{agitLabel}</span>
+                    <ChevronDown />
+                </SelectBox>
+            </Block>
+
+            <Block>
+                <SectionLabel>결제방식</SectionLabel>
+                <SelectBox
+                    $placeholder={methodLabel === "선택해주세요"}
+                    onClick={() => alert("결제방식 선택 연결 예정")}
+                >
+                    <span>{methodLabel}</span>
+                    <ChevronDown />
+                </SelectBox>
+            </Block>
+
+            <Block>
+                <SectionLabel>자동 갱신 여부</SectionLabel>
+                <SelectBox
+                    $placeholder={false}
+                    onClick={() => alert("자동 갱신 옵션 선택 예정")}
+                >
+                    <span>자동 갱신 신청</span>
+                    <ChevronDown />
+                </SelectBox>
+            </Block>
+
+            <Block>
+                <RowBetween>
+                    <SectionLabel>확인하세요!</SectionLabel>
+                    <button
+                        type="button"
+                        style={{
+                            border: "0",
+                            background: "transparent",
+                            fontSize: 12,
+                            color: "#6b7280",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                        }}
+                    >
+                        이용약관/환불정책 보기 →
+                    </button>
+                </RowBetween>
+
+                <BottomNoteWrap>
+                    유효기간 내 미사용 잔여분 환불/연장 불가 (약관 기준)
+                </BottomNoteWrap>
+            </Block>
+        </PurchaseWrap>
+    );
+
+    /* ===== Render ===== */
+    return createPortal(
+        <Backdrop onClick={handleBackdrop}>
+            <Dialog role="dialog" aria-modal="true" aria-label="아지트 멤버십 상세">
+                <Header>
+                    <HeaderTop>
+                        <CloseBtn onClick={onClose}>✕</CloseBtn>
+                    </HeaderTop>
+                    <TabsBar>
+                        <Tabs>
+                            <Tab
+                                $active={activeTab === "detail"}
+                                onClick={() => setActiveTab("detail")}
+                            >
+                                상세정보 확인
+                            </Tab>
+                            <Tab
+                                $active={activeTab === "buy"}
+                                onClick={() => setActiveTab("buy")}
+                            >
+                                구매하기
+                            </Tab>
+                        </Tabs>
+                    </TabsBar>
+                </Header>
+
+                <Body>
+                    {activeTab === "detail" ? renderDetail() : renderPurchase()}
+                </Body>
+
+                <Footer>
+                    <CTAButton onClick={handleCTA}>아지트 멤버십 이용하기</CTAButton>
+                </Footer>
+            </Dialog>
+        </Backdrop>,
+        portalEl
+    );
+}

@@ -1,0 +1,299 @@
+.
+├── README.md
+├── firebase.json
+├── firestore.indexes.json
+├── firestore.rules
+├── package-lock.json
+├── package.json
+├── public
+│   ├── assets
+│   │   ├── icons
+│   │   │   ├── analytic.png
+│   │   │   ├── calendar.png
+│   │   │   ├── ic_coin.png
+│   │   │   ├── ic_download.png
+│   │   │   ├── ic_membership.png
+│   │   │   ├── ic_pickup.png
+│   │   │   ├── ic_program.png
+│   │   │   ├── ic_ticket.png
+│   │   │   ├── person.png
+│   │   │   └── school.png
+│   │   └── images
+│   │       ├── background.png
+│   │       ├── banner1.png
+│   │       ├── banner2.png
+│   │       ├── banner3.png
+│   │       ├── banner4.png
+│   │       ├── banner_main.png
+│   │       ├── character.png
+│   │       ├── cloud_1.png
+│   │       ├── cloud_2.png
+│   │       ├── cloud_3.png
+│   │       ├── logo.png
+│   │       ├── main_01 (수정버젼 11
+│   │       ├── main_01 (수정버젼 12
+│   │       ├── main_01 (수정버젼 13
+│   │       ├── main_01 (수정버젼 14
+│   │       ├── main_01 (수정버젼 15
+│   │       ├── mainlogo.png
+│   │       ├── mainlogo2.png
+│   │       ├── phone.png
+│   │       ├── phone2.png
+│   │       ├── school.png
+│   │       ├── spot1.png
+│   │       ├── spot2.png
+│   │       ├── spot3.png
+│   │       ├── 위드 아지트 (1).zip
+│   │       ├── 위드 아지트 (2).zip
+│   │       ├── 위드 아지트 (3).zip
+│   │       ├── 위드 아지트 (4).zip
+│   │       ├── 위드 아지트 (5).zip
+│   │       └── 위드 아지트.zip
+│   ├── favicon.ico
+│   ├── images
+│   │   ├── banner1.jpg
+│   │   ├── banner10.jpg
+│   │   ├── banner2.jpg
+│   │   ├── banner3.jpg
+│   │   ├── banner4.jpg
+│   │   ├── banner5.jpg
+│   │   ├── banner6.jpg
+│   │   ├── banner7.jpg
+│   │   ├── banner8.jpg
+│   │   ├── banner9.jpg
+│   │   ├── character.png
+│   │   └── 원형.png
+│   ├── index.html
+│   ├── logo192.png
+│   ├── logo512.png
+│   ├── manifest.json
+│   └── robots.txt
+├── src
+│   ├── App.css
+│   ├── App.jsx
+│   ├── app
+│   │   ├── layouts
+│   │   └── pages
+│   ├── assets
+│   │   ├── icons
+│   │   │   ├── analytic.png
+│   │   │   ├── calendar.png
+│   │   │   ├── ic_coin.png
+│   │   │   ├── ic_download.png
+│   │   │   ├── ic_membership.png
+│   │   │   ├── ic_pickup.png
+│   │   │   ├── ic_program.png
+│   │   │   ├── ic_ticket.png
+│   │   │   ├── person.png
+│   │   │   └── school.png
+│   │   └── images
+│   │       ├── action1.png
+│   │       ├── action2.png
+│   │       ├── action3.png
+│   │       ├── action4.png
+│   │       ├── background.png
+│   │       ├── banner1.png
+│   │       ├── banner2.png
+│   │       ├── banner3.png
+│   │       ├── banner4.png
+│   │       ├── banner_main.png
+│   │       ├── car.png
+│   │       ├── car_kakaot.png
+│   │       ├── character.png
+│   │       ├── character_bear.png
+│   │       ├── character_bear_hearts.png
+│   │       ├── character_dog.png
+│   │       ├── character_rabbit.png
+│   │       ├── child_care_icon.png
+│   │       ├── child_realtime_pickup_icon.png
+│   │       ├── cloud_1.png
+│   │       ├── cloud_2.png
+│   │       ├── cloud_3.png
+│   │       ├── default_product.png
+│   │       ├── default_service.png
+│   │       ├── default_store.png
+│   │       ├── dhm_community.png
+│   │       ├── dhm_deliveryrent.png
+│   │       ├── dhm_returnfree.png
+│   │       ├── dhmobility_heyway_banner.png
+│   │       ├── food.png
+│   │       ├── kid_map_card.png
+│   │       ├── kid_route_pickup.png
+│   │       ├── logo.png
+│   │       ├── main_01 (수정버젼 11
+│   │       ├── main_01 (수정버젼 12
+│   │       ├── main_01 (수정버젼 13
+│   │       ├── main_01 (수정버젼 14
+│   │       ├── main_01 (수정버젼 15
+│   │       ├── mainlogo.png
+│   │       ├── mainlogo2.png
+│   │       ├── phone.png
+│   │       ├── phone2.png
+│   │       ├── regions
+│   │       ├── school.png
+│   │       ├── splash.png
+│   │       ├── spot1.png
+│   │       ├── spot2.png
+│   │       ├── spot3.png
+│   │       ├── withagit-program-icon.png
+│   │       ├── wiz-sample (1).jpg
+│   │       ├── wiz-sample.jpg
+│   │       ├── 위드 아지트 (1).zip
+│   │       ├── 위드 아지트 (2).zip
+│   │       ├── 위드 아지트 (3).zip
+│   │       ├── 위드 아지트 (4).zip
+│   │       ├── 위드 아지트 (5).zip
+│   │       └── 위드 아지트.zip
+│   ├── auth-kit
+│   │   ├── bridge
+│   │   │   ├── firebase.js
+│   │   │   ├── handleAuthResult.js
+│   │   │   └── useBridgeAuth.js
+│   │   ├── components
+│   │   │   ├── auth-ui
+│   │   │   └── modal
+│   │   ├── config
+│   │   │   ├── auth.config.js
+│   │   │   ├── i18n.ko.js
+│   │   │   └── theme.tokens.css
+│   │   ├── pages
+│   │   │   ├── Callback.jsx
+│   │   │   ├── LoginLanding.jsx
+│   │   │   ├── PhoneAlimtalkPage.jsx
+│   │   │   ├── PhoneMethodRouter.jsx
+│   │   │   └── PhonePassPage.jsx
+│   │   ├── providers
+│   │   │   ├── api
+│   │   │   └── firebase
+│   │   └── utils
+│   │       ├── postAuthGate.js
+│   │       └── toast.js
+│   ├── components
+│   │   ├── AppDownloadCTA.jsx
+│   │   ├── BranchCards.jsx
+│   │   ├── BranchShowcase.jsx
+│   │   ├── CloudLayer.jsx
+│   │   ├── ContentRequestCard.jsx
+│   │   ├── CoreValuesSection.jsx
+│   │   ├── FeatureSpotlightList.jsx
+│   │   ├── Footer.jsx
+│   │   ├── GetStartedCTA.jsx
+│   │   ├── Header.jsx
+│   │   ├── HomeHero.jsx
+│   │   ├── MembershipPlans.jsx
+│   │   ├── NoticeCard.jsx
+│   │   ├── PickupDialog.jsx
+│   │   ├── PlanCards.jsx
+│   │   ├── PlanDetailModal.jsx
+│   │   ├── ProgramTrustSection.jsx
+│   │   ├── QuickNav.jsx
+│   │   ├── ScrollToTop.jsx
+│   │   ├── ServiceIntro.jsx
+│   │   ├── TopPatternBg.jsx
+│   │   ├── TopWaveCut.jsx
+│   │   ├── TopWaveCutSvg.jsx
+│   │   ├── ValueProps.jsx
+│   │   └── common
+│   │       ├── Accordion.jsx
+│   │       ├── Button.jsx
+│   │       ├── Carousel.jsx
+│   │       ├── ConsultStrip.jsx
+│   │       ├── Input.jsx
+│   │       ├── Modal.jsx
+│   │       ├── SectionTitle.jsx
+│   │       └── Select.jsx
+│   ├── context
+│   │   ├── AuthContext.jsx
+│   │   ├── PickupContext.jsx
+│   │   └── UIContext.jsx
+│   ├── hooks
+│   │   ├── useBanners.js
+│   │   ├── useBranches.js
+│   │   ├── useMembership.js
+│   │   ├── useNotices.js
+│   │   └── usePickup.js
+│   ├── index.css
+│   ├── index.js
+│   ├── layouts
+│   │   ├── EmptyLayout.jsx
+│   │   └── MainLayout.jsx
+│   ├── logo.svg
+│   ├── mobile
+│   │   ├── bottom-tabs
+│   │   ├── layouts
+│   │   └── pages
+│   ├── pages
+│   │   ├── AboutPage.jsx
+│   │   ├── BranchDetail copy.jsx
+│   │   ├── BranchDetail.jsx
+│   │   ├── BranchPage.jsx
+│   │   ├── CarePage.jsx
+│   │   ├── FAQPage.jsx
+│   │   ├── HomePage.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── MemberShipPrepagePage.jsx
+│   │   ├── MemberShipSubscriptionPage.jsx
+│   │   ├── MemberShipTimepassPage.jsx
+│   │   ├── MembershipPage.jsx
+│   │   ├── MorePage.jsx
+│   │   ├── MyPage
+│   │   │   ├── Bookings.jsx
+│   │   │   ├── Children.jsx
+│   │   │   ├── Memberships.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   └── index.jsx
+│   │   ├── NoticePage.jsx
+│   │   ├── NoticesPage.jsx
+│   │   ├── PickupApplyPage.jsx
+│   │   ├── PickupPage
+│   │   │   ├── ChildSelect.jsx
+│   │   │   ├── DateSelect.jsx
+│   │   │   ├── Options.jsx
+│   │   │   ├── Review.jsx
+│   │   │   ├── RouteSelect.jsx
+│   │   │   ├── TimeSelect.jsx
+│   │   │   └── index.jsx
+│   │   ├── ProgramPage.jsx
+│   │   ├── Programs
+│   │   │   ├── ProgramDetailDesktop.jsx
+│   │   │   └── ProgramListDesktop.jsx
+│   │   ├── ReservePage.jsx
+│   │   ├── SafetytPage.jsx
+│   │   ├── ServicePage.jsx
+│   │   ├── SignupFlow.jsx
+│   │   ├── Snack
+│   │   │   └── SnackDesktopPage.jsx
+│   │   ├── SpacePage.jsx
+│   │   ├── SuggestPage.jsx
+│   │   ├── TimePage.jsx
+│   │   └── TopupPage.jsx
+│   ├── router.jsx
+│   ├── services
+│   │   ├── api.js
+│   │   ├── authService.js
+│   │   ├── bannerService.js
+│   │   ├── branchService.js
+│   │   ├── membershipService.js
+│   │   ├── noticeService.js
+│   │   ├── paymentService.js
+│   │   ├── pickupService.js
+│   │   └── snackService.js
+│   ├── setupTests.js
+│   ├── styles
+│   │   ├── globals.css
+│   │   └── reset.css
+│   ├── theme
+│   │   ├── GlobalStyle.css
+│   │   ├── GlobalStyle.js
+│   │   ├── GlobalStyle.styled.js
+│   │   ├── theme.js
+│   │   └── tokens.js
+│   └── utils
+│       ├── date.js
+│       ├── fee.js
+│       ├── formatters.js
+│       ├── imageDB.js
+│       └── validators.js
+└── tree.txt
+
+53 directories, 244 files

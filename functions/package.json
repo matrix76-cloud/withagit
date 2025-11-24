@@ -1,0 +1,19 @@
+{
+    "name": "functions",
+    "engines": {
+        "node": "20"
+    },
+    "main": "index.js",
+    "type": "commonjs",
+    "scripts": {
+        "serve": "firebase emulators:start --only functions",
+        "deploy": "firebase deploy --only functions"
+    },
+    "dependencies": {
+        "firebase-functions": "^5.1.1",
+        "firebase-admin": "^12.7.0",
+        "express": "^4.19.2",
+        "cors": "^2.8.5",
+        "aligoapi": "^1.1.3"
+    }
+}

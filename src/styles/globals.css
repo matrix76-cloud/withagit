@@ -1,0 +1,14 @@
+/* 글로벌 유틸 */
+.container {
+
+    margin: 0 auto;
+    padding: 0 16px
+}
+
+.mt-24 {
+    margin-top: 24px
+}
+
+.hidden {
+    display: none
+}
