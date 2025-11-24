@@ -1,6 +1,6 @@
 /* eslint-disable */
 // /src/pages/MembershipPurchasePage.jsx
-// Withagit — 멤버십 구매/정액권/프로그램/기타 상품 탭 구조
+// Withagit — 멤버십 구매/정액권/프로그램/기타 상품 섹션 + 상단 고정 탭 (스크롤 연동 X 버전)
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
@@ -26,16 +26,9 @@ import iconToy from "../assets/membership/icon-toy.png";
 import iconSnack from "../assets/membership/icon-snack.png";
 import iconProgram from "../assets/membership/icon-program.png";
 
-import {
-  getNearestSpecialEvent,
-  listMenuBySections,
-  listOtherProducts,
-} from "../services/snackService";
-
-// ✅ 프로그램 실데이터 서비스
+import { listOtherProducts } from "../services/snackService";
 import { listPrograms } from "../services/programService";
 
-// 색상 토큰
 const accent = "var(--color-accent, #F07A2A)";
 const primaryText = "#222";
 const subText = "#777";
@@ -49,13 +42,18 @@ const Page = styled.main`
   min-height: 100dvh;
 `;
 
-/* ===== 페이지 안 상단 서브 탭바 ===== */
+/* ===== 상단 서브 탭바 (고정) ===== */
 
 const TopTabsBar = styled.div`
   width: 100%;
   box-sizing: border-box;
   padding: 32px 20px 0;
-  background:#FFFCF4;
+  background: #fffcf4;
+  position: fixed;
+  top: 64px;      /* 헤더 높이에 맞춰 조정 */
+  left: 0;
+  right: 0;
+  z-index: 1000;  /* 헤더보다 위로 */
 
   @media (max-width: 768px) {
     padding: 24px 16px 0;
@@ -120,6 +118,11 @@ const TopTabIcon = styled.img`
 
 const TopTabLabel = styled.span`
   line-height: 1.3;
+`;
+
+/* 탭바 + 헤더 높이만큼 여백 확보용 스페이서 */
+const TabsSpacer = styled.div`
+  height: 160px;
 `;
 
 /* ===== 공통 섹션 래퍼 ===== */
@@ -191,8 +194,6 @@ const ChargeSectionInner = styled.div`
   }
 `;
 
-/* ===== 왼쪽 2×2 아이콘 그리드 ===== */
-
 const IconGrid = styled.div`
   flex: 0 0 45%;
   display: grid;
@@ -246,8 +247,6 @@ const IconTitle = styled.div`
   text-align: center;
   letter-spacing: -0.02em;
 `;
-
-/* ===== 오른쪽 정액권 설명 영역 ===== */
 
 const ChargePanel = styled.div`
   flex: 0 0 55%;
@@ -374,7 +373,7 @@ const PrimaryButton = styled.button`
   }
 `;
 
-/* ============ 프로그램/기타 상품 카드 ============ */
+/* ============ 기타 상품 카드 ============ */
 
 const CardsRow = styled.div`
   margin-top: 28px;
@@ -435,7 +434,7 @@ const Badge = styled.span`
   color: ${({ $tone = "accent" }) => ($tone === "accent" ? accent : "#666")};
 `;
 
-const ProgramTitle = styled.div`
+const ProgramTitleText = styled.div`
   font-size: 15px;
   font-weight: 600;
   color: ${primaryText};
@@ -564,7 +563,7 @@ const FaqItemWhite = styled(FaqItem)`
   }
 `;
 
-/* ===== 프로그램 예약 탭 전용 레이아웃 ===== */
+/* ===== 프로그램 예약 섹션 ===== */
 
 const ProgramPageWrap = styled.section`
   max-width: 1120px;
@@ -615,23 +614,19 @@ const ProgramLayout = styled.div`
   }
 `;
 
-/* ----- 왼쪽 상세 영역 ----- */
-
 const ProgramDetailShell = styled.div`
   background: #ffffff;
   border-radius: 32px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
   padding: 24px 24px 28px;
   box-sizing: border-box;
-
-  /* ✅ 높이 고정 + 내부 스크롤 */
-  max-height: 850px;       /* 필요하면 600~700 선에서 수치 조절 */
+  max-height: 850px;
   overflow-y: auto;
 
   @media (max-width: 768px) {
     border-radius: 24px;
     padding: 20px 18px 24px;
-    max-height: none;      /* 모바일에서는 전체 스크롤로 풀어줄 수도 있음 */
+    max-height: none;
     overflow-y: visible;
   }
 `;
@@ -660,10 +655,9 @@ const DetailHeroImage = styled.div`
   margin-bottom: 16px;
 `;
 
-
 const DetailPageImage = styled.div`
   width: 100%;
-  max-height: 450px;        /* ProgramDetailShell 안에서만 스크롤 */
+  max-height: 450px;
   border-radius: 18px;
   background-color: #f3f3f3;
   overflow-y: auto;
@@ -681,9 +675,6 @@ const DetailPageImageInner = styled.img`
     margin-bottom: 0;
   }
 `;
-
-
-/* ----- 오른쪽 예약 패널 ----- */
 
 const BookingSidebarShell = styled.div`
   background: #ffffff;
@@ -711,8 +702,6 @@ const BookingSectionTitle = styled.div`
   color: ${primaryText};
   margin-bottom: 8px;
 `;
-
-/* ----- 달력 박스 ----- */
 
 const CalendarBox = styled.div`
   border-radius: 18px;
@@ -769,6 +758,7 @@ const CalendarGrid = styled.div`
   row-gap: 6px;
   column-gap: 0;
 `;
+
 const CalendarDayCell = styled.button`
   border: none;
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
@@ -783,11 +773,11 @@ const CalendarDayCell = styled.button`
     $isSelected
       ? "#0003"
       : $isAvailable
-        ? "rgba(240,122,42,0.06)"   // 프로그램 있는 날 배경 살짝 강조
-        : "transparent"};
+      ? "rgba(240,122,42,0.06)"
+      : "transparent"};
 
   color: ${({ $isSelected, $isAvailable }) =>
-    $isSelected ? "#ffffff" : $isAvailable ? "#222222" : "#c8c8c8"}; // 없는 날은 연한 회색
+    $isSelected ? "#ffffff" : $isAvailable ? "#222222" : "#c8c8c8"};
 `;
 
 const CalendarDayNumber = styled.div`
@@ -801,8 +791,6 @@ const CalendarHint = styled.p`
   color: ${subText};
 `;
 
-/* ----- 시간 슬롯 리스트 ----- */
-
 const TimeSlotList = styled.div`
   display: flex;
   flex-direction: column;
@@ -814,7 +802,7 @@ const TimeSlotItem = styled.button`
   border-radius: 999px;
   border: 1px solid
     ${({ $active, $closed }) =>
-    $closed ? "#e0e0e0" : $active ? accent : "#e5e5e5"};
+      $closed ? "#e0e0e0" : $active ? accent : "#e5e5e5"};
   background: ${({ $active, $closed }) =>
     $closed ? "#f7f7f7" : $active ? "rgba(240,122,42,0.06)" : "#ffffff"};
   padding: 8px 12px;
@@ -836,8 +824,6 @@ const TimeSlotMeta = styled.span`
   font-size: 11px;
   color: ${subText};
 `;
-
-/* ----- 프로그램 리스트 / 자녀 / 버튼 ----- */
 
 const BookingProgramList = styled.div`
   display: flex;
@@ -959,8 +945,6 @@ const ChildAddButton = styled.button`
   cursor: pointer;
 `;
 
-/* ================== Mock Data ================== */
-
 const ICON_ITEMS = [
   { key: "pickup", title: "픽업비용", img: iconPickup },
   { key: "toy", title: "유료 교구", img: iconToy },
@@ -1010,8 +994,6 @@ const TOP_TABS = [
   },
 ];
 
-/* ================== Helper ================== */
-
 function formatKRW(n) {
   const v = Number(n || 0);
   return `₩${v.toLocaleString()}`;
@@ -1021,19 +1003,17 @@ function formatKRW(n) {
 
 export default function MembershipPurchasePage() {
   const [topTab, setTopTab] = useState("membership");
-
   const [chargeDialogOpen, setChargeDialogOpen] = useState(false);
-  const [dlgOpen, setDlgOpen] = useState(false);
-  const [dlgPayload, setDlgPayload] = useState(null);
 
   const nav = useNavigate();
 
   const [otherProducts, setOtherProducts] = useState([]);
-
-  // 프로그램 실데이터
   const [programs, setPrograms] = useState([]);
   const [programsLoading, setProgramsLoading] = useState(true);
   const [programsError, setProgramsError] = useState("");
+
+  const OTHER_PAGE_SIZE = 3;
+  const [otherPage, setOtherPage] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -1051,7 +1031,6 @@ export default function MembershipPurchasePage() {
     };
   }, []);
 
-  // 프로그램 목록 로드
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -1059,7 +1038,6 @@ export default function MembershipPurchasePage() {
         setProgramsLoading(true);
         const list = await listPrograms();
         if (!alive) return;
-        // 노출 활성화된 것만
         const filtered = list.filter((p) => p.isActive);
         setPrograms(filtered);
       } catch (e) {
@@ -1075,10 +1053,6 @@ export default function MembershipPurchasePage() {
       alive = false;
     };
   }, []);
-
-  // ===== 기타 상품(3개씩 슬라이드)용 상태 =====
-  const OTHER_PAGE_SIZE = 3;
-  const [otherPage, setOtherPage] = useState(0);
 
   const otherPageCount = Math.ceil(otherProducts.length / OTHER_PAGE_SIZE) || 1;
   const safeOtherPage =
@@ -1157,13 +1131,12 @@ export default function MembershipPurchasePage() {
     { id: "c2", name: "김다다", birth: "2022-02-22" },
   ];
 
-  function ProgramTabSection({ programs, loading, error }) {
+  function ProgramTabSectionInner({ programs, loading, error }) {
     const [selectedProgramId, setSelectedProgramId] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(null); // yyyy-mm-dd
+    const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTimeId, setSelectedTimeId] = useState(null);
     const [selectedChild, setSelectedChild] = useState(null);
 
-    // 프로그램/날짜/시간 초기 선택
     useEffect(() => {
       if (!programs || !programs.length) return;
       const first = programs[0];
@@ -1179,7 +1152,6 @@ export default function MembershipPurchasePage() {
 
     const dateSlots = selectedProgram?.dateSlots || [];
 
-    // 캘린더 기준 년/월
     let calendarYear;
     let calendarMonth;
     if (dateSlots.length && dateSlots[0].date) {
@@ -1222,13 +1194,9 @@ export default function MembershipPurchasePage() {
       .filter(Boolean)
       .join(", ");
 
-
-
-    // 현재 선택된 날짜에 해당하는 dateSlot
     const currentDateSlot =
       dateSlots.find((ds) => ds.date === selectedDate) || null;
 
-    // 그 날짜의 시간대만 사용
     const timeSlots = currentDateSlot?.timeSlots || [];
 
     const handleSelectProgram = (programId) => {
@@ -1241,10 +1209,10 @@ export default function MembershipPurchasePage() {
         setSelectedTimeId(firstTime?.id || null);
       }
     };
+
     const handleClickDay = (day) => {
       if (!selectedProgram) return;
 
-      // 선택 월/연도 기준으로 dateSlots 중 해당 날짜 찾기
       const match = (selectedProgram.dateSlots || []).find((ds) => {
         if (!ds.date) return false;
         const [y, m, d] = ds.date.split("-");
@@ -1312,7 +1280,6 @@ export default function MembershipPurchasePage() {
         </ProgramHeader>
 
         <ProgramLayout>
-          {/* 왼쪽: 프로그램 상세 영역 */}
           <ProgramDetailShell>
             <DetailShellTitle>
               {selectedProgram ? selectedProgram.title : "프로그램 상세"}
@@ -1321,38 +1288,38 @@ export default function MembershipPurchasePage() {
               {selectedProgram?.description
                 ? selectedProgram.description
                 : selectedProgram
-                  ? `총 정원 ${selectedProgram.totalCapacity || 0}명 · 현재 예약 ${selectedProgram.totalReserved || 0
+                ? `총 정원 ${
+                    selectedProgram.totalCapacity || 0
+                  }명 · 현재 예약 ${
+                    selectedProgram.totalReserved || 0
                   }명`
-                  : "프로그램 정보를 불러오는 중입니다."}
+                : "프로그램 정보를 불러오는 중입니다."}
             </DetailShellMeta>
 
-            {/* 메인 이미지 */}
             <DetailHeroImage
               style={
                 selectedProgram?.heroImageUrl
                   ? {
-                    backgroundImage: `url("${selectedProgram.heroImageUrl}")`,
-                  }
+                      backgroundImage: `url("${selectedProgram.heroImageUrl}")`,
+                    }
                   : undefined
               }
             />
 
-            {/* 상세 이미지 중 첫 장 */}
             <DetailPageImage>
               {(selectedProgram?.detailImageUrls || []).map((url, idx) => (
                 <DetailPageImageInner
                   key={`${url}-${idx}`}
                   src={url}
-                  alt={`${selectedProgram?.title || "프로그램 상세"}-${idx + 1}`}
+                  alt={`${selectedProgram?.title || "프로그램 상세"}-${
+                    idx + 1
+                  }`}
                 />
               ))}
             </DetailPageImage>
-
           </ProgramDetailShell>
 
-          {/* 오른쪽: 예약 패널 */}
           <BookingSidebarShell>
-            {/* 1) 날짜 선택 */}
             <BookingSection>
               <BookingSectionTitle>날짜를 선택해주세요</BookingSectionTitle>
 
@@ -1374,7 +1341,7 @@ export default function MembershipPurchasePage() {
                 </CalendarWeekRow>
                 <CalendarGrid>
                   {days.map((day) => {
-                    const isAvailable = availableDays.includes(day);  // 해당 달에 프로그램 있는 날
+                    const isAvailable = availableDays.includes(day);
                     const isSelected = selectedDayNumber === day;
 
                     return (
@@ -1385,8 +1352,8 @@ export default function MembershipPurchasePage() {
                         $isAvailable={isAvailable}
                         $clickable={isAvailable}
                         onClick={() => {
-                          if (!isAvailable) return;     // 프로그램 없는 날은 클릭 무시
-                          handleClickDay(day);         // 아래에서 정의
+                          if (!isAvailable) return;
+                          handleClickDay(day);
                         }}
                       >
                         <CalendarDayNumber>{day}</CalendarDayNumber>
@@ -1402,7 +1369,6 @@ export default function MembershipPurchasePage() {
               </CalendarHint>
             </BookingSection>
 
-            {/* 2) 시간 선택 */}
             <BookingSection>
               <BookingSectionTitle>시간을 선택해주세요</BookingSectionTitle>
               {timeSlots.length === 0 ? (
@@ -1419,8 +1385,8 @@ export default function MembershipPurchasePage() {
                     const meta = closed
                       ? "마감"
                       : remain != null
-                        ? `잔여 ${remain}석`
-                        : "";
+                      ? `잔여 ${remain}석`
+                      : "";
 
                     const active = selectedTimeId === slotId;
 
@@ -1444,8 +1410,6 @@ export default function MembershipPurchasePage() {
               )}
             </BookingSection>
 
-
-            {/* 3) 프로그램 선택 리스트 */}
             <BookingSection>
               <BookingSectionTitle>프로그램을 선택해주세요</BookingSectionTitle>
               <BookingProgramList>
@@ -1454,8 +1418,9 @@ export default function MembershipPurchasePage() {
                   const firstSlot = p.dateSlots?.[0] || null;
                   const firstTime = firstSlot?.timeSlots?.[0] || null;
                   const meta = firstSlot
-                    ? `${firstSlot.date}${firstTime ? ` · ${firstTime.label}` : ""
-                    }`
+                    ? `${firstSlot.date}${
+                        firstTime ? ` · ${firstTime.label}` : ""
+                      }`
                     : "운영일 미설정";
                   const capacity = Number(p.totalCapacity || 0);
                   const reserved = Number(p.totalReserved || 0);
@@ -1492,7 +1457,6 @@ export default function MembershipPurchasePage() {
               </BookingProgramList>
             </BookingSection>
 
-            {/* 4) 자녀 선택 – 더미 */}
             <BookingSection>
               <BookingSectionTitle>자녀 선택</BookingSectionTitle>
               <ChildList>
@@ -1517,7 +1481,6 @@ export default function MembershipPurchasePage() {
               </ChildList>
             </BookingSection>
 
-            {/* 5) 예약 버튼 (아직 실제 예약 로직 X) */}
             <BookingSubmitButton type="button">
               예약하기
             </BookingSubmitButton>
@@ -1573,7 +1536,7 @@ export default function MembershipPurchasePage() {
                   <ProgramBadgeRow>
                     <Badge $tone="neutral">기타 상품</Badge>
                   </ProgramBadgeRow>
-                  <ProgramTitle>{p.title}</ProgramTitle>
+                  <ProgramTitleText>{p.title}</ProgramTitleText>
                   <ProgramMeta>
                     <span>{p.place}</span>
                     <span>·</span>
@@ -1612,7 +1575,7 @@ export default function MembershipPurchasePage() {
 
   return (
     <Page>
-      {/* 상단 서브 탭바 */}
+      {/* 고정 탭바 — 지금은 클릭 시 active만 바뀌고 스크롤은 안 건드림 */}
       <TopTabsBar>
         <TopTabsInner>
           {TOP_TABS.map((tab) => {
@@ -1624,7 +1587,7 @@ export default function MembershipPurchasePage() {
                 key={tab.key}
                 type="button"
                 $active={isActive}
-                onClick={() => setTopTab(tab.key)}
+                onClick={() => setTopTab(tab.key)}  // ✅ 이제 클릭하면 그냥 active만 바뀜
               >
                 <TopTabIcon src={iconSrc} alt={tab.label} />
                 <TopTabLabel>{tab.label}</TopTabLabel>
@@ -1634,37 +1597,23 @@ export default function MembershipPurchasePage() {
         </TopTabsInner>
       </TopTabsBar>
 
-      {/* 탭별 본문 렌더링 */}
-      {topTab === "membership" && <MembershipTabSection />}
-      {topTab === "charge" && <ChargeTabSection />}
-      {topTab === "program" && (
-        <ProgramTabSection
-          programs={programs}
-          loading={programsLoading}
-          error={programsError}
-        />
-      )}
-      {topTab === "others" && <OthersTabSection />}
+      {/* 탭바 높이만큼 본문 내려주기 */}
+      <TabsSpacer />
 
-      {/* 정액권 충전 다이얼로그 (탭과 무관하게 공통) */}
+      {/* 섹션 4개를 그냥 위→아래로 쭉 배치 */}
+      <MembershipTabSection />
+      <ChargeTabSection />
+      <ProgramTabSectionInner
+        programs={programs}
+        loading={programsLoading}
+        error={programsError}
+      />
+      <OthersTabSection />
+
+      {/* 정액권 충전 모달 */}
       <CheckoutChargeDialog
         open={chargeDialogOpen}
         onClose={() => setChargeDialogOpen(false)}
-        onProceed={(payload) => {
-          const buyerDefault = {
-            name: (profile?.displayName || "").trim(),
-            phoneE164: (phoneE164 || "").trim(),
-            email: (profile?.email || "").trim(),
-          };
-
-          setDlgPayload({
-            ...payload,
-            buyer: { ...buyerDefault, ...(payload?.buyer || {}) },
-          });
-
-          setChargeDialogOpen(false);
-          setDlgOpen(true);
-        }}
       />
     </Page>
   );

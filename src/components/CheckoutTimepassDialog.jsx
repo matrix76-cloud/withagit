@@ -1,11 +1,17 @@
 /* eslint-disable */
 // src/components/CheckoutTimepassDialog.jsx
-// 타임패스 상세/구매 안내 모달 (상세정보/구매하기 탭, 내용 스크롤 + 하단 CTA 고정)
+// 타임패스 상세/구매 + 실제 결제까지 한 번에 처리하는 모달
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import { Bootpay } from "@bootpay/client-js";
+
 import { MEMBERSHIP_KIND } from "../constants/membershipDefine";
+import { ORDER_TYPE } from "../constants/defs";
+import { useUser } from "../contexts/UserContext";
+import { createOrderDraft, markOrderPaid } from "../services/orderService";
 
 import twohourimg from "../assets/membership/twohour.png";
 import fourhourimg from "../assets/membership/fourhour.png";
@@ -21,14 +27,14 @@ const Backdrop = styled.div`
 `;
 
 const Dialog = styled.div`
-  width: min(460px, 100vw - 24px);          /* 형이 줄여놓은 폭 */
-  max-height: min(720px, 100vh - 24px);    /* 높이 제한 */
+  width: min(460px, 100vw - 24px);
+  max-height: min(720px, 100vh - 24px);
   background: #ffffff;
   border-radius: 24px;
   overflow: hidden;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  box-shadow: none;                        /* 그림자 제거 (플랫) */
+  box-shadow: none;
   font-family: "NanumSquareRound", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
 `;
@@ -144,7 +150,8 @@ const SummaryList = styled.ul`
     font-weight: 700;
   }
 `;
-/* ===== 2시간권 / 4시간권 이미지 카드 (선택 기능 제거 버전) ===== */
+
+/* ===== 2시간권 / 4시간권 이미지 카드 ===== */
 
 const PassRow = styled.div`
   display: flex;
@@ -191,15 +198,12 @@ const PassPrice = styled.div`
   text-align: center;
 `;
 
-
-
-
 const BenefitCard = styled.div`
   margin-top: 4px;
   padding: 14px 16px 12px;
   border-radius: 22px;
   background: #ffffff;
-  box-shadow: none; /* 그림자 제거 */
+  box-shadow: none;
   display: grid;
   gap: 6px;
   font-size: 13px;
@@ -287,6 +291,9 @@ const AddChildRow = styled.div`
   padding: 12px 16px;
   font-size: 14px;
   color: #92400e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const BottomNoteWrap = styled.div`
@@ -303,6 +310,43 @@ const RowBetween = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`;
+
+/* 자녀 드롭다운 */
+const ChildDropdown = styled.div`
+  margin-top: 8px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  max-height: 180px;
+  overflow-y: auto;
+`;
+
+const ChildItemButton = styled.button`
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  .name {
+    color: #111827;
+    font-weight: 700;
+  }
+  .meta {
+    margin-top: 2px;
+    font-size: 12px;
+    color: #6b7280;
+  }
 `;
 
 /* ===== Footer CTA ===== */
@@ -333,35 +377,80 @@ const CTAButton = styled.button`
   &:active {
     transform: translateY(1px);
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const PurchaseWrap = styled.div`
-  padding: 0 18px;   /* 구매하기 탭 전용 좌우 패딩 */
+  padding: 0 18px;
 `;
-
 
 /* ===== 타임패스 옵션 ===== */
 const TIMEPASS_OPTIONS = [
-  { key: "2h", label: "2시간권", hours: "2h", minutes: 120, price: 25000 },
-  { key: "4h", label: "4시간권", hours: "4h", minutes: 240, price: 45000 },
+  { key: "2h", label: "2시간권 (25,000원)", hours: "2h", minutes: 120, price: 25000 },
+  { key: "4h", label: "4시간권 (45,000원)", hours: "4h", minutes: 240, price: 45000 },
 ];
 
-const KRW = (n) => n.toLocaleString("ko-KR");
+const KRW = (n = 0) => n.toLocaleString("ko-KR");
+
+/* util: 전화번호, dev test, sanitize */
+
+const onlyDigits = (s = "") => (s || "").replace(/\D+/g, "");
+function toLocalDigitsFromAny(phoneLike) {
+  const d = onlyDigits(String(phoneLike || ""));
+  if (!d) return "";
+  if (d.startsWith("82")) return "0" + d.slice(2);
+  return d;
+}
+
+function sanitizeForFirestore(obj) {
+  return JSON.parse(
+    JSON.stringify(obj, (k, v) => (v === undefined ? null : v))
+  );
+}
+
+const DEV_TEST_START = "01062141000";
+const DEV_TEST_END = "01062142000";
+const DEV_TEST_EXTRA = "01039239669";
+function isDevTestPhoneLocal(localDigits) {
+  if (!localDigits) return false;
+  return (
+    (localDigits >= DEV_TEST_START && localDigits <= DEV_TEST_END) ||
+    localDigits === DEV_TEST_EXTRA
+  );
+}
+
+function mapKindToOrderType(k) {
+  if (k === MEMBERSHIP_KIND.TIMEPASS) return ORDER_TYPE.TIMEPASS;
+  return null;
+}
 
 export default function CheckoutTimepassDialog({
   open,
   onClose,
-  onProceed, // (payload) => 최종 CheckoutConfirmDialog 열기
+  onProceed, // (result) => { ok, orderId, payload } (optional)
 }) {
   const [portalEl, setPortalEl] = useState(null);
   const [activeTab, setActiveTab] = useState("detail");
   const [selectedKey, setSelectedKey] = useState("2h");
 
-  // 구매하기 탭용 간단 state (나중에 CheckoutConfirmDialog 로직 연결 예정)
   const [selectedChildLabel, setSelectedChildLabel] = useState("선택해주세요");
   const [selectedOptionLabel, setSelectedOptionLabel] = useState("선택해주세요");
-  const [selectedAgitLabel, setSelectedAgitLabel] = useState("선택해주세요");
-  const [selectedMethodLabel, setSelectedMethodLabel] = useState("선택해주세요");
+
+  const [selectedChildId, setSelectedChildId] = useState(null);
+  const [childDropdownOpen, setChildDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+  const { children: ctxChildren, phoneE164, profile, refresh } = useUser() || {};
+
+  const children = useMemo(
+    () => (Array.isArray(ctxChildren) ? ctxChildren : []),
+    [ctxChildren]
+  );
 
   useEffect(() => {
     let el = document.getElementById("modal-root");
@@ -377,31 +466,295 @@ export default function CheckoutTimepassDialog({
     if (!open) return;
     setSelectedKey("2h");
     setActiveTab("detail");
-  }, [open]);
+    setChildDropdownOpen(false);
+    setLoading(false);
+
+    // 자녀 기본 선택
+    if (children.length > 0) {
+      const first = children[0];
+      setSelectedChildId(first.childId || null);
+      setSelectedChildLabel(
+        first.name
+          ? first.birth
+            ? `${first.name} (${first.birth})`
+            : first.name
+          : "선택해주세요"
+      );
+    } else {
+      setSelectedChildId(null);
+      setSelectedChildLabel("선택해주세요");
+    }
+
+    // ✅ 옵션 콤보에 금액을 처음부터 노출
+    const base = TIMEPASS_OPTIONS.find((o) => o.key === "2h");
+    setSelectedOptionLabel(base ? base.label : "선택해주세요");
+  }, [open, children]);
 
   if (!open || !portalEl) return null;
 
   const selected =
     TIMEPASS_OPTIONS.find((o) => o.key === selectedKey) || TIMEPASS_OPTIONS[0];
 
-  const handleCTA = () => {
-    // 지금은 detail/구매하기 탭 모두 같은 CTA를 사용 (타임패스 이용하기)
-    // 나중에 구매하기 탭에서 직접 Checkout 로직으로 바꾸면 됨
-    const payload = {
-      product: {
-        id: `timepass-${selected.key}`,
-        name:
-          selected.key === "2h"
-            ? "타임패스 멤버십(2시간권)"
-            : "타임패스 멤버십(4시간권)",
-        kind: MEMBERSHIP_KIND.TIMEPASS,
-        variant: selected.key,
-        minutes: selected.minutes,
-      },
-      price: { total: selected.price },
+  const minutes = selected.minutes || 0;
+  const total = selected.price || 0;
+
+  const effectivePhoneE164 = (phoneE164 || "").trim();
+  const effectiveName = (profile?.displayName || "").trim();
+  const effectiveEmail = (profile?.email || "").trim();
+  const localPhone = toLocalDigitsFromAny(effectivePhoneE164);
+
+  const canPay =
+    !!open &&
+    !loading &&
+    !!effectivePhoneE164 &&
+    !!selectedChildId &&
+    minutes > 0 &&
+    total > 0;
+
+  const appId = (process.env.REACT_APP_BOOTPAY_WEB_APP_ID || "").trim();
+  const BOOTPAY_PG = (process.env.REACT_APP_BOOTPAY_PG || "").trim();
+  const BOOTPAY_METHODS = (process.env.REACT_APP_BOOTPAY_METHODS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const handleCTA = async () => {
+    if (!canPay) {
+      if (!effectivePhoneE164) alert("로그인이 필요합니다.");
+      else if (!selectedChildId) {
+        alert("타임패스를 연결할 자녀를 선택해 주세요.");
+        setActiveTab("buy");
+      } else if (!minutes || !total) {
+        alert("시간권 또는 금액 정보가 올바르지 않습니다.");
+      }
+      return;
+    }
+
+    const kind = MEMBERSHIP_KIND.TIMEPASS;
+    const type = mapKindToOrderType(kind);
+    if (!type) {
+      alert("시간권 상품 정보가 올바르지 않습니다.");
+      return;
+    }
+
+    const rawE164 = effectivePhoneE164;
+    const devMode = isDevTestPhoneLocal(localPhone);
+
+    const product = {
+      id: `timepass-${selected.key}`,
+      name:
+        selected.key === "2h"
+          ? "타임패스 멤버십(2시간권)"
+          : "타임패스 멤버십(4시간권)",
+      kind,
+      variant: selected.key,
+      minutes,
     };
-    onProceed?.(payload);
+
+    const payload = {
+      product,
+      price: { total },
+      childId: selectedChildId,
+    };
+
+    // 주문 드래프트 – TIMEPASS 전용
+    const draft = sanitizeForFirestore({
+      type,                       // ORDER_TYPE.TIMEPASS
+      childId: selectedChildId,   // child-scoped
+      children: undefined,
+      months: 0,
+      minutes: Number(minutes || 0),
+      amountKRW: Number(total) || 0,
+      product: {
+        id: product.id,
+        name: product.name,
+        variant: product.variant,
+      },
+      provider: { name: "bootpay" },
+      buyer: {
+        name: effectiveName || rawE164?.slice(-4) || "",
+        phoneE164: rawE164 || "",
+        email: effectiveEmail || "",
+      },
+      meta: {
+        pricing: null,
+        familyMax: 0,
+        calc: { kind },          // 기존 구조 호환용
+      },
+    });
+
+    console.groupCollapsed("[TimepassCheckout] draft 생성");
+    console.log("phoneE164", rawE164);
+    console.log("childId", selectedChildId);
+    console.log("draft", draft);
+    console.groupEnd();
+
+    setLoading(true);
+
+    try {
+      const orderRes = await createOrderDraft(rawE164, draft);
+      console.log("[TimepassCheckout] createOrderDraft 결과", orderRes);
+
+      // 🔥 여기서부터는 ok 안 보고 orderId만 확인
+      const orderId = orderRes?.orderId;
+      if (!orderId) {
+        console.error("[TimepassCheckout] 주문 생성 실패 상세", orderRes);
+        alert(orderRes?.error?.message || "주문 생성에 실패했습니다.");
+        setLoading(false);
+        onProceed?.({ ok: false, stage: "createOrder", error: orderRes });
+        return;
+      }
+
+      // ===== dev/test: Bootpay 생략 =====
+      if (devMode) {
+        console.log("[TimepassCheckout] dev 모드, Bootpay 생략");
+        await markOrderPaid({
+          phoneE164: rawE164,
+          orderId,
+          provider: { name: "dev", payload: { dev: true, kind: "timepass" } },
+        });
+        console.log("[TimepassCheckout] markOrderPaid(dev) 완료");
+
+        try {
+          await refresh?.();
+        } catch (e) {
+          console.warn("[TimepassCheckout] refresh 실패", e);
+        }
+
+        alert("테스트 결제가 완료되었습니다.");
+        onProceed?.({ ok: true, test: true, orderId, payload });
+        onClose?.();
+        setLoading(false);
+        return;
+      }
+
+      // ===== 운영: Bootpay 호출 =====
+      if (!appId) {
+        alert(
+          "결제 설정(App ID)이 필요합니다. REACT_APP_BOOTPAY_WEB_APP_ID를 설정해 주세요."
+        );
+        setLoading(false);
+        return;
+      }
+
+      console.log("[TimepassCheckout] Bootpay.requestPayment 호출");
+      const response = await Bootpay.requestPayment({
+        application_id: appId,
+        price: total,
+        order_name: product.name,
+        order_id: orderId,
+        ...(BOOTPAY_PG ? { pg: BOOTPAY_PG } : {}),
+        ...(BOOTPAY_METHODS.length ? { methods: BOOTPAY_METHODS } : {}),
+        user: {
+          id: localPhone || "guest",
+          username:
+            effectiveName || `회원-${String(rawE164 || "").slice(-4)}`,
+          phone: localPhone,
+          email: effectiveEmail || "",
+        },
+        items: [
+          {
+            id: product.id || "timepass",
+            name: product.name,
+            qty: 1,
+            price: total,
+          },
+        ],
+        metadata: sanitizeForFirestore({
+          kind,
+          minutes,
+          productId: product.id,
+          variant: product.variant,
+          childId: selectedChildId,
+        }),
+        extra: {
+          open_type: "iframe",
+          browser_open_type: [
+            { browser: "kakaotalk", open_type: "popup" },
+            { browser: "instagram", open_type: "redirect" },
+            { browser: "facebook", open_type: "redirect" },
+            { browser: "mobile_safari", open_type: "popup" },
+            { browser: "mobile_chrome", open_type: "iframe" },
+          ],
+          redirect_url: `${window.location.origin}${window.location.pathname}${window.location.search}`,
+        },
+      });
+
+      console.log("[TimepassCheckout] Bootpay 응답", response);
+
+      if (response?.event === "cancel") {
+        alert("결제가 취소되었습니다.");
+        setLoading(false);
+        onProceed?.({ ok: false, stage: "cancel", orderId, payload, response });
+        return;
+      }
+      if (response?.event === "error") {
+        alert(response?.message || "결제 중 오류가 발생했습니다.");
+        setLoading(false);
+        onProceed?.({ ok: false, stage: "error", orderId, payload, response });
+        return;
+      }
+      if (response?.event === "issued") {
+        alert("가상계좌가 발급되었습니다. 안내에 따라 입금해 주세요.");
+        setLoading(false);
+        onProceed?.({ ok: true, stage: "issued", orderId, payload, response });
+        onClose?.();
+        return;
+      }
+
+      if (response?.event === "done") {
+        try {
+          await markOrderPaid({
+            phoneE164: rawE164,
+            orderId,
+            provider: {
+              name: "bootpay",
+              txnId: response?.data?.receipt_id,
+              payload: response,
+            },
+          });
+          console.log("[TimepassCheckout] markOrderPaid(prod) 완료");
+        } catch (err) {
+          console.error("[TimepassCheckout] markOrderPaid(prod) 실패", err);
+          alert(String(err?.message || err));
+          setLoading(false);
+          onProceed?.({
+            ok: false,
+            stage: "markOrderPaid",
+            orderId,
+            payload,
+            error: err,
+          });
+          return;
+        }
+
+        try {
+          await refresh?.();
+        } catch (e) {
+          console.warn("[TimepassCheckout] refresh 실패", e);
+        }
+
+        alert("결제가 완료되었습니다.");
+        onProceed?.({ ok: true, stage: "done", orderId, payload, response });
+        onClose?.();
+        setLoading(false);
+        return;
+      }
+
+      setLoading(false);
+    } catch (e) {
+      console.error("[TimepassCheckout] 예외 발생", e);
+      if (e?.event === "cancel") {
+        alert("결제가 취소되었습니다.");
+        onProceed?.({ ok: false, stage: "cancel-ex", error: e });
+      } else {
+        alert(e?.message || "결제 중 오류가 발생했습니다.");
+        onProceed?.({ ok: false, stage: "exception", error: e });
+      }
+      setLoading(false);
+    }
   };
+
 
   const handleBackdrop = (e) => {
     if (e.target === e.currentTarget) onClose?.();
@@ -420,18 +773,17 @@ export default function CheckoutTimepassDialog({
         <li>간단한 예약, 부담 없는 이용</li>
       </SummaryList>
 
-
       <PassRow>
         <PassCard>
           <PassImage src={twohourimg} alt="2시간권" />
           <PassLabel>2시간권</PassLabel>
-          <PassPrice>25,000원</PassPrice>
+          <PassPrice>{KRW(25000)}원</PassPrice>
         </PassCard>
 
         <PassCard>
           <PassImage src={fourhourimg} alt="4시간권" />
           <PassLabel>4시간권</PassLabel>
-          <PassPrice>45,000원</PassPrice>
+          <PassPrice>{KRW(45000)}원</PassPrice>
         </PassCard>
       </PassRow>
 
@@ -476,14 +828,59 @@ export default function CheckoutTimepassDialog({
           type="button"
           $placeholder={selectedChildLabel === "선택해주세요"}
           onClick={() => {
-            // TODO: 자녀 선택 드롭다운 연결 (지금은 더미)
-            alert("자녀 선택 드롭다운은 나중에 연결할게!");
+            if (!children.length) {
+              if (
+                window.confirm(
+                  "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록하시겠어요?"
+                )
+              ) {
+                onClose?.();
+                navigate("/mypage");
+              }
+              return;
+            }
+            setChildDropdownOpen((prev) => !prev);
           }}
         >
           <span>{selectedChildLabel}</span>
           <ChevronDown />
         </SelectBox>
-        <AddChildRow>+ 자녀 추가</AddChildRow>
+        <AddChildRow
+          onClick={() => {
+            onClose?.();
+            navigate("/mypage");
+          }}
+        >
+          <span>+ 자녀 추가</span>
+          <span style={{ fontSize: 12, color: "#b45309" }}>
+            클릭하면 마이페이지로 이동
+          </span>
+        </AddChildRow>
+
+        {childDropdownOpen && children.length > 0 && (
+          <ChildDropdown>
+            {children.map((c) => (
+              <ChildItemButton
+                key={c.childId}
+                type="button"
+                onClick={() => {
+                  setSelectedChildId(c.childId);
+                  setSelectedChildLabel(
+                    c.name
+                      ? c.birth
+                        ? `${c.name} (${c.birth})`
+                        : c.name
+                      : "선택해주세요"
+                  );
+                  setChildDropdownOpen(false);
+                }}
+              >
+                <span className="name">{c.name || "(이름 없음)"}</span>
+                {c.birth ? <span className="meta">{c.birth}</span> : null}
+              </ChildItemButton>
+            ))}
+          </ChildDropdown>
+        )}
       </Block>
 
       <Block>
@@ -492,43 +889,14 @@ export default function CheckoutTimepassDialog({
           type="button"
           $placeholder={selectedOptionLabel === "선택해주세요"}
           onClick={() => {
-            // TODO: 옵션 선택 (2시간권/4시간권) 연결
-            setSelectedOptionLabel(
-              selectedKey === "2h" ? "2시간권 (25,000원)" : "4시간권 (45,000원)"
-            );
+            // 간단 토글: 2h ↔ 4h
+            const nextKey = selectedKey === "2h" ? "4h" : "2h";
+            setSelectedKey(nextKey);
+            const next = TIMEPASS_OPTIONS.find((o) => o.key === nextKey);
+            setSelectedOptionLabel(next ? next.label : "선택해주세요");
           }}
         >
           <span>{selectedOptionLabel}</span>
-          <ChevronDown />
-        </SelectBox>
-      </Block>
-
-      <Block>
-        <SectionLabel>아지트</SectionLabel>
-        <SelectBox
-          type="button"
-          $placeholder={selectedAgitLabel === "선택해주세요"}
-          onClick={() => {
-            // TODO: 아지트 지점 선택 드롭다운 연결
-            alert("아지트 지점 선택은 나중에 연결할게!");
-          }}
-        >
-          <span>{selectedAgitLabel}</span>
-          <ChevronDown />
-        </SelectBox>
-      </Block>
-
-      <Block>
-        <SectionLabel>결제방식</SectionLabel>
-        <SelectBox
-          type="button"
-          $placeholder={selectedMethodLabel === "선택해주세요"}
-          onClick={() => {
-            // TODO: 결제수단 선택 드롭다운 연결
-            alert("결제방식 선택은 나중에 연결할게!");
-          }}
-        >
-          <span>{selectedMethodLabel}</span>
           <ChevronDown />
         </SelectBox>
       </Block>
@@ -598,8 +966,8 @@ export default function CheckoutTimepassDialog({
         </Body>
 
         <Footer>
-          <CTAButton type="button" onClick={handleCTA}>
-            타임패스 이용하기
+          <CTAButton type="button" onClick={handleCTA} disabled={!canPay}>
+            {loading ? "결제 진행 중…" : `타임패스 이용하기 (${KRW(total)}원)`}
           </CTAButton>
         </Footer>
       </Dialog>
