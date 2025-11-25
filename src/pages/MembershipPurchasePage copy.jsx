@@ -29,7 +29,6 @@ import iconProgram from "../assets/membership/icon-program.png";
 import { listOtherProducts } from "../services/snackService";
 import { listProgramsForUser } from "../services/programService";
 import { useUser } from "../contexts/UserContext";
-import CheckoutProgramDialog from "../components/CheckoutProgramDialog";
 
 const accent = "var(--color-accent, #F07A2A)";
 const primaryText = "#222";
@@ -567,60 +566,26 @@ const FaqItemWhite = styled(FaqItem)`
 
 /* ===== 프로그램 상단 설명 + 목록 + 상세 영역 ===== */
 
-/* ========= 상단 탭 정보 ========= */
+const ProgramImagesWrap = styled.div`
+  margin-top: 16px;
+  padding: 8px;
+  border-radius: 18px;
+  background: #f7f7f7;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
 
-const TOP_TABS = [
-  {
-    key: "membership",
-    label: "멤버십 구매",
-    activeIcon: tabMembershipOn,
-    inactiveIcon: tabMembershipOff,
-  },
-  {
-    key: "charge",
-    label: "정액권 충전",
-    activeIcon: tabChargeOn,
-    inactiveIcon: tabChargeOff,
-  },
-  {
-    key: "program",
-    label: "프로그램 예약",
-    activeIcon: tabProgramOn,
-    inactiveIcon: tabProgramOff,
-  },
-  {
-    key: "others",
-    label: "기타 상품",
-    activeIcon: tabOthersOn,
-    inactiveIcon: tabOthersOff,
-  },
-];
-
-const ICON_ITEMS = [
-  { key: "pickup", title: "픽업비용", img: iconPickup },
-  { key: "toy", title: "유료 교구", img: iconToy },
-  { key: "snack", title: "간식", img: iconSnack },
-  { key: "program", title: "프로그램 예약", img: iconProgram },
-];
-
-const FAQ_ITEMS = [
-  {
-    q: "프로그램 예약은 언제까지 취소할 수 있나요?",
-    a: "예약 후 24시간 전까지는 무료 취소가 가능합니다.",
-  },
-  {
-    q: "정액권으로도 프로그램을 예약할 수 있나요?",
-    a: "정액권 잔액이 있을 경우, 프로그램 결제 시 함께 사용할 수 있습니다.",
-  },
-  {
-    q: "결제 중인데 잔여석이 없어졌다고 나와요. 왜 그런가요?",
-    a: "프로그램 잔여석은 실시간으로 변동될 수 있어, 동시에 결제하는 다른 보호자에 의해 마감될 수 있습니다.",
-  },
-];
-function formatKRW(n) {
-  const v = Number(n || 0);
-  return `₩${v.toLocaleString()}`;
-}
+const ProgramDetailImage = styled.img`
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  object-fit: contain;    /* 핵심: 절대 자르지 않음 */
+`;
 
 
 
@@ -703,11 +668,9 @@ const ProgramListGrid = styled.div`
 
 /* 상세 섹션 전체 래퍼 */
 
-// ===== 프로그램 상세 레이아웃 및 사이드바(예약 + 장바구니) =====
-
 const ProgramDetailWrapper = styled.div`
   max-width: 1120px;
-  margin: 0 auto;
+  margin: 0px auto;
   padding: 0 20px;
 
   @media (max-width: 768px) {
@@ -715,29 +678,25 @@ const ProgramDetailWrapper = styled.div`
   }
 `;
 
-/* 상세 레이아웃 (왼쪽 상세 3fr / 가운데 예약 1.5fr / 오른쪽 장바구니 1.5fr) */
+/* 상세 레이아웃 (좌측 상세 + 우측 예약) */
 
 const ProgramLayout = styled.div`
   margin-top: 16px;
   display: grid;
-  grid-template-columns: 3fr 1.5fr 1.5fr;
-  column-gap: 32px;
+  grid-template-columns: 3fr 2fr;
+  column-gap: 40px;
   align-items: flex-start;
-
-  @media (max-width: 1200px) {
-    column-gap: 24px;
-  }
 
   @media (max-width: 960px) {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 20px;
+    row-gap: 24px;
   }
 `;
 
 const ProgramDetailShell = styled.div`
   background: #ffffff;
   border-radius: 32px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 18 px 40px rgba(0, 0, 0, 0.06);
   padding: 24px 24px 28px;
   box-sizing: border-box;
   min-height: 360px;
@@ -770,86 +729,28 @@ const DetailShellDescription = styled.div`
   white-space: pre-line;
 `;
 
-/* 프로그램 상세 이미지 (원본 비율 유지) */
-
-const ProgramImagesWrap = styled.div`
-  margin-top: 16px;
-  padding: 8px;
-  border-radius: 18px;
-  background: #f7f7f7;
-  overflow-y: auto;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const ProgramDetailImage = styled.img`
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 12px;
-  object-fit: contain;
-`;
-
-/* 가운데 예약 사이드바 */
+/* 오른쪽 예약 박스 */
 
 const BookingSidebarShell = styled.div`
   position: sticky;
-  top: 180px; /* 탭바 + 헤더 높이 고려해서 고정 지점 설정 */
+  top: 120px;   /* 탭바 + 헤더 높이 고려해서 고정 지점 설정 */
   background: #ffffff;
   border-radius: 24px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
-  padding: 16px 16px 18px;
+  padding: 20px 20px 24px;
+  min-height: 420px;
   box-sizing: border-box;
-  align-self: flex-start;
-
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 140px);
-
+  align-self: start;  /* Grid 안에서 상단 정렬 */
   @media (max-width: 960px) {
-    position: static;
+    position: static;  /* 모바일에서는 스크롤 고정 꺼짐 */
     top: auto;
-    max-height: none;
   }
-
   @media (max-width: 768px) {
     border-radius: 20px;
-    padding: 14px 12px 16px;
+    padding: 18px 16px 22px;
   }
 `;
 
-/* 오른쪽 장바구니 사이드바 */
-
-const CartSidebarShell = styled.div`
-  position: sticky;
-  top: 180px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
-  padding: 16px 16px 18px;
-  box-sizing: border-box;
-  align-self: flex-start;
-
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: calc(100vh - 140px);
-  overflow-y: auto;
-
-  @media (max-width: 960px) {
-    position: static;
-    top: auto;
-    max-height: none;
-  }
-
-  @media (max-width: 768px) {
-    border-radius: 20px;
-    padding: 14px 12px 16px;
-  }
-`;
 
 const BookingSection = styled.div`
   & + & {
@@ -863,8 +764,6 @@ const BookingSectionTitle = styled.div`
   color: ${primaryText};
   margin-bottom: 8px;
 `;
-
-/* 달력 */
 
 const CalendarBox = styled.div`
   border-radius: 18px;
@@ -911,6 +810,7 @@ const CalendarNavButton = styled.button`
   }
 `;
 
+
 const CalendarWeekRow = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -934,6 +834,7 @@ const CalendarDayCell = styled.button`
   border: none;
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
 
+  /* 완전 동그란 원 + 조금 더 크게 */
   width: 32px;
   height: 32px;
   margin: 0 auto;
@@ -947,21 +848,27 @@ const CalendarDayCell = styled.button`
   box-sizing: border-box;
   border-radius: 999px;
 
+  /* 배경색: 선택일은 진한 주황, 예약 가능일은 더 진한 연주황 */
   background: ${({ $isSelected, $isAvailable }) =>
     $isSelected
-      ? "#f07a2a"
+      ? "#f07a2a" /* 선택된 날: 진하게 */
       : $isAvailable
-      ? "rgba(240, 122, 42, 0.3)"
+      ? "rgba(240, 122, 42, 0.3)" /* 예약 가능일: 기존보다 조금 더 진하게 */
       : "transparent"};
 
+  /* 글자 색 */
   color: ${({ $isSelected, $isAvailable }) =>
-    $isSelected ? "#ffffff" : $isAvailable ? "#222222" : "#d0d0d0"};
+    $isSelected
+      ? "#ffffff"
+      : $isAvailable
+      ? "#222222"
+      : "#d0d0d0"};
 
+  /* 선택/예약 가능일은 숫자도 살짝 굵게 */
   font-weight: ${({ $isSelected, $isAvailable }) =>
     $isSelected || $isAvailable ? 600 : 400};
 
-  transition: background 0.12s ease-out, color 0.12s ease-out,
-    transform 0.08s ease-out;
+  transition: background 0.12s ease-out, color 0.12s ease-out, transform 0.08s ease-out;
 
   &:hover {
     ${({ $clickable }) =>
@@ -978,12 +885,18 @@ const CalendarDot = styled.div`
   height: 6px;
   border-radius: 999px;
 
+  /* dot 색상 파랑으로 변경 */
   background: ${({ $active, $available }) =>
-    $active ? "#ffffff" : $available ? "#3B82F6" : "transparent"};
+    $active
+      ? "#ffffff"          /* 선택된 날: 흰 점 그대로 */
+      : $available
+      ? "#3B82F6"          /* 예약 가능일: 파랑 포인트 */
+      : "transparent"};
 
   margin-left: auto;
   margin-right: auto;
 `;
+
 
 const CalendarEmptyCell = styled.div`
   height: 28px;
@@ -993,14 +906,14 @@ const CalendarDayNumber = styled.div`
   line-height: 1.3;
 `;
 
+
+
 const CalendarHint = styled.p`
   margin: 8px 2px 0;
   font-size: 11px;
   line-height: 1.5;
   color: ${subText};
 `;
-
-/* 세부 프로그램 (타임 슬롯) */
 
 const BookingProgramList = styled.div`
   display: flex;
@@ -1055,8 +968,6 @@ const BookingChildPlaceholder = styled.div`
   height: 64px;
 `;
 
-/* 자녀 선택 */
-
 const ChildSelectButton = styled.button`
   width: 100%;
   border-radius: 12px;
@@ -1098,7 +1009,7 @@ const ChildDropdownItem = styled.button`
 
   &:hover {
     background: ${({ $active }) =>
-      $active ? "rgba(240,122,42,0.1)" : "#f9fafb"};
+    $active ? "rgba(240,122,42,0.1)" : "#f9fafb"};
   }
 
   .name {
@@ -1114,6 +1025,43 @@ const ChildDropdownItem = styled.button`
   }
 `;
 
+
+
+const ChildList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const ChildItem = styled.button`
+  width: 100%;
+  border: 1px solid
+    ${({ $active }) => ($active ? "#f07a2a" : "rgba(0, 0, 0, 0.06)")};
+  background: ${({ $active }) =>
+    $active ? "rgba(240, 122, 42, 0.06)" : "#ffffff"};
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+`;
+
+
+
+
+
+const ChildInfo = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+`;
+
+const ChildBirth = styled.div`
+  font-size: 11px;
+  color: #777;
+`;
+
 const ChildAddButton = styled.button`
   width: 100%;
   margin-top: 4px;
@@ -1125,90 +1073,6 @@ const ChildAddButton = styled.button`
   color: #777;
   cursor: pointer;
 `;
-
-/* 장바구니 요약 */
-
-const CartSummaryHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-`;
-
-const CartSummaryTitle = styled.div`
-  font-size: 13px;
-  font-weight: 700;
-  color: ${primaryText};
-`;
-
-const CartSummaryCount = styled.span`
-  font-size: 11px;
-  color: ${subText};
-`;
-
-const CartSummaryEmpty = styled.p`
-  margin: 4px 2px 0;
-  font-size: 12px;
-  color: ${subText};
-`;
-
-const CartSummaryList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const CartSummaryItem = styled.div`
-  border-radius: 14px;
-  background: #ffffff;
-  padding: 10px 12px;
-  border: 1px solid #f1e0c9;
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  column-gap: 10px;
-  row-gap: 4px;
-`;
-
-const CartSummaryMain = styled.div`
-  grid-column: 1 / 2;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const CartSummaryItemTitle = styled.div`
-  font-size: 13px;
-  font-weight: 600;
-  color: ${primaryText};
-`;
-
-const CartSummaryItemMeta = styled.div`
-  font-size: 11px;
-  color: ${subText};
-`;
-
-const CartSummaryItemPrice = styled.div`
-  grid-column: 1 / 2;
-  font-size: 12px;
-  font-weight: 600;
-  color: ${primaryText};
-  margin-top: 2px;
-`;
-
-const CartSummaryRemoveButton = styled.button`
-  grid-column: 2 / 3;
-  grid-row: 1 / 3;
-  align-self: center;
-  border: none;
-  background: transparent;
-  font-size: 11px;
-  color: #d26a3b;
-  cursor: pointer;
-  padding: 4px 6px;
-`;
-
-/* 공용 CTA 버튼 */
 
 const BookingSubmitButton = styled.button`
   margin-top: 24px;
@@ -1223,9 +1087,68 @@ const BookingSubmitButton = styled.button`
   cursor: pointer;
 `;
 
-/* ================== ProgramDetail 컴포넌트 ================== */
+/* ========= 상단 탭 정보 ========= */
+
+const TOP_TABS = [
+  {
+    key: "membership",
+    label: "멤버십 구매",
+    activeIcon: tabMembershipOn,
+    inactiveIcon: tabMembershipOff,
+  },
+  {
+    key: "charge",
+    label: "정액권 충전",
+    activeIcon: tabChargeOn,
+    inactiveIcon: tabChargeOff,
+  },
+  {
+    key: "program",
+    label: "프로그램 예약",
+    activeIcon: tabProgramOn,
+    inactiveIcon: tabProgramOff,
+  },
+  {
+    key: "others",
+    label: "기타 상품",
+    activeIcon: tabOthersOn,
+    inactiveIcon: tabOthersOff,
+  },
+];
+
+const ICON_ITEMS = [
+  { key: "pickup", title: "픽업비용", img: iconPickup },
+  { key: "toy", title: "유료 교구", img: iconToy },
+  { key: "snack", title: "간식", img: iconSnack },
+  { key: "program", title: "프로그램 예약", img: iconProgram },
+];
+
+const FAQ_ITEMS = [
+  {
+    q: "프로그램 예약은 언제까지 취소할 수 있나요?",
+    a: "예약 후 24시간 전까지는 무료 취소가 가능합니다.",
+  },
+  {
+    q: "정액권으로도 프로그램을 예약할 수 있나요?",
+    a: "정액권 잔액이 있을 경우, 프로그램 결제 시 함께 사용할 수 있습니다.",
+  },
+  {
+    q: "결제 중인데 잔여석이 없어졌다고 나와요. 왜 그런가요?",
+    a: "프로그램 잔여석은 실시간으로 변동될 수 있어, 동시에 결제하는 다른 보호자에 의해 마감될 수 있습니다.",
+  },
+];
+
+function formatKRW(n) {
+  const v = Number(n || 0);
+  return `₩${v.toLocaleString()}`;
+}
+
+
 
 function ProgramDetail({ program }) {
+
+  console.log("[ProgramDetail] dateSlots:", program.dateSlots);
+
   const nav = useNavigate();
   const { children: ctxChildren } = useUser() || {};
   const children = useMemo(
@@ -1239,12 +1162,6 @@ function ProgramDetail({ program }) {
   const [childDropdownOpen, setChildDropdownOpen] = useState(false);
   const [childLabel, setChildLabel] = useState("자녀를 선택해주세요");
 
-  // 장바구니: 세부 프로그램 + 자녀 조합 리스트
-  const [cartItems, setCartItems] = useState([]);
-
-  // 결제 다이얼로그
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-
   const dateSlots = Array.isArray(program.dateSlots) ? program.dateSlots : [];
 
   const parseDateStr = (str) => {
@@ -1254,8 +1171,8 @@ function ProgramDetail({ program }) {
     return new Date(y, m - 1, d);
   };
 
-  // dateSlots 기준 최소 날짜 계산
-  const { minDate } = useMemo(() => {
+  // dateSlots 기준 최소/최대 날짜 계산
+  const { minDate, maxDate } = useMemo(() => {
     const valid = dateSlots
       .map((ds) => parseDateStr(ds.date))
       .filter((d) => d instanceof Date && !isNaN(d.getTime()))
@@ -1336,9 +1253,7 @@ function ProgramDetail({ program }) {
       if (!d) return;
       if (
         d.getFullYear() === viewYear &&
-        d.getMonth() + 1 === viewMonth &&
-        Array.isArray(ds.timeSlots) &&
-        ds.timeSlots.length > 0
+        d.getMonth() + 1 === viewMonth
       ) {
         set.add(d.getDate());
       }
@@ -1346,16 +1261,14 @@ function ProgramDetail({ program }) {
     return set;
   }, [dateSlots, viewYear, viewMonth]);
 
-  // "이 프로그램의 예약 가능일은 5일, 6일, 12일 입니다." 텍스트용
+  // "이 프로그램의 예약 가능일은 5일, 22일 입니다." 텍스트용
   const availableText = useMemo(() => {
     if (!dateSlots.length) return "";
     const labels = dateSlots
       .map((ds) => {
         if (!ds.date) return null;
         const d = parseDateStr(ds.date);
-        if (!d || !Array.isArray(ds.timeSlots) || ds.timeSlots.length === 0) {
-          return null;
-        }
+        if (!d) return null;
         return `${d.getDate()}일`;
       })
       .filter(Boolean);
@@ -1367,6 +1280,12 @@ function ProgramDetail({ program }) {
   const currentDateSlot =
     dateSlots.find((ds) => ds.date === selectedDate) || null;
   const timeSlots = currentDateSlot?.timeSlots || [];
+
+
+  console.log("[ProgramDetail] selectedDate:", selectedDate);
+  console.log("[ProgramDetail] dateSlots:", dateSlots);
+  console.log("[ProgramDetail] currentDateSlot:", currentDateSlot);
+  console.log("[ProgramDetail] timeSlots:", timeSlots);
 
   const dateLabel = selectedDate ? selectedDate.replace(/-/g, ".") : "";
 
@@ -1391,29 +1310,18 @@ function ProgramDetail({ program }) {
     });
   };
 
-  // 날짜 클릭
+  // 실제 예약 가능한 day 클릭 처리
   const handleClickDay = (day) => {
     if (!availableDaysSet.has(day)) return;
 
-    const match = dateSlots.find((ds) => {
-      if (!ds.date) return false;
-      const d = parseDateStr(ds.date);
-      if (!d) return false;
-      return (
-        d.getFullYear() === viewYear &&
-        d.getMonth() + 1 === viewMonth &&
-        d.getDate() === day &&
-        Array.isArray(ds.timeSlots) &&
-        ds.timeSlots.length > 0
-      );
-    });
+    const dateStr = `${viewYear}-${String(viewMonth).padStart(2, "0")}-${String(
+      day
+    ).padStart(2, "0")}`;
 
-    if (!match) return;
+    setSelectedDate(dateStr);
 
-    setSelectedDate(match.date);
-    const firstTime = Array.isArray(match.timeSlots)
-      ? match.timeSlots[0]
-      : null;
+    const ds = dateSlots.find((slot) => slot.date === dateStr) || null;
+    const firstTime = ds?.timeSlots?.[0] || null;
     setSelectedTimeId(firstTime?.id || null);
   };
 
@@ -1436,156 +1344,23 @@ function ProgramDetail({ program }) {
     headerMetaText = parts.join(" · ");
   }
 
-  const selectedChild =
-    children.find((c) => c.childId === selectedChildId) || null;
-
-  const getSlotTitle = (slot) => {
-    if (!slot) return "세부 프로그램";
-    return slot.title || slot.name || slot.label || "세부 프로그램";
-  };
-
-  const formatDateLabel = (dateStr) => {
-    if (!dateStr) return "";
-    return dateStr.replace(/-/g, ".");
-  };
-
-  // 장바구니 담기 (로직 그대로)
-  const handleAddToCart = () => {
-    if (!selectedDate || !selectedSlot) {
-      alert("날짜와 세부 프로그램을 먼저 선택해주세요.");
-      return;
-    }
-    if (!selectedChild) {
-      alert("자녀를 선택해주세요.");
-      return;
-    }
-
-    const key = `${program.id}_${selectedSlot.id}_${selectedChild.childId}`;
-    const exists = cartItems.some((item) => item.id === key);
-    if (exists) {
-      alert("이미 담겨 있는 예약입니다.");
-      return;
-    }
-
-    const slotPrice =
-      typeof selectedSlot.priceKRW === "number"
-        ? selectedSlot.priceKRW
-        : typeof program.priceKRW === "number"
-        ? program.priceKRW
-        : 0;
-
-    const item = {
-      id: key,
-      programId: program.id,
-      programTitle: program.title || "",
-      date: selectedDate,
-      dateLabel: formatDateLabel(selectedDate),
-      slotId: selectedSlot.id,
-      slotTitle: getSlotTitle(selectedSlot),
-      slotLabel: selectedSlot.label || "",
-      priceKRW: slotPrice,
-      childId: selectedChild.childId,
-      childName: selectedChild.name || "",
-      childBirth: selectedChild.birth || "",
-      subProgramId: selectedSlot.subProgramId || "",
-      subProgramTitle: selectedSlot.subProgramTitle || "",
-    };
-
-    setCartItems((prev) => [...prev, item]);
-  };
-
-  const handleRemoveCartItem = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  // 결제 버튼 클릭 → 다이얼로그 오픈
   const handleSubmitBooking = () => {
-    if (cartItems.length === 0) {
-      alert(
-        "장바구니에 담긴 예약이 없습니다.\n날짜 · 세부 프로그램 · 자녀를 선택한 뒤 ‘장바구니에 담기’를 눌러주세요."
-      );
+    if (!selectedDate || !selectedSlot) {
+      alert("날짜와 세부 프로그램을 선택해 주세요.");
       return;
     }
-    setCheckoutOpen(true);
-  };
-
-  const renderTimeSlots = () => {
-    if (timeSlots.length === 0) {
-      return <BookingChildPlaceholder />;
+    if (!selectedChildId) {
+      alert("자녀를 선택해 주세요.");
+      return;
     }
-
-    return (
-      <BookingProgramList>
-        {timeSlots.map((slot, idx) => {
-          const slotId = slot.id || `${currentDateSlot?.date || ""}-${idx}`;
-
-          const capacity = Number(
-            slot.capacity || program.totalCapacity || 0
-          );
-          const reserved = Number(
-            slot.reserved || program.totalReserved || 0
-          );
-          const remain =
-            capacity > 0 ? Math.max(capacity - (reserved || 0), 0) : null;
-          const closed = capacity > 0 ? remain === 0 : false;
-
-          const slotTitle = getSlotTitle(slot);
-          const timeLabel = slot.label || "";
-
-          const metaParts = [];
-          if (dateLabel) metaParts.push(dateLabel);
-          if (timeLabel) metaParts.push(timeLabel);
-          if (closed) {
-            metaParts.push("마감");
-          } else if (remain != null) {
-            metaParts.push(`잔여 ${remain}석`);
-          }
-          const metaText = metaParts.join(" · ");
-
-          const slotPrice =
-            typeof slot.priceKRW === "number"
-              ? slot.priceKRW
-              : typeof program.priceKRW === "number"
-              ? program.priceKRW
-              : 0;
-          const priceLabel =
-            slotPrice > 0 ? formatKRW(slotPrice) : "가격 미정";
-
-          const active = selectedTimeId === slotId;
-
-          return (
-            <BookingProgramItem
-              key={slotId}
-              type="button"
-              $active={active}
-              onClick={() => {
-                if (closed) return;
-                setSelectedTimeId(slotId);
-              }}
-            >
-              <BookingProgramContent>
-                <BookingProgramTitle>{slotTitle}</BookingProgramTitle>
-                <BookingProgramMeta>
-                  {metaText || "일정 정보가 없습니다."}
-                </BookingProgramMeta>
-                <BookingProgramPrice>{priceLabel}</BookingProgramPrice>
-              </BookingProgramContent>
-            </BookingProgramItem>
-          );
-        })}
-      </BookingProgramList>
-    );
+    // TODO: 여기서 실제 예약 페이지로 이동하거나 예약 생성 로직 호출
+    alert("예약 로직은 나중에 연결할게요 :)");
   };
-
-  const submitButtonLabel =
-    cartItems.length > 0
-      ? `선택한 ${cartItems.length}건 예약/결제하기`
-      : "예약하기";
 
   return (
     <ProgramDetailWrapper id="program-detail-section">
       <ProgramLayout>
-        {/* 왼쪽: 프로그램 설명 + 이미지 */}
+        {/* 왼쪽: 프로그램 설명 */}
         <ProgramDetailShell>
           <DetailShellTitle>{program.title || "프로그램"}</DetailShellTitle>
 
@@ -1624,7 +1399,7 @@ function ProgramDetail({ program }) {
           )}
         </ProgramDetailShell>
 
-        {/* 가운데: 예약 패널 (날짜/타임슬롯/자녀/장바구니 담기) */}
+        {/* 오른쪽: 날짜/시간/자녀 선택 */}
         <BookingSidebarShell>
           {/* 날짜 선택 */}
           <BookingSection>
@@ -1652,10 +1427,12 @@ function ProgramDetail({ program }) {
               </CalendarWeekRow>
 
               <CalendarGrid>
+                {/* 앞쪽 빈 칸 */}
                 {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
                   <CalendarEmptyCell key={`empty-${idx}`} />
                 ))}
 
+                {/* 실제 날짜들 */}
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day = i + 1;
                   const isAvailable = availableDaysSet.has(day);
@@ -1694,8 +1471,78 @@ function ProgramDetail({ program }) {
           {/* 세부 프로그램 (시간 슬롯) */}
           <BookingSection>
             <BookingSectionTitle>세부 프로그램</BookingSectionTitle>
-            {renderTimeSlots()}
+            {timeSlots.length === 0 ? (
+              <BookingChildPlaceholder />
+            ) : (
+              <BookingProgramList>
+                {timeSlots.map((slot, idx) => {
+                  const slotId =
+                    slot.id || `${currentDateSlot?.date || ""}-${idx}`;
+
+                  const capacity = Number(
+                    slot.capacity || program.totalCapacity || 0
+                  );
+                  const reserved = Number(
+                    slot.reserved || program.totalReserved || 0
+                  );
+                  const remain =
+                    capacity > 0 ? Math.max(capacity - (reserved || 0), 0) : null;
+                  const closed = capacity > 0 ? remain === 0 : false;
+
+                  // ✅ 여기: 세부 프로그램 이름 우선, 메인 제목은 빼기
+                  const slotTitle =
+                    slot.title ||        // 가장 먼저 세부 타이틀
+                    slot.name ||         // 혹시 name 필드 쓴다면
+                    slot.label ||        // label(예: A코스, B코스 등)
+                    "세부 프로그램";     // 아무것도 없으면 기본 문구
+
+                  const timeLabel = slot.label || "";
+
+                  const metaParts = [];
+                  if (dateLabel) metaParts.push(dateLabel);
+                  if (timeLabel) metaParts.push(timeLabel);
+                  if (closed) {
+                    metaParts.push("마감");
+                  } else if (remain != null) {
+                    metaParts.push(`잔여 ${remain}석`);
+                  }
+                  const metaText = metaParts.join(" · ");
+
+                  const slotPrice =
+                    typeof slot.priceKRW === "number"
+                      ? slot.priceKRW
+                      : typeof program.priceKRW === "number"
+                      ? program.priceKRW
+                      : 0;
+                  const priceLabel =
+                    slotPrice > 0 ? formatKRW(slotPrice) : "가격 미정";
+
+                  const active = selectedTimeId === slotId;
+
+                  return (
+                    <BookingProgramItem
+                      key={slotId}
+                      type="button"
+                      $active={active}
+                      onClick={() => {
+                        if (closed) return;
+                        setSelectedTimeId(slotId);
+                      }}
+                    >
+                      <BookingProgramContent>
+                        <BookingProgramTitle>{slotTitle}</BookingProgramTitle>
+                        <BookingProgramMeta>
+                          {metaText || "일정 정보가 없습니다."}
+                        </BookingProgramMeta>
+                        <BookingProgramPrice>{priceLabel}</BookingProgramPrice>
+                      </BookingProgramContent>
+                    </BookingProgramItem>
+                  );
+                })}
+              </BookingProgramList>
+            )}
           </BookingSection>
+
 
           {/* 자녀 선택 */}
           <BookingSection>
@@ -1715,11 +1562,7 @@ function ProgramDetail({ program }) {
               <ChildDropdown>
                 {(!children || !children.length) && (
                   <div
-                    style={{
-                      padding: "10px 12px",
-                      fontSize: 13,
-                      color: "#777",
-                    }}
+                    style={{ padding: "10px 12px", fontSize: 13, color: "#777" }}
                   >
                     등록된 자녀가 없습니다. 아래 버튼을 눌러 추가해 주세요.
                   </div>
@@ -1760,88 +1603,11 @@ function ProgramDetail({ program }) {
             )}
           </BookingSection>
 
-          {/* 담기 버튼 */}
-          <BookingSection>
-            <BookingSectionTitle>선택한 예약 담기</BookingSectionTitle>
-            <BookingSubmitButton
-              type="button"
-              onClick={handleAddToCart}
-              style={{ marginTop: 8, marginBottom: 0 }}
-            >
-              장바구니에 담기
-            </BookingSubmitButton>
-          </BookingSection>
-        </BookingSidebarShell>
-
-        {/* 오른쪽: 장바구니 요약 + 예약/결제 버튼 */}
-        <CartSidebarShell>
-          <CartSummaryHeader>
-            <CartSummaryTitle>담긴 예약 내역</CartSummaryTitle>
-            <CartSummaryCount>
-              {cartItems.length > 0 ? `${cartItems.length}건` : "0건"}
-            </CartSummaryCount>
-          </CartSummaryHeader>
-
-          {cartItems.length === 0 ? (
-            <CartSummaryEmpty>
-              담긴 예약이 없습니다. 날짜·세부 프로그램·자녀를 선택한 뒤
-              <br />
-              <strong>‘장바구니에 담기’</strong>를 눌러주세요.
-            </CartSummaryEmpty>
-          ) : (
-            <CartSummaryList>
-              {cartItems.map((item) => (
-                <CartSummaryItem key={item.id}>
-                  <CartSummaryMain>
-                    <CartSummaryItemTitle>
-                      {item.dateLabel} · {item.slotTitle}
-                    </CartSummaryItemTitle>
-                    <CartSummaryItemMeta>
-                      {item.slotLabel}
-                      {item.childName &&
-                        ` · ${item.childName}${
-                          item.childBirth ? ` (${item.childBirth})` : ""
-                        }`}
-                    </CartSummaryItemMeta>
-                  </CartSummaryMain>
-                  <CartSummaryItemPrice>
-                    {formatKRW(item.priceKRW)}
-                  </CartSummaryItemPrice>
-                  <CartSummaryRemoveButton
-                    type="button"
-                    onClick={() => handleRemoveCartItem(item.id)}
-                  >
-                    삭제
-                  </CartSummaryRemoveButton>
-                </CartSummaryItem>
-              ))}
-            </CartSummaryList>
-          )}
-
-          {/* 장바구니 기준 예약/결제 버튼 */}
-          <BookingSubmitButton
-            type="button"
-            onClick={handleSubmitBooking}
-            style={{ marginTop: 16 }}
-          >
-            {submitButtonLabel}
+          <BookingSubmitButton type="button" onClick={handleSubmitBooking}>
+            예약하기
           </BookingSubmitButton>
-        </CartSidebarShell>
+        </BookingSidebarShell>
       </ProgramLayout>
-
-      {/* 💳 프로그램 예약 결제 다이얼로그 */}
-      <CheckoutProgramDialog
-        open={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        items={cartItems}
-        onProceed={(result) => {
-          console.log("[ProgramDetail] 결제 결과", result);
-          if (result?.ok) {
-            // 결제 성공 시 장바구니 비우기
-            setCartItems([]);
-          }
-        }}
-      />
     </ProgramDetailWrapper>
   );
 }

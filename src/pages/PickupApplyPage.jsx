@@ -23,7 +23,7 @@ const cardBg = "#FFFFFF";
 /* ================== 페이지 레이아웃 ================== */
 
 const Page = styled.main`
-  background: #fffcf4;
+  background: #fff;
   min-height: 100vh;
   padding-bottom: 60px;
 `;
