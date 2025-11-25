@@ -1088,17 +1088,23 @@ function PickupRightColumn({ slots,onChangeSlots }) {
   }, [children]);
 
 
-  // 지도 초기화
+  // 지도 초기화 — index.html에서 이미 kakao sdk를 로딩하는 방식
   useEffect(() => {
-    if (!window.kakao || !window.kakao.maps) {
-      console.warn("[PickupRightColumn] kakao.maps not loaded");
+    if (!mapRef.current) {
+      console.log("[PickupRightColumn] mapRef 없음");
       return;
     }
-    if (!mapRef.current) return;
-    if (mapInstanceRef.current) return;
+    if (!window.kakao || !window.kakao.maps) {
+      console.log("[PickupRightColumn] window.kakao.maps 없음:", window.kakao);
+      return;
+    }
+    if (mapInstanceRef.current) {
+      console.log("[PickupRightColumn] 지도 이미 초기화됨");
+      return;
+    }
 
     const kakao = window.kakao;
-    const center = new kakao.maps.LatLng(37.5665, 126.978); // 서울 시청 근처
+    const center = new kakao.maps.LatLng(37.5665, 126.978);
     const map = new kakao.maps.Map(mapRef.current, {
       center,
       level: 5,
@@ -1106,7 +1112,12 @@ function PickupRightColumn({ slots,onChangeSlots }) {
 
     mapInstanceRef.current = map;
     placesRef.current = new kakao.maps.services.Places();
+
+    console.log("[PickupRightColumn] kakao 지도 초기화 완료");
   }, []);
+
+
+
 
   // 출발/도착 변경 시 마커/라인 업데이트
   useEffect(() => {

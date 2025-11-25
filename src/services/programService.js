@@ -1,16 +1,17 @@
 /* eslint-disable */
 // src/services/programService.js
-// Withagit — 프로그램 예약 관리용 서비스 (Firestore 기반)
+// Withagit — 프로그램 예약 관리/사용자 조회 서비스 (Firestore 기반)
 
 import {
-    getFirestore,
     collection,
     getDocs,
     doc,
     setDoc,
     deleteDoc,
+    query,
+    where,
+    orderBy,
 } from "firebase/firestore";
-
 
 import { db } from "./api";
 
@@ -34,7 +35,7 @@ function mapProgramDoc(docSnap) {
         detailImageUrls: Array.isArray(data.detailImageUrls)
             ? data.detailImageUrls
             : [],
-        // 태그 제거 → 사용 안 함
+        // 사용 여부
         isActive: !!data.isActive,
         order: data.order ?? 0,
         // 프로그램 단위 총 정원/현재 예약 인원
@@ -46,14 +47,27 @@ function mapProgramDoc(docSnap) {
 }
 
 /**
- * 프로그램 목록 조회
+ * 프로그램 목록 조회 (관리자용: 전체 + 비활성 포함)
  */
 export async function listPrograms() {
     const colRef = collection(db, COLLECTION_ID);
-    const snap = await getDocs(colRef);
-    const items = snap.docs.map(mapProgramDoc);
-    items.sort((a, b) => (a.order || 0) - (b.order || 0));
-    return items;
+    const q = query(colRef, orderBy("order", "asc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(mapProgramDoc);
+}
+
+/**
+ * 프로그램 목록 조회 (사용자용: 활성 프로그램만)
+ */
+export async function listProgramsForUser() {
+    const colRef = collection(db, COLLECTION_ID);
+    const q = query(
+        colRef,
+        where("isActive", "==", true),
+        orderBy("order", "asc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(mapProgramDoc);
 }
 
 /**
