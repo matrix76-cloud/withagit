@@ -39,13 +39,14 @@ function isDevTestPhoneLocal(localDigits) {
   );
 }
 
-// 가능한 경우의 수 중 하나를 프로그램 예약 타입으로 사용 (없으면 null)
+// 가능한 경우의 수 중 하나를 프로그램 예약 타입으로 사용
+// defs에 PROGRAM 계열 상수가 없어도 최소 "PROGRAM" 문자열로라도 나가도록 보호
 const ORDER_TYPE_PROGRAM =
   ORDER_TYPE.PROGRAM ||
   ORDER_TYPE.PROGRAM_BOOKING ||
   ORDER_TYPE.PROGRAM_RESERVATION ||
   ORDER_TYPE.ETC ||
-  null;
+  "PROGRAM";
 
 /* ===== Layout ===== */
 
@@ -411,6 +412,8 @@ export default function CheckoutProgramDialog({
     });
 
     console.groupCollapsed("[ProgramCheckout] draft 생성");
+    console.log("ORDER_TYPE", ORDER_TYPE);
+    console.log("ORDER_TYPE_PROGRAM", ORDER_TYPE_PROGRAM);
     console.log("phoneE164", rawE164);
     console.log("예약 건수", count);
     console.log("총 금액", total);

@@ -34,6 +34,7 @@ function assertOrderType(t) {
         ORDER_TYPE.TIMEPASS,
         ORDER_TYPE.CASHPASS, // ✅ 정액권
         ORDER_TYPE.POINTS,   // (지갑 충전형, 멤버십 생성 없음)
+        ORDER_TYPE.PROGRAM,  // ✅ 프로그램 예약(멤버십 생성 없음)
     ].includes(t);
     if (!ok) throw new Error(`invalid ORDER_TYPE: ${t}`);
 }
@@ -89,6 +90,7 @@ export async function createOrderDraft(phoneE164, payload = {}) {
         if (!(Number(minutes || 0) > 0)) throw new Error("minutes must be > 0 for timepass");
     }
     // CASHPASS는 금액권이므로 months=0(무기한)도 허용. 기간형으로 팔면 months>0 설정.
+    // PROGRAM 타입은 childId/months/minutes 제약 없음 (예약 메타는 meta.*에 저장).
 
     const orderId = makeOrderId(type);
     const createdAt = nowMs();
@@ -99,7 +101,7 @@ export async function createOrderDraft(phoneE164, payload = {}) {
         amountKRW: Number(amountKRW),
         status: ORDER_STATUS.PENDING,
         product: product ? { ...product } : null,
-        childId: childId || null,    // POINTS는 null이어도 됨
+        childId: childId || null,    // POINTS/PROGRAM은 null이어도 됨
         months: Number(months || 0),
         minutes: Number(minutes || 0),
         provider: provider ? { ...provider } : null,
@@ -162,16 +164,24 @@ export async function listMemberOrders(
         } else if (rawType === "CASHPASS") {
             type = "points";
             if (!/포인트/i.test(kind)) kind = "cashpass";
+        } else if (rawType === "PROGRAM") {
+            type = "program";
         }
 
         const productName =
             v?.product?.name ??
-            (type === "timepass" ? "시간권" : type === "points" ? "정액권(포인트)" : (kind ? `${kind} 멤버십` : "멤버십"));
+            (type === "timepass"
+                ? "시간권"
+                : type === "points"
+                    ? "정액권(포인트)"
+                    : type === "program"
+                        ? "프로그램 예약"
+                        : (kind ? `${kind} 멤버십` : "멤버십"));
 
         return {
             id,
             createdAt: ts,                        // number | undefined
-            type,                                 // 'membership' | 'timepass' | 'points' | 'etc'
+            type,                                 // 'membership' | 'timepass' | 'points' | 'program' | 'etc'
             kind: v.kind || (type === "membership" ? (rawType || "membership").toLowerCase() : undefined),
             productName,
             minutes: v?.minutes ?? 0,
@@ -310,7 +320,7 @@ export async function markOrderPaid(args = {}) {
             else if (type === ORDER_TYPE.CASHPASS || type === ORDER_TYPE.POINTS) {
                 kind = MEMBERSHIP_KIND.CASHPASS;
             }
-             
+            // PROGRAM 타입은 kind=null → 멤버십 생성 스킵
 
             // ✅ 서버 보루 가드: FAMILY는 계정에 active agitz가 있어야 함
             if (kind === MEMBERSHIP_KIND.FAMILY) {
@@ -335,9 +345,6 @@ export async function markOrderPaid(args = {}) {
                 const monthsN = Number(months || 1) || 1;
 
                 const targets = ids.length ? ids : [childId];
-                // (선택) 서버 재계산
-                // const sumServer = targets.reduce((s, _, i) => s + (i === 0 ? base : per2), 0);
-                // if (Number(amountKRW || 0) < sumServer) { ... 정책에 따라 보정/거절 ... }
 
                 const mids = [];
                 for (let i = 0; i < targets.length; i++) {
@@ -353,8 +360,7 @@ export async function markOrderPaid(args = {}) {
                     mids.push(mres.mid);
                 }
                 createdMembership = { mid: mids[0], mids };
-            }else if (kind === MEMBERSHIP_KIND.AGITZ) {
-                // 정규 멤버십 — 필수: childId, months>=1
+            } else if (kind === MEMBERSHIP_KIND.AGITZ) {
                 const cid = childId || current?.meta?.selectedChildIds?.[0];
                 const m = Math.max(1, Number(months || 1));
                 if (!cid) throw new Error("AGITZ requires childId");
@@ -369,7 +375,6 @@ export async function markOrderPaid(args = {}) {
                 createdMembership = res;
 
             } else if (kind === MEMBERSHIP_KIND.TIMEPASS) {
-                // 시간권 — 필수: childId, minutes>0
                 const cid = childId || current?.meta?.selectedChildIds?.[0];
                 const mins = Number(minutes || 0);
                 if (!cid) throw new Error("TIMEPASS requires childId");
@@ -383,8 +388,8 @@ export async function markOrderPaid(args = {}) {
                     orderId,
                 });
                 createdMembership = res;
-            }else if (kind === MEMBERSHIP_KIND.CASHPASS) {
-                const expiresAt = current?.meta?.expiresAt ?? (Date.now() + 365 * 24 * 60 * 60 * 1000); // 정책에 맞게
+            } else if (kind === MEMBERSHIP_KIND.CASHPASS) {
+                const expiresAt = current?.meta?.expiresAt ?? (Date.now() + 365 * 24 * 60 * 60 * 1000);
                 const amt = Number(amountKRW || 0);
                 const res = await membershipService.createMembership(phoneE164, {
                     kind: MEMBERSHIP_KIND.CASHPASS,
@@ -392,13 +397,13 @@ export async function markOrderPaid(args = {}) {
                     months: 0,
                     minutes: 0,
                     amountKRW: amt,
-                    remainKRW: amt,   // ⚠️ 서비스가 이 필드를 기대하면 포함
+                    remainKRW: amt,
                     expiresAt,
                     orderId,
                 });
                 createdMembership = res;
             }
-    
+            // kind가 null(PROGRAM 등)인 경우에는 멤버십 생성 없이 통과
         }
     } catch (e) {
         applyError = e;
@@ -420,7 +425,7 @@ export async function markOrderPaid(args = {}) {
             appliedAt: finalNow,
             updatedAt: finalNow,
             membershipMid: createdMembership?.mid || null,
-            membershipMids: createdMembership?.mids || null, // FAMILY 다자녀
+            membershipMids: createdMembership?.mids || null,
             applyError: null,
         });
     }

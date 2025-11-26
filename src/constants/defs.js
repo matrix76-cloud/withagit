@@ -25,6 +25,7 @@ export const ORDER_TYPE = Object.freeze({
     CASHPASS: "CASHPASS",  // 정액권 (childId 필수, amountKRW>0, months 옵션)
     POINTS: "POINTS",    // 계정 지갑 충전(멤버십 생성 없음)
     PICKUP: "PICKUP",    // 픽업/예약류 결제(옵션, 멤버십 아님)
+    PROGRAM: "PROGRAM", // ← 이 줄 추가
 });
 
 /* ---- 레거시 호환(소문자/오탈자 → 표준 상수 변환) ----
