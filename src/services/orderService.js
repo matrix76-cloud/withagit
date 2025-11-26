@@ -438,6 +438,52 @@ export async function markOrderPaid(args = {}) {
     };
 }
 
+// PROGRAM 타입 주문(프로그램 예약)만 조회
+export async function listProgramOrders(
+    phoneE164,
+    { limit = 50 } = {}
+) {
+    assertPhone(phoneE164);
+
+    const colRef = collection(db, "members", phoneE164, "orders");
+
+    // type === PROGRAM 이고 createdAt 최신순
+    const q = query(
+        colRef,
+        where("type", "==", ORDER_TYPE.PROGRAM),
+        orderBy("createdAt", "desc"),
+        qlimit(limit)
+    );
+
+    const snap = await getDocs(q).catch(() => null);
+    if (!snap) return [];
+
+    return snap.docs.map((docSnap) => {
+        const v = docSnap.data() || {};
+        const id = docSnap.id;
+
+        // createdAt 은 number 또는 Timestamp 인 경우 둘 다 대응
+        const createdAt =
+            (v.createdAt && typeof v.createdAt.toMillis === "function"
+                ? v.createdAt.toMillis()
+                : undefined) ??
+            (typeof v.createdAt === "number" ? v.createdAt : undefined) ??
+            undefined;
+
+        const bookings = Array.isArray(v?.meta?.bookings)
+            ? v.meta.bookings
+            : [];
+
+        return {
+            id,
+            status: v.status || ORDER_STATUS.PAID,
+            amountKRW: Number(v.amountKRW || 0),
+            createdAt,
+            bookings,
+        };
+    });
+}
+
 
 
 export default {
@@ -448,4 +494,5 @@ export default {
     markOrderFailed,
     cancelOrder,
     buildCheckoutMetadata,
+    listProgramOrders
 };

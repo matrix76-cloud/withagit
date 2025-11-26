@@ -28,7 +28,7 @@ import {
 import { saveProfile, upsertChild, deleteChild, setProfileAvatarFromFile } from "../../services/memberService";
 import { fmtDateTime } from "../../utils/date";
 import { listMemberships } from "../../services/membershipService";
-import { listMemberOrders } from "../../services/orderService";
+import { listMemberOrders, listProgramOrders } from "../../services/orderService";
 
 /* ===================== Layout ===================== */
 const Page = styled.main`
@@ -2146,8 +2146,8 @@ function ReservesSection({ rows = [], loading }) {
                 <thead>
                     <tr>
                         <th style={{ width: 180 }}>예약번호</th>
-                        <th style={{ width: 180 }}>일시</th>
-                        <th>유형</th>
+                        <th style={{ width: 220 }}>일시</th>
+                        <th>프로그램</th>
                         <th style={{ width: 160 }}>자녀</th>
                         <th style={{ width: 120 }}>상태</th>
                     </tr>
@@ -2165,35 +2165,37 @@ function ReservesSection({ rows = [], loading }) {
                     {!loading &&
                         rows.map((r) => (
                             <tr key={r.id}>
-                                <td>{r.id}</td>
+                                {/* 예약번호: orderId가 있으면 우선 표시 */}
+                                <td>{r.orderId || r.id}</td>
+
+                                {/* 일시: 숫자면 fmtDateTime, 문자열이면 그대로 */}
                                 <td>
-                                    {fmtDateTime(
-                                        r.when ||
-                                        `${r.date || ""} ${String(
-                                            r.hour ?? 0
-                                        )
-                                            .toString()
-                                            .padStart(2, "0")}:${String(
-                                                r.minute ?? 0
-                                            )
-                                                .toString()
-                                                .padStart(2, "0")}`
+                                    {typeof r.when === "number"
+                                        ? fmtDateTime(r.when)
+                                        : (r.when || "-")}
+                                </td>
+
+                                {/* 프로그램 이름 (세부 프로그램 포함) */}
+                                <td>{r.programTitle || "-"}</td>
+
+                                {/* 자녀 */}
+                                <td>{r.childName || r.childId || "-"}</td>
+
+                                {/* 상태 태그 */}
+                                <td>
+                                    {r.status === ORDER_STATUS.PAID ? (
+                                        <Tag bg="#ecfdf5" color="#047857">
+                                            결제완료
+                                        </Tag>
+                                    ) : r.status === ORDER_STATUS.PENDING ? (
+                                        <Tag bg="#fef3c7" color="#92400e">
+                                            결제대기
+                                        </Tag>
+                                    ) : (
+                                        <Tag bg="#e5e7eb" color="#4b5563">
+                                            {r.statusLabel || String(r.status || "기타")}
+                                        </Tag>
                                     )}
-                                </td>
-                                <td>{r.type || r.service || "픽업"}</td>
-                                <td>
-                                    {r.childName ||
-                                        r.child ||
-                                        r.childId ||
-                                        "-"}
-                                </td>
-                                <td>
-                                    <Tag
-                                        bg="#eff6ff"
-                                        color="#1d4ed8"
-                                    >
-                                        {r.status || "예약됨"}
-                                    </Tag>
                                 </td>
                             </tr>
                         ))}
@@ -2202,6 +2204,7 @@ function ReservesSection({ rows = [], loading }) {
         </TableWrap>
     );
 }
+
 
 
 /* 픽업 신청 내역 */
@@ -2487,50 +2490,52 @@ export default function MyPage() {
         }
     };
 
-    const loadReserves = async () => {
-        if (!phoneE164) return;
-        setReserveLoading(true);
-        try {
-            const resCol = collection(
-                db,
-                "members",
-                phoneE164,
-                "reservations"
-            );
-            const snap = await getDocs(
-                query(
-                    resCol,
-                    where("status", "in", RESERVATION_QUERY.UPCOMING),
-                    orderBy("date", "desc"),
-                    qlimit(200)
-                )
-            ).catch(() => null);
-            const rows = snap
-                ? snap.docs.map((d) => {
-                    const x = d.data();
-                    return {
-                        id: d.id,
-                        when: `${x.date || ""} ${String(
-                            x.hour ?? 0
-                        )
-                            .toString()
-                            .padStart(2, "0")}:${String(
-                                x.minute ?? 0
-                            )
-                                .toString()
-                                .padStart(2, "0")}`,
-                        type: "픽업",
-                        childName:
-                            x.childName || x.child || x.childId,
-                        status: x.status || "예약됨",
-                    };
-                })
-                : [];
-            setReserveRows(rows);
-        } finally {
-            setReserveLoading(false);
-        }
-    };
+ const loadReserves = async () => {
+    if (!phoneE164) return;
+    setReserveLoading(true);
+    try {
+        // PROGRAM 타입 주문만 가져오기
+        const orders = await listProgramOrders(phoneE164, { limit: 50 });
+
+        const rows = [];
+        orders.forEach((o) => {
+            const status = o.status || ORDER_STATUS.PAID;
+            const statusLabel =
+                status === ORDER_STATUS.PAID
+                    ? "결제완료"
+                    : status === ORDER_STATUS.PENDING
+                    ? "결제대기"
+                    : status;
+
+            const bookings = Array.isArray(o.bookings) ? o.bookings : [];
+
+            bookings.forEach((b, idx) => {
+                rows.push({
+                    id: `${o.id}_${idx}`,
+                    orderId: o.id,
+                    // 일시: 사람이 보기 좋게 라벨 위주로 구성
+                    when: `${b.dateLabel || b.date || ""} ${b.slotLabel || ""}`.trim() ||
+                        o.createdAt ||
+                        "",
+                    programTitle: [
+                        b.programTitle || "프로그램",
+                        b.slotTitle || "",
+                    ]
+                        .filter(Boolean)
+                        .join(" · "),
+                    childName: b.childName || "",
+                    childId: b.childId || "",
+                    status,
+                    statusLabel,
+                });
+            });
+        });
+
+        setReserveRows(rows);
+    } finally {
+        setReserveLoading(false);
+    }
+};
 
     useEffect(() => {
         if (!initialized || !phoneE164) return;
