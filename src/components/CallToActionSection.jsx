@@ -33,26 +33,26 @@ const Heading = styled.h2`
 
 const Body = styled.p`
   margin: 0 0 30px;
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1.8;
   opacity: 0.95;
 `;
 
+/* ✅ 항상 한 줄 배치 (모바일에서도 row 유지) */
 const ButtonsRow = styled.div`
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 14px;
+  display: flex;
+  gap: 12px;
   justify-content: center;
-
-  @media (max-width: 480px) {
-    width: 100%;
-    flex-direction: column;
-  }
+  align-items: center;
+  width: 100%;
+  max-width: 480px;   /* 모바일 기준폭 */
+  margin: 0 auto;     /* 가운데 정렬 */
 `;
 
 const BaseButton = styled.button`
-  min-width: 180px;
-  padding: 13px 30px;
+  flex: 1 1 0;                /* ➜ 두 버튼이 1:1로 폭 나눠 쓰기 */
+  min-width: 0;               /* ➜ 작아질 수 있게 */
+  padding: 13px 16px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 800;
@@ -61,10 +61,6 @@ const BaseButton = styled.button`
   outline: none;
   transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
     color 0.15s ease, border-color 0.15s ease;
-
-  @media (max-width: 480px) {
-    width: 100%;
-  }
 `;
 
 const PrimaryBtn = styled(BaseButton)`
@@ -100,35 +96,35 @@ const GhostBtn = styled(BaseButton)`
 `;
 
 export default function CallToActionSection({
-    onClickSignup,
-    onClickContact,
+  onClickSignup,
+  onClickContact,
 }) {
-    const handleSignup = () => {
-        if (onClickSignup) onClickSignup();
-    };
+  const handleSignup = () => {
+    if (onClickSignup) onClickSignup();
+  };
 
-    const handleContact = () => {
-        if (onClickContact) onClickContact();
-    };
+  const handleContact = () => {
+    if (onClickContact) onClickContact();
+  };
 
-    return (
-        <Section>
-            <Inner>
-                <Heading>지금 바로 시작해보세요!</Heading>
-                <Body>
-                    간편한 회원가입으로
-                    <br />
-                    안전하고 믿을 수 있는 아이 돌봄서비스를 경험해보세요.
-                </Body>
-                <ButtonsRow>
-                    <PrimaryBtn type="button" onClick={handleSignup}>
-                        무료 회원가입
-                    </PrimaryBtn>
-                    <GhostBtn type="button" onClick={handleContact}>
-                        문의하기
-                    </GhostBtn>
-                </ButtonsRow>
-            </Inner>
-        </Section>
-    );
+  return (
+    <Section>
+      <Inner>
+        <Heading>지금 바로 시작해보세요!</Heading>
+        <Body>
+          간편한 회원가입으로
+          <br />
+          안전하고 믿을 수 있는 아이 돌봄서비스를 경험해보세요.
+        </Body>
+        <ButtonsRow>
+          <PrimaryBtn type="button" onClick={handleSignup}>
+            무료 회원가입
+          </PrimaryBtn>
+          <GhostBtn type="button" onClick={handleContact}>
+            문의하기
+          </GhostBtn>
+        </ButtonsRow>
+      </Inner>
+    </Section>
+  );
 }

@@ -1,8 +1,8 @@
 /* eslint-disable */
 // src/pages/PickupApplyPage.jsx
-// Withagit — 픽업 예약하기 (왼쪽: 자녀/날짜/시간, 오른쪽: 슬롯요약 + 카카오 지도 + 메모 + 하단 안내/CTA)
+// Withagit — 픽업 예약하기 (왼쪽: 자녀/날짜/시간, 오른쪽: 지점 선택 + 장바구니 + 결제)
 
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
@@ -10,6 +10,10 @@ import {
   MEMBERSHIP_KIND,
   MEMBERSHIP_STATUS,
 } from "../constants/membershipDefine";
+import { listPlaces } from "../services/pickupPlacesService";
+import CheckoutPickupDialog from "../components/CheckoutPickupDialog";
+import pickupSearchIcon from "../assets/pickup/pickup-banner.png"; // 실제 경로에 맞게 수정
+import pickupSwapIcon from "../assets/pickup/pickup-swap.png"; // 경로는 형 프로젝트에 맞게
 
 /* ================== 공통 색상/토큰 ================== */
 
@@ -17,15 +21,40 @@ const primaryText = "#111827";
 const subText = "#6b7280";
 const borderSoft = "#E5E5E5";
 const accent = "#F97316";
-const bgSoft = "#FFF7ED";
 const cardBg = "#FFFFFF";
+
+
+const HANGUL_INITIALS = [
+  "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ",
+  "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ",
+];
+
+function getInitialConsonant(ch) {
+  if (!ch) return null;
+  const code = ch.charCodeAt(0);
+  // 한글 범위 밖이면 null
+  if (code < 0xac00 || code > 0xd7a3) return null;
+  const index = Math.floor((code - 0xac00) / 588);
+  return HANGUL_INITIALS[index] || null;
+}
+
+function getPlaceGroupLabel(place) {
+  const name = (place.placeName || "").trim();
+  const firstChar = name[0];
+  const initial = getInitialConsonant(firstChar);
+  if (initial) {
+    return `${initial}으로 시작하는 정류소`;
+  }
+  return "기타 정류소";
+}
+
 
 /* ================== 페이지 레이아웃 ================== */
 
 const Page = styled.main`
   background: #fff;
   min-height: 100vh;
-  padding-bottom: 60px;
+  padding-bottom: 120px;
 `;
 
 const PageInner = styled.div`
@@ -34,10 +63,13 @@ const PageInner = styled.div`
   padding: 100px 20px 40px;
 
   @media (max-width: 768px) {
-    padding: 88px 16px 32px;
+    padding: 18px 16px 32px;
   }
 `;
 
+
+
+/* 🔸 모바일에서는 페이지 타이틀/서브텍스트 숨김 */
 const PageTitle = styled.h1`
   font-size: 28px;
   font-weight: 800;
@@ -45,7 +77,7 @@ const PageTitle = styled.h1`
   color: ${primaryText};
 
   @media (max-width: 768px) {
-    font-size: 22px;
+    display: none;
   }
 `;
 
@@ -53,33 +85,19 @@ const PageSub = styled.p`
   margin: 0 0 18px;
   font-size: 14px;
   color: ${subText};
-`;
 
-const NoticeBox = styled.div`
-  margin-bottom: 24px;
-  padding: 18px 20px;
-  border-radius: 18px;
-  background: #f3f4f6;
-  font-size: 13px;
-  color: ${primaryText};
-  line-height: 1.7;
-
-  p {
-    margin: 0 0 4px;
-  }
-
-  p:last-child {
-    margin-bottom: 0;
+  @media (max-width: 768px) {
+    display: none;
   }
 `;
 
-// 메인 2컬럼 레이아웃: 왼쪽 1.2, 오른쪽 2 비율 + 카드 높이 동일
+// 메인 2컬럼 레이아웃
 const MainGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr);
   gap: 28px;
-  align-items: stretch; /* 🔥 카드 높이 동일하게 */
-  
+  align-items: stretch;
+
   @media (max-width: 960px) {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -104,8 +122,13 @@ const LeftWrap = styled.aside`
   }
 `;
 
+/* 🔸 모바일에서는 섹션 헤더(자녀/날짜·시간 설명) 숨김 */
 const SectionHeader = styled.div`
   margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -127,12 +150,11 @@ const Block = styled.div`
 
 const SectionLabel = styled.div`
   font-size: 13px;
-  font-weight: 700;
   color: ${primaryText};
   margin-bottom: 6px;
 `;
 
-/* --- 자녀 드롭다운 (정액권 스타일) --- */
+/* --- 자녀 드롭다운 --- */
 
 const SelectBox = styled.button`
   width: 100%;
@@ -250,8 +272,9 @@ const CalendarShell = styled.div`
 
 const CalendarHeaderRow = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
@@ -298,8 +321,7 @@ const DayGrid = styled.div`
 
 const DayCell = styled.button`
   border: none;
-  background: ${({ $selected }) =>
-    $selected ? accent : "transparent"};
+  background: ${({ $selected }) => ($selected ? accent : "transparent")};
   color: ${({ $selected }) => ($selected ? "#ffffff" : "#111827")};
   border-radius: 999px;
   font-size: 12px;
@@ -309,7 +331,7 @@ const DayCell = styled.button`
 
   &:hover {
     background: ${({ $selected }) =>
-      $selected ? accent : "rgba(249, 115, 22, 0.06)"};
+    $selected ? accent : "rgba(249, 115, 22, 0.06)"};
   }
 
   &:disabled {
@@ -319,7 +341,7 @@ const DayCell = styled.button`
   }
 `;
 
-/* 시간 헤더 + 슬롯 박스 */
+/* 시간 선택 */
 
 const TimeHeaderRow = styled.div`
   margin-bottom: 8px;
@@ -330,15 +352,15 @@ const TimeHeaderRow = styled.div`
 
 const TimeHeaderTitle = styled.div`
   font-size: 13px;
-  font-weight: 700;
+
   color: ${primaryText};
 `;
 
 const TimeApplyButton = styled.button`
-  border-radius: 999px;
+  border-radius: 10px;
   border: none;
   background: #f3f4f6;
-  padding: 6px 14px;
+  padding: 14px 14px;
   font-size: 12px;
   font-weight: 700;
   color: #4b5563;
@@ -377,7 +399,47 @@ const TimeColumns = styled.div`
   gap: 8px;
 `;
 
-// AM/PM column
+
+
+const TimeWheelWrapper = styled.div`
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid ${borderSoft};
+  background: #ffffff;
+  overflow: hidden;
+`;
+
+const TimeWheelViewport = styled.div`
+  max-height: 160px;
+  padding: 64px 0; /* 위/아래 여유를 줘서 가운데 줄에 숫자가 오도록 */
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+`;
+
+const TimeWheelItem = styled.div`
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  font-size: 17px;
+  font-weight: ${({ $active }) => ($active ? 800 : 500)};
+  color: ${({ $active }) => ($active ? primaryText : "#9ca3af")};
+`;
+
+const TimeWheelCenterLines = styled.div`
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
+  pointer-events: none;
+`;
+
+
 const AmPmColumn = styled.div`
   display: flex;
   flex-direction: column;
@@ -402,7 +464,6 @@ const AmPmButton = styled.button`
   }
 `;
 
-// 숫자 휠 column
 const WheelColumn = styled.div`
   border-radius: 14px;
   border: 1px solid ${borderSoft};
@@ -462,8 +523,6 @@ const TimeResetLink = styled.button`
   }
 `;
 
-/* 선택된 시간 칩 */
-
 const SelectedSlotsRow = styled.div`
   margin: 6px 0 14px;
   display: flex;
@@ -473,8 +532,8 @@ const SelectedSlotsRow = styled.div`
 
 const SlotChip = styled.button`
   border: none;
-  border-radius: 999px;
-  padding: 4px 10px 4px 8px;
+  border-radius: 10px;
+  padding: 10px 10px 10px 8px;
   font-size: 12px;
   background: #fee2e2;
   color: #b91c1c;
@@ -482,6 +541,7 @@ const SlotChip = styled.button`
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  
 `;
 
 const ChipRemove = styled.span`
@@ -507,20 +567,566 @@ function getMonthMatrix(baseDate) {
   return cells;
 }
 
+/* ================== 오른쪽 컬럼 스타일 ================== */
+
+const RightWrap = styled.aside`
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 24px;
+  border-radius: 24px;
+  background: ${cardBg};
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+  height: 100%;
+
+  @media (max-width: 960px) {
+    border-radius: 20px;
+    padding: 18px 16px 22px;
+  }
+`;
+
+const SummaryChipsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+`;
+
+const SearchBlock = styled.div`
+  margin-bottom: 12px;
+`;
+
+const SearchFieldsWrap = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+const SwapButton = styled.button`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  padding: 0;
+  z-index: 2;
+`;
+
+const SwapIconImg = styled.img`
+  width: 18px;
+  height: 18px;
+  display: block;
+`;
+
+
+const SearchRow = styled.div`
+  width: 100%;
+  margin-bottom: 8px;
+`;
+
+const SearchInputWrap = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid ${borderSoft};
+  padding: 0 42px 0 16px;   /* 오른쪽에 아이콘 들어갈 여유 */
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: ${accent};
+  }
+`;
+
+const SearchIconButton = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+const SearchIconImg = styled.img`
+  width: 18px;
+  height: 18px;
+  display: block;
+`;
+
+
+const SwapLine = styled.div`
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  transform: translateX(-50%);
+  background: #e5e7eb;
+`;
+
+
+
+const SwapIconSvg = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24">
+    <path
+      d="M8 5l-3 3h14"
+      stroke="#9ca3af"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <path
+      d="M16 19l3-3H5"
+      stroke="#9ca3af"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  </svg>
+);
+
+
+const SearchBtn = styled.button`
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: none;
+  background: #f3f4f6;
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+
+  &:hover {
+    background: #e5e7eb;
+  }
+`;
+
+const ListBtn = styled.button`
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid ${borderSoft};
+  background: #ffffff;
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+
+  &:hover {
+    background: #f9fafb;
+  }
+`;
+
+const HintText = styled.div`
+  font-size: 11px;
+  color: ${subText};
+`;
+
+const MapBox = styled.div`
+  margin-top: 12px;
+  margin-bottom: 14px;
+`;
+
+const MapContainer = styled.div`
+  width: 100%;
+  height: 300px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #e5e7eb;
+`;
+
+const DistanceRow = styled.div`
+  margin-top: 8px;
+  font-size: 12px;
+  color: ${subText};
+`;
+
+const MemoLabel = styled.div`
+  margin-top: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: ${primaryText};
+`;
+
+const MemoArea = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  border-radius: 18px;
+  border: 1px solid ${borderSoft};
+  padding: 10px 12px;
+  font-size: 13px;
+  resize: vertical;
+  margin-top: 10px;
+  font-family: inherit;
+  color: ${primaryText};
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #c4c4c4;
+  }
+`;
+
+const RightSlotChip = styled.button`
+  position: relative;
+  border: 1px solid ${accent};
+  border-radius: 24px;
+  padding: 8px 28px 8px 14px;
+  min-width: 180px;
+  background: #fff3e6;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+
+  .topline {
+    font-size: 12px;
+    font-weight: 700;
+    color: ${accent};
+  }
+
+  .bottomline {
+    margin-top: 3px;
+    font-size: 14px;
+    font-weight: 800;
+    color: ${accent};
+  }
+
+  .close {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    font-size: 12px;
+    color: ${accent};
+  }
+`;
+
+/* 장바구니 버튼 + 카드 */
+
+const CartActionsRow = styled.div`
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const CartButton = styled.button`
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: none;
+  background: #e6e6e6;
+  color: #666666;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
+const CartList = styled.div`
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const CartCard = styled.div`
+  border-radius: 18px;
+  border: 1px solid #fee2e2;
+  background: #fff7ed;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: ${primaryText};
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const CartLineTop = styled.div`
+  font-weight: 700;
+`;
+
+const CartLineMiddle = styled.div`
+  color: ${subText};
+`;
+
+const CartLineBottom = styled.div`
+  font-size: 11px;
+  color: ${subText};
+`;
+
+const ModalBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+`;
+
+const ModalCard = styled.div`
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  border-radius: 24px;
+  background: #ffffff;
+  padding: 24px 20px 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+`;
+
+const ModalHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+`;
+
+const ModalTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: ${primaryText};
+`;
+
+const ModalCloseBtn = styled.button`
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+`;
+
+const ModalSearchWrap = styled.div`
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+`;
+
+const ModalSearchInput = styled.input`
+  width: 100%;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 0 44px 0 18px;  /* 오른쪽 여백 넉넉히 (아이콘 자리) */
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:focus {
+    border-color: ${accent};
+    box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.16);
+  }
+`;
+
+const ModalSearchIcon = styled.img`
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+`;
+
+
+const ModalSection = styled.div`
+  margin-bottom: 14px;
+`;
+
+const ModalSectionHeader = styled.div`
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #e6e6e6;
+  font-size: 12px;
+  font-weight: 700;
+  color: ${primaryText};
+  margin-bottom: 6px;
+`;
+
+const ModalBannerWrap = styled.div`
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: center;
+`;
+
+const ModalBannerImage = styled.img`
+  max-width: 100%;
+  border-radius: 14px;
+  display: block;
+`;
+
+
+
+
+const ModalList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+`;
+
+const ModalItem = styled.button`
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: #ffffff;
+  padding: 10px 6px;
+  border-radius: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background: #fff7ed;
+  }
+`;
+
+const ModalItemName = styled.div`
+  font-size: 14px;
+  font-weight: 700;
+  color: ${primaryText};
+`;
+
+const ModalItemAddress = styled.div`
+  margin-top: 2px;
+  font-size: 12px;
+  color: ${subText};
+`;
+
+const ModalEmpty = styled.div`
+  margin-top: 16px;
+  font-size: 12px;
+  color: ${subText};
+`;
+
+const CartPriceLine = styled.div`
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 800;
+  color: ${accent};
+`;
+
 /* ================== 왼쪽 컬럼 컴포넌트 ================== */
+
+
+
+
+
+const TIME_WHEEL_ITEM_HEIGHT = 32;
+
+function ScrollWheelColumn({ items, value, onChange, renderItem }) {
+  const viewportRef = React.useRef(null);
+  const timerRef = React.useRef(null);
+
+  // 현재 선택된 값으로 스크롤 위치 맞추기
+  React.useEffect(() => {
+    const idx = items.findIndex((v) => v === value);
+    if (idx < 0 || !viewportRef.current) return;
+
+    viewportRef.current.scrollTo({
+      top: idx * TIME_WHEEL_ITEM_HEIGHT,
+      behavior: "smooth",
+    });
+  }, [items, value]);
+
+  const handleScroll = (e) => {
+    const el = e.currentTarget;
+    if (!el) return;
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    // 스크롤 멈춘 뒤에 가장 가까운 칸으로 스냅 + 값 반영
+    timerRef.current = setTimeout(() => {
+      const rawIndex = el.scrollTop / TIME_WHEEL_ITEM_HEIGHT;
+      let idx = Math.round(rawIndex);
+      if (idx < 0) idx = 0;
+      if (idx > items.length - 1) idx = items.length - 1;
+
+      const nextValue = items[idx];
+      if (nextValue !== value) {
+        onChange(nextValue);
+      }
+
+      el.scrollTo({
+        top: idx * TIME_WHEEL_ITEM_HEIGHT,
+        behavior: "smooth",
+      });
+    }, 80);
+  };
+
+  return (
+    <TimeWheelWrapper>
+      <TimeWheelViewport ref={viewportRef} onScroll={handleScroll}>
+        {items.map((item, index) => (
+          <TimeWheelItem
+            key={index}
+            $active={item === value}
+          >
+            {renderItem ? renderItem(item) : String(item)}
+          </TimeWheelItem>
+        ))}
+      </TimeWheelViewport>
+      {/* 가운데 가로 라인 제거 */}
+    </TimeWheelWrapper>
+  );
+}
+
+
+const KRW = (n = 0) => (n || 0).toLocaleString("ko-KR");
 
 function PickupLeftColumn({ slots, onChangeSlots }) {
   const { children: ctxChildren, memberships: ctxMemberships } = useUser() || {};
+  const navigate = useNavigate();
   const children = Array.isArray(ctxChildren) ? ctxChildren : [];
 
-  // 정규/패밀리 멤버십 Set
+  const today = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }, []);
+
   const agitzSet = useMemo(() => {
     const set = new Set();
     if (Array.isArray(ctxMemberships)) {
       ctxMemberships.forEach((m) => {
         if (
           m &&
-          m.kind === MEMBERSHIP_KIND.AGITZ &&
+          m.kind === MEMBERSSHIP_KIND.AGITZ &&
           (m.status === MEMBERSHIP_STATUS.ACTIVE ||
             m.status === MEMBERSHIP_STATUS.FUTURE) &&
           m.childId
@@ -568,7 +1174,6 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
     [children, agitzSet, familySet]
   );
 
-  // 자녀 선택 상태
   const [activeChildId, setActiveChildId] = useState(null);
   const [childLabel, setChildLabel] = useState("선택해주세요");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -595,14 +1200,24 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
     }
   }, [childItems, activeChildId]);
 
-  // 날짜/시간/슬롯 상태
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const monthCells = useMemo(() => getMonthMatrix(currentMonth), [currentMonth]);
 
+  // 🔸 휠용 상태
   const [ampm, setAmPm] = useState("AM");
-  const [hour, setHour] = useState(1); // 1~12
+  const [hour, setHour] = useState(1);
   const [minute, setMinute] = useState(0);
+
+  const ampmItems = ["AM", "PM"];
+  const hourItems = useMemo(
+    () => Array.from({ length: 12 }, (_, i) => i + 1),
+    []
+  );
+  const minuteItems = useMemo(
+    () => Array.from({ length: 12 }, (_, i) => i * 5), // 0,5,10,...55
+    []
+  );
 
   const formattedMonth = useMemo(() => {
     const y = currentMonth.getFullYear();
@@ -621,24 +1236,6 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
   const selectDate = (d) => {
     if (!d) return;
     setSelectedDate(d);
-  };
-
-  const incHour = (step) => {
-    setHour((prev) => {
-      let next = prev + step;
-      if (next < 1) next = 12;
-      if (next > 12) next = 1;
-      return next;
-    });
-  };
-
-  const incMinute = (step) => {
-    setMinute((prev) => {
-      let next = prev + step;
-      if (next >= 60) next = 0;
-      if (next < 0) next = 55;
-      return next;
-    });
   };
 
   const addSlot = () => {
@@ -696,7 +1293,6 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
         </SectionSub>
       </SectionHeader>
 
-      {/* 자녀 연결 */}
       <Block>
         <SectionLabel>자녀 연결</SectionLabel>
         <SelectBox
@@ -749,7 +1345,16 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
 
         <AddChildRow
           onClick={() => {
-            navigate("/mypage");
+            const isMobile =
+              typeof window !== "undefined" &&
+              window.matchMedia &&
+              window.matchMedia("(max-width: 768px)").matches;
+
+            if (isMobile) {
+              navigate("/m/account");
+            } else {
+              navigate("/mypage");
+            }
           }}
         >
           <span>+ 자녀 추가</span>
@@ -757,26 +1362,19 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
         </AddChildRow>
       </Block>
 
-      {/* 날짜 · 시간 선택 */}
       <DateTimeBlock>
         <BlockLabelRow>
-          <SectionLabel>날짜 · 시간 선택</SectionLabel>
-          <BlockHint>여러 날짜·시간을 추가로 담을 수 있어요.</BlockHint>
+          <SectionLabel>날짜를 선택해 주세요</SectionLabel>
         </BlockLabelRow>
-
-
-        {/* 캘린더 */}
         <CalendarShell>
           <CalendarHeaderRow>
+            <MonthNavBtn type="button" onClick={() => moveMonth(-1)}>
+              ‹
+            </MonthNavBtn>
             <MonthLabelText>{formattedMonth}</MonthLabelText>
-            <MonthNav>
-              <MonthNavBtn type="button" onClick={() => moveMonth(-1)}>
-                ‹
-              </MonthNavBtn>
-              <MonthNavBtn type="button" onClick={() => moveMonth(1)}>
-                ›
-              </MonthNavBtn>
-            </MonthNav>
+            <MonthNavBtn type="button" onClick={() => moveMonth(1)}>
+              ›
+            </MonthNavBtn>
           </CalendarHeaderRow>
 
           <WeekRow>
@@ -787,27 +1385,36 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
           <DayGrid>
             {monthCells.map((d, idx) => {
               if (!d) return <div key={"empty-" + idx} />;
+
               const isSelected =
                 selectedDate &&
                 d.getFullYear() === selectedDate.getFullYear() &&
                 d.getMonth() === selectedDate.getMonth() &&
                 d.getDate() === selectedDate.getDate();
 
+              const thisDate = new Date(d);
+              thisDate.setHours(0, 0, 0, 0);
+              const isPast = thisDate < today; // 🔹 오늘보다 이전이면 비활성
+
               return (
                 <DayCell
                   key={d.toISOString()}
                   type="button"
                   $selected={isSelected}
-                  onClick={() => selectDate(d)}
+                  disabled={isPast}
+                  onClick={() => {
+                    if (isPast) return;
+                    selectDate(d);
+                  }}
                 >
                   {d.getDate()}
                 </DayCell>
               );
             })}
           </DayGrid>
+
         </CalendarShell>
 
-        {/* 시간 선택 + 이대로 담기 */}
         <TimeHeaderRow>
           <TimeHeaderTitle>시간을 선택해주세요</TimeHeaderTitle>
           <TimeApplyButton type="button" onClick={addSlot}>
@@ -823,57 +1430,24 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
           </TimePickerLabels>
 
           <TimeColumns>
-            {/* AM / PM */}
-            <AmPmColumn>
-              <AmPmButton
-                type="button"
-                $active={ampm === "AM"}
-                onClick={() => setAmPm("AM")}
-              >
-                오전
-              </AmPmButton>
-              <AmPmButton
-                type="button"
-                $active={ampm === "PM"}
-                onClick={() => setAmPm("PM")}
-              >
-                오후
-              </AmPmButton>
-            </AmPmColumn>
-
-            {/* 시간 */}
-            <WheelColumn>
-              <WheelRow>
-                <WheelNumberWrapper>
-                  <WheelNumber>{String(hour).padStart(2, "0")}</WheelNumber>
-                </WheelNumberWrapper>
-                <WheelArrowRow>
-                  <WheelArrowBtn type="button" onClick={() => incHour(1)}>
-                    ▲
-                  </WheelArrowBtn>
-                  <WheelArrowBtn type="button" onClick={() => incHour(-1)}>
-                    ▼
-                  </WheelArrowBtn>
-                </WheelArrowRow>
-              </WheelRow>
-            </WheelColumn>
-
-            {/* 분 */}
-            <WheelColumn>
-              <WheelRow>
-                <WheelNumberWrapper>
-                  <WheelNumber>{String(minute).padStart(2, "0")}</WheelNumber>
-                </WheelNumberWrapper>
-                <WheelArrowRow>
-                  <WheelArrowBtn type="button" onClick={() => incMinute(5)}>
-                    ▲
-                  </WheelArrowBtn>
-                  <WheelArrowBtn type="button" onClick={() => incMinute(-5)}>
-                    ▼
-                  </WheelArrowBtn>
-                </WheelArrowRow>
-              </WheelRow>
-            </WheelColumn>
+            <ScrollWheelColumn
+              items={ampmItems}
+              value={ampm}
+              onChange={setAmPm}
+              renderItem={(v) => (v === "PM" ? "오후" : "오전")}
+            />
+            <ScrollWheelColumn
+              items={hourItems}
+              value={hour}
+              onChange={setHour}
+              renderItem={(v) => String(v).padStart(2, "0")}
+            />
+            <ScrollWheelColumn
+              items={minuteItems}
+              value={minute}
+              onChange={setMinute}
+              renderItem={(v) => String(v).padStart(2, "0")}
+            />
           </TimeColumns>
         </TimePickerBox>
 
@@ -881,188 +1455,34 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
           선택한 시간 모두 지우기
         </TimeResetLink>
       </DateTimeBlock>
+
+      <SelectedSlotsRow>
+        {slots.map((s) => (
+          <SlotChip key={s.id} type="button" onClick={() => removeSlot(s.id)}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div>{s.date}</div>
+              <div>
+                {s.ampm === "PM" ? "오후" : "오전"}{" "}
+                {String((s.hour % 12) || 12).padStart(2, "0")}:
+                {String(s.minute).padStart(2, "0")}
+              </div>
+            </div>
+            <ChipRemove>×</ChipRemove>
+          </SlotChip>
+        ))}
+      </SelectedSlotsRow>
     </LeftWrap>
   );
 }
 
-/* ================== 오른쪽 컬럼 스타일 ================== */
+/* ================== 오른쪽 컬럼 (지도 + 정류장 모달 + 장바구니) ================== */
 
-const RightWrap = styled.aside`
-  flex: 1 1 0;
-  min-width: 0;
-  padding: 24px;
-  border-radius: 24px;
-  background: ${cardBg};
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
-  height: 100%;
-
-  @media (max-width: 960px) {
-    border-radius: 20px;
-    padding: 18px 16px 22px;
-  }
-`;
-
-// 상단 슬롯 요약 칩 레일
-const SummaryChipsRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-`;
-
-// 출발/도착 검색 영역
-const SearchBlock = styled.div`
-  margin-bottom: 12px;
-`;
-
-const SearchRow = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 6px;
-  margin-bottom: 8px;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid ${borderSoft};
-  padding: 0 14px;
-  font-size: 13px;
-  outline: none;
-  box-sizing: border-box;
-
-  &:focus {
-    border-color: ${accent};
-  }
-`;
-
-const SearchBtn = styled.button`
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: none;
-  background: #f3f4f6;
-  font-size: 13px;
-  color: #4b5563;
-  cursor: pointer;
-
-  &:hover {
-    background: #e5e7eb;
-  }
-`;
-
-const ListBtn = styled.button`
-  height: 40px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid ${borderSoft};
-  background: #ffffff;
-  font-size: 13px;
-  color: #4b5563;
-  cursor: pointer;
-
-  &:hover {
-    background: #f9fafb;
-  }
-`;
-
-const HintText = styled.div`
-  font-size: 11px;
-  color: ${subText};
-`;
-
-// 지도 영역
-const MapBox = styled.div`
-  margin-top: 12px;
-  margin-bottom: 14px;
-`;
-
-const MapContainer = styled.div`
-  width: 100%;
-  height: 260px;
-  border-radius: 18px;
-  overflow: hidden;
-  background: #e5e7eb;
-`;
-
-// 거리/요금 표시
-const DistanceRow = styled.div`
-  margin-top: 8px;
-  font-size: 12px;
-  color: ${subText};
-`;
-
-// 메모 라벨/입력
-const MemoLabel = styled.div`
-  margin-top: 18px;
-  font-size: 13px;
-  font-weight: 700;
-  color: ${primaryText};
-`;
-
-const MemoArea = styled.textarea`
-  width: 100%;
-  min-height: 120px;
-  border-radius: 18px;
-  border: 1px solid ${borderSoft};
-  padding: 10px 12px;
-  font-size: 13px;
-  resize: vertical;
-  font-family: inherit;
-  color: ${primaryText};
-  box-sizing: border-box;
-
-  &::placeholder {
-    color: #c4c4c4;
-  }
-`;
-
-// 오른쪽 슬롯 칩 (피그마 스타일)
-const RightSlotChip = styled.button`
-  position: relative;
-  border: 1px solid ${accent};
-  border-radius: 24px;
-  padding: 8px 28px 8px 14px;
-  min-width: 180px;
-  background: #fff3e6;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  cursor: pointer;
-
-  .topline {
-    font-size: 12px;
-    font-weight: 700;
-    color: ${accent};
-  }
-
-  .bottomline {
-    margin-top: 3px;
-    font-size: 14px;
-    font-weight: 800;
-    color: ${accent};
-  }
-
-  .close {
-    position: absolute;
-    top: 6px;
-    right: 10px;
-    font-size: 12px;
-    color: ${accent};
-  }
-`;
-
-
-/* ================== 오른쪽 컬럼 컴포넌트 (카카오 지도 포함) ================== */
-
-function PickupRightColumn({ slots,onChangeSlots }) {
+function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const startMarkerRef = useRef(null);
   const endMarkerRef = useRef(null);
   const polylineRef = useRef(null);
-  const placesRef = useRef(null);
 
   const [startQuery, setStartQuery] = useState("");
   const [endQuery, setEndQuery] = useState("");
@@ -1073,6 +1493,12 @@ function PickupRightColumn({ slots,onChangeSlots }) {
   const [distanceKm, setDistanceKm] = useState(0);
   const [estimatedFare, setEstimatedFare] = useState(7000);
   const [memo, setMemo] = useState("");
+
+  const [showPlacesModal, setShowPlacesModal] = useState(false);
+  const [placesTarget, setPlacesTarget] = useState("start");
+  const [places, setPlaces] = useState([]);
+  const [placesLoading, setPlacesLoading] = useState(false);
+  const [placesSearch, setPlacesSearch] = useState("");
 
   const { children: ctxChildren } = useUser() || {};
   const children = Array.isArray(ctxChildren) ? ctxChildren : [];
@@ -1087,51 +1513,81 @@ function PickupRightColumn({ slots,onChangeSlots }) {
     return map;
   }, [children]);
 
+  // "위드아지트" 정류장 찾기
+  const sujichoPlace = useMemo(() => {
+    if (!places.length) return null;
+    const byName = places.find((p) => (p.placeName || "").includes("위드아지트"));
+    if (byName) return byName;
+    const byBranch = places.find((p) => (p.branchName || "").includes("위드아지트"));
+    if (byBranch) return byBranch;
+    const byAddr = places.find((p) => (p.address || "").includes("위드아지트"));
+    if (byAddr) return byAddr;
+    return null;
+  }, [places]);
 
-  // 지도 초기화 — index.html에서 이미 kakao sdk를 로딩하는 방식
+  // 지도 초기화 — SDK/DOM 준비될 때까지 재시도
   useEffect(() => {
-    if (!mapRef.current) {
-      console.log("[PickupRightColumn] mapRef 없음");
-      return;
-    }
-    if (!window.kakao || !window.kakao.maps) {
-      console.log("[PickupRightColumn] window.kakao.maps 없음:", window.kakao);
-      return;
-    }
-    if (mapInstanceRef.current) {
-      console.log("[PickupRightColumn] 지도 이미 초기화됨");
-      return;
-    }
+    let cancelled = false;
+    let tries = 0;
+    const MAX_TRIES = 40; // 40번 × 250ms ≒ 10초
 
-    const kakao = window.kakao;
-    const center = new kakao.maps.LatLng(37.5665, 126.978);
-    const map = new kakao.maps.Map(mapRef.current, {
-      center,
-      level: 5,
-    });
+    const tryInitMap = () => {
+      if (cancelled) return;
 
-    mapInstanceRef.current = map;
-    placesRef.current = new kakao.maps.services.Places();
+      const kakao = window.kakao;
+      const hasKakao = !!(kakao && kakao.maps);
+      const hasRef = !!mapRef.current;
 
-    console.log("[PickupRightColumn] kakao 지도 초기화 완료");
+      if (!hasRef || !hasKakao) {
+        tries += 1;
+        console.log(
+          "[PickupRightColumn] mapRef / kakao 미준비, retry:",
+          tries,
+          "hasRef:",
+          hasRef,
+          "hasKakao:",
+          hasKakao
+        );
+        if (tries < MAX_TRIES) {
+          setTimeout(tryInitMap, 250);
+        }
+        return;
+      }
+
+      if (mapInstanceRef.current) {
+        console.log("[PickupRightColumn] 지도 이미 초기화됨");
+        return;
+      }
+
+      const center = new kakao.maps.LatLng(37.314760, 127.085600);
+      const map = new kakao.maps.Map(mapRef.current, {
+        center,
+        level: 5,
+      });
+
+      mapInstanceRef.current = map;
+      console.log("[PickupRightColumn] kakao 지도 초기화 완료");
+    };
+
+    tryInitMap();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
 
-
-
-  // 출발/도착 변경 시 마커/라인 업데이트
+  // 출발/도착 변경 시 마커/라인 + 거리/요금 + 라벨 뱃지
   useEffect(() => {
-    const kakao = window.kakao && window.kakao.maps;
+    const kakao = window.kakao;
     const map = mapInstanceRef.current;
-    if (!kakao || !map) return;
+    if (!kakao || !kakao.maps || !map) return;
 
-    // 기존 라인 제거
+    // 기존 라인/마커 제거
     if (polylineRef.current) {
       polylineRef.current.setMap(null);
       polylineRef.current = null;
     }
-
-    // 마커 초기화/업데이트
     if (startMarkerRef.current) {
       startMarkerRef.current.setMap(null);
       startMarkerRef.current = null;
@@ -1141,37 +1597,62 @@ function PickupRightColumn({ slots,onChangeSlots }) {
       endMarkerRef.current = null;
     }
 
+    // 아무것도 없으면 초기화
     if (!startPlace && !endPlace) {
       setDistanceKm(0);
-      setEstimatedFare(7000);
+      setEstimatedFare(0);
       return;
     }
 
-    const bounds = new kakao.LatLngBounds();
+    const bounds = new kakao.maps.LatLngBounds();
     const path = [];
 
-    if (startPlace) {
-      const pos = new kakao.LatLng(startPlace.lat, startPlace.lng);
-      const marker = new kakao.maps.Marker({
-        position: pos,
-        map,
+    // 공용: 라벨 오버레이 만드는 헬퍼
+    const makeLabelOverlay = (position, text, bgColor, zIndex) => {
+      const el = document.createElement("div");
+      el.innerText = text;
+      el.style.padding = "6px 10px";
+      el.style.borderRadius = "999px";
+      el.style.background = bgColor;
+      el.style.color = "#ffffff";
+      el.style.fontSize = "12px";
+      el.style.fontWeight = "700";
+      el.style.boxShadow = "0 3px 6px rgba(0,0,0,0.25)";
+      el.style.whiteSpace = "nowrap";
+      el.style.transform = "translateY(-8px)"; // 살짝 위로 띄우기
+
+      const overlay = new kakao.maps.CustomOverlay({
+        position,
+        content: el,
+        yAnchor: 1,
+        zIndex: zIndex ?? 10,
       });
-      startMarkerRef.current = marker;
+
+      overlay.setMap(map);
+      return overlay;
+    };
+
+    // 출발지
+    if (startPlace && startPlace.lat && startPlace.lng) {
+      const pos = new kakao.maps.LatLng(startPlace.lat, startPlace.lng);
+      const overlay = makeLabelOverlay(pos, "출발", "#f97316", 20);
+      startMarkerRef.current = overlay;
+
       bounds.extend(pos);
       path.push(pos);
     }
 
-    if (endPlace) {
-      const pos = new kakao.LatLng(endPlace.lat, endPlace.lng);
-      const marker = new kakao.maps.Marker({
-        position: pos,
-        map,
-      });
-      endMarkerRef.current = marker;
+    // 도착지
+    if (endPlace && endPlace.lat && endPlace.lng) {
+      const pos = new kakao.maps.LatLng(endPlace.lat, endPlace.lng);
+      const overlay = makeLabelOverlay(pos, "도착", "#2563eb", 20);
+      endMarkerRef.current = overlay;
+
       bounds.extend(pos);
       path.push(pos);
     }
 
+    // 선 긋기 + 거리/요금 계산
     if (path.length >= 2) {
       const polyline = new kakao.maps.Polyline({
         path,
@@ -1183,173 +1664,392 @@ function PickupRightColumn({ slots,onChangeSlots }) {
       polyline.setMap(map);
       polylineRef.current = polyline;
 
-      const lengthM = polyline.getLength(); // m
+      const lengthM = polyline.getLength();
       const km = lengthM / 1000;
       setDistanceKm(km);
 
-      // 간단 요금 계산
-      const fare = 7000 + Math.max(0, km - 2) * 500;
-      setEstimatedFare(Math.round(fare / 100) * 100);
+      // 정류장 price 우선, 없으면 거리 기반 요금
+      const priceFromStart =
+        startPlace && typeof startPlace.price === "number"
+          ? startPlace.price
+          : null;
+      const priceFromEnd =
+        endPlace && typeof endPlace.price === "number"
+          ? endPlace.price
+          : null;
+
+      if (priceFromStart != null || priceFromEnd != null) {
+        const fare = priceFromStart ?? priceFromEnd ?? 0;
+        setEstimatedFare(Number(fare) || 0);
+      } else {
+        const base = 7000;
+        const extra = Math.max(0, km - 2) * 500;
+        const fare = base + extra;
+        setEstimatedFare(Math.round(fare / 100) * 100);
+      }
     } else {
       setDistanceKm(0);
-      setEstimatedFare(7000);
+      setEstimatedFare(0);
     }
 
-    if (bounds.isEmpty && !bounds.isEmpty()) {
+    if (!bounds.isEmpty()) {
       map.setBounds(bounds);
     }
   }, [startPlace, endPlace]);
 
-  const doSearch = (type) => {
-    const kakao = window.kakao && window.kakao.maps;
-    const ps = placesRef.current;
-    const map = mapInstanceRef.current;
-    if (!kakao || !ps || !map) {
-      alert("지도를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.");
-      return;
-    }
 
-    const query = type === "start" ? startQuery : endQuery;
-    if (!query || !query.trim()) {
-      alert("검색어를 입력해 주세요.");
-      return;
-    }
+  const openPlacesModal = async (target, initialKeyword = "") => {
+    setPlacesTarget(target);
+    setShowPlacesModal(true);
+    setPlacesSearch(initialKeyword || "");
 
-    ps.keywordSearch(query, (data, status) => {
-      if (status !== kakao.services.Status.OK || !data || !data.length) {
-        alert("검색 결과가 없습니다.");
-        return;
+    if (!places.length) {
+      try {
+        setPlacesLoading(true);
+        const rows = await listPlaces("전체");
+        setPlaces(rows || []);
+      } catch (e) {
+        console.error("[PickupRightColumn] listPlaces error", e);
+        alert("정류장 목록을 불러오지 못했습니다.");
+      } finally {
+        setPlacesLoading(false);
       }
-      const first = data[0];
-      const place = {
-        name: first.place_name,
-        address: first.road_address_name || first.address_name || "",
-        lat: parseFloat(first.y),
-        lng: parseFloat(first.x),
-      };
-
-      if (type === "start") setStartPlace(place);
-      else setEndPlace(place);
-
-      const pos = new kakao.LatLng(place.lat, place.lng);
-      map.setCenter(pos);
-    });
+    }
   };
 
-  // 슬롯 요약 칩
+  const handleSearchClick = (target) => {
+    const keyword = target === "start" ? startQuery : endQuery;
+    openPlacesModal(target, keyword);
+  };
+
+
+  const handleSwapStartEnd = () => {
+    // 인풋 값 스왑
+    const newStartQuery = endQuery;
+    const newEndQuery = startQuery;
+    setStartQuery(newStartQuery);
+    setEndQuery(newEndQuery);
+
+    // 선택된 장소 정보도 같이 스왑
+    setStartPlace(endPlace);
+    setEndPlace(startPlace);
+  };
+
+  const handleSearchOrList = (target) => {
+    const keywordRaw = target === "start" ? startQuery : endQuery;
+    const keyword = (keywordRaw || "").trim();
+
+    if (!keyword) {
+      // 입력이 없으면 전체 목록 모달
+      openPlacesModal(target);
+    } else {
+      // 입력이 있으면 해당 키워드로 검색 모달
+      openPlacesModal(target, keyword);
+    }
+  };
+
+
+
+  const filteredPlaces = useMemo(() => {
+    const keyword = (placesSearch || "").trim();
+    if (!keyword) return places;
+    const lower = keyword.toLowerCase();
+    return places.filter((p) => {
+      const name = (p.placeName || "").toLowerCase();
+      const addr = (p.address || "").toLowerCase();
+      return name.includes(lower) || addr.includes(lower);
+    });
+  }, [places, placesSearch]);
+
+
+
+  const groupedPlaces = useMemo(() => {
+    if (!filteredPlaces || !filteredPlaces.length) return [];
+
+    const map = new Map();
+
+    filteredPlaces.forEach((p) => {
+      const label = getPlaceGroupLabel(p);
+      if (!map.has(label)) {
+        map.set(label, []);
+      }
+      map.get(label).push(p);
+    });
+
+    // 섹션 순서: ㄱ~ㅎ 정렬, 기타 정류소는 맨 뒤
+    return Array.from(map.entries())
+      .sort(([a], [b]) => {
+        if (a === "기타 정류소") return 1;
+        if (b === "기타 정류소") return -1;
+        return a.localeCompare(b, "ko-KR");
+      })
+      .map(([label, items]) => ({ label, items }));
+  }, [filteredPlaces]);
+
+
+  const handleSelectPlace = (place) => {
+    const label = place.placeName || place.address || "";
+    const lat = place.lat != null ? Number(place.lat) : null;
+    const lng = place.lng != null ? Number(place.lng) : null;
+    const price = place.price != null ? Number(place.price) : null; // 정류장 가격
+
+    if (!lat || !lng) {
+      alert("위치 정보가 올바르지 않습니다.");
+      return;
+    }
+
+    // 선택한 정류장 정보
+    const selectedPlace = {
+      name: label,
+      address: place.address || "",
+      lat,
+      lng,
+      price,
+    };
+
+    // 항상 위드아지트(수지초점)를 반대편으로 세팅
+    const agit = sujichoPlace
+      ? {
+        name: sujichoPlace.placeName || sujichoPlace.address || "",
+        address: sujichoPlace.address || "",
+        lat: Number(sujichoPlace.lat),
+        lng: Number(sujichoPlace.lng),
+        price:
+          sujichoPlace.price != null ? Number(sujichoPlace.price) : null,
+      }
+      : null;
+
+    if (placesTarget === "start") {
+      // 출발지를 사용자가 선택 → 도착지는 항상 위드아지트
+      setStartQuery(label);
+      setStartPlace(selectedPlace);
+
+      if (agit) {
+        setEndQuery(agit.name);
+        setEndPlace(agit);
+      }
+    } else {
+      // 도착지를 사용자가 선택 → 출발지는 항상 위드아지트
+      setEndQuery(label);
+      setEndPlace(selectedPlace);
+
+      if (agit) {
+        setStartQuery(agit.name);
+        setStartPlace(agit);
+      }
+    }
+
+    setShowPlacesModal(false);
+  };
+
+
   const slotChips = useMemo(
     () =>
       slots.map((s) => {
-        const childName = childMap[s.childId] || "";
         const h12 = (s.hour % 12) || 12;
         const ampmLabel = s.ampm === "PM" ? "오후" : "오전";
-        const datePretty = s.date.replace(/-/g, "."); // 2025-11-17 → 2025.11.17
-        // 피그마 느낌: "이은기 · 2025.11.17(월)" / "오후 3:30"
-        const top = childName
-          ? `${childName} · ${datePretty}`
-          : `${datePretty}`;
-        const bottom = `${ampmLabel} ${String(h12).padStart(2, "0")}:${String(
-          s.minute
-        ).padStart(2, "0")}`;
+        const datePretty = s.date.replace(/-/g, ".");
         return {
           id: s.id,
-          top,
-          bottom,
+          top: `${datePretty}`,
+          bottom: `${ampmLabel} ${String(h12).padStart(2, "0")}:${String(
+            s.minute
+          ).padStart(2, "0")}`,
         };
       }),
-    [slots, childMap]
+    [slots]
   );
 
+  const handleAddToCart = () => {
+    if (!slots.length) {
+      alert("왼쪽에서 날짜·시간을 먼저 담아 주세요.");
+      return;
+    }
+    if (!startQuery.trim() || !endQuery.trim()) {
+      alert("출발지와 도착지를 모두 선택해 주세요.");
+      return;
+    }
+
+    const next = [...(cartItems || [])];
+
+    slots.forEach((s) => {
+      const childName = childMap[s.childId] || "자녀";
+      const h12 = (s.hour % 12) || 12;
+      const ampmLabel = s.ampm === "PM" ? "오후" : "오전";
+      const timeText = `${ampmLabel} ${String(h12).padStart(2, "0")}:${String(
+        s.minute
+      ).padStart(2, "0")}`;
+
+      next.push({
+        id: `cart-${s.id}-${Date.now()}`,
+        childId: s.childId,
+        childName,
+        date: s.date,
+        timeText,
+        startLabel: startQuery,
+        endLabel: endQuery,
+        memo,
+        priceKRW: estimatedFare || 0, // 🔥 정류장 price 기준
+      });
+    });
+
+    onChangeCartItems(next);
+  };
+
   return (
-    <RightWrap>
-      {/* 1) 상단 슬롯 요약 칩 레일 (오른쪽 전용) */}
-      <SummaryChipsRow>
-        {slotChips.length === 0 ? (
-          <span style={{ fontSize: 12, color: subText }}>
-            왼쪽에서 날짜·시간을 선택 후 &ldquo;이대로 담기&rdquo;를 눌러 슬롯을
-            만들어 주세요.
-          </span>
-        ) : (
-          slotChips.map((chip) => (
-            <RightSlotChip
-              key={chip.id}
-              type="button"
-              onClick={() => {
-                // 오른쪽 칩 클릭으로도 삭제 가능
-                const next = slots.filter((s) => s.id !== chip.id);
-                onChangeSlots(next);
-              }}
-            >
-              <div className="topline">{chip.top}</div>
-              <div className="bottomline">{chip.bottom}</div>
-              <div className="close">×</div>
-            </RightSlotChip>
-          ))
-        )}
-      </SummaryChipsRow>
+    <>
+      <RightWrap>
+        <SearchBlock>
+          <SectionLabel>출발지 / 도착지</SectionLabel>
+          <SearchFieldsWrap>
+            <SearchRow>
+              <SearchInputWrap>
+                <SearchInput
+                  placeholder="출발지 검색"
+                  value={startQuery}
+                  onChange={(e) => setStartQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearchOrList("start");
+                    }
+                  }}
+                />
+                <SearchIconButton
+                  type="button"
+                  onClick={() => handleSearchOrList("start")}
+                >
+                  <SearchIconImg src={pickupSearchIcon} alt="검색" />
+                </SearchIconButton>
+              </SearchInputWrap>
+            </SearchRow>
+
+            <SearchRow>
+              <SearchInputWrap>
+                <SearchInput
+                  placeholder="도착지 검색"
+                  value={endQuery}
+                  onChange={(e) => setEndQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearchOrList("end");
+                    }
+                  }}
+                />
+                <SearchIconButton
+                  type="button"
+                  onClick={() => handleSearchOrList("end")}
+                >
+                  <SearchIconImg src={pickupSearchIcon} alt="검색" />
+                </SearchIconButton>
+              </SearchInputWrap>
+            </SearchRow>
+
+            {/* 🔁 가운데 스왑 버튼 + 세로 라인 */}
+
+            <SwapButton type="button" onClick={handleSwapStartEnd}>
+              <SwapIconImg src={pickupSwapIcon} alt="출발/도착 전환" />
+            </SwapButton>
+          </SearchFieldsWrap>
 
 
-      
+        </SearchBlock>
 
-      {/* 2) 출발지/도착지 검색 + 지도 */}
-      <SearchBlock>
-        <SectionLabel>출발지 / 도착지</SectionLabel>
+        <MemoLabel>메모 (선택)</MemoLabel>
+        <MemoArea
+          placeholder="픽업시 필요한 내용을 자유롭게 남겨주세요."
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+        />
 
-        <SearchRow>
-          <SearchInput
-            placeholder="출발지 검색"
-            value={startQuery}
-            onChange={(e) => setStartQuery(e.target.value)}
-          />
-          <SearchBtn type="button" onClick={() => doSearch("start")}>
-            검색
-          </SearchBtn>
-          <ListBtn type="button" onClick={() => alert("즐겨찾기 목록 연결 예정")}>
-            목록
-          </ListBtn>
-        </SearchRow>
+        <CartActionsRow>
+          <CartButton type="button" onClick={handleAddToCart}>
+            장바구니에 담기
+          </CartButton>
+        </CartActionsRow>
 
-        <SearchRow>
-          <SearchInput
-            placeholder="도착지 검색"
-            value={endQuery}
-            onChange={(e) => setEndQuery(e.target.value)}
-          />
-          <SearchBtn type="button" onClick={() => doSearch("end")}>
-            검색
-          </SearchBtn>
-          <ListBtn type="button" onClick={() => alert("즐겨찾기 목록 연결 예정")}>
-            목록
-          </ListBtn>
-        </SearchRow>
+        <CartList>
+          {(cartItems || []).map((item) => (
+            <CartCard key={item.id}>
+              <CartLineTop>
+                {item.childName} · {item.date}
+              </CartLineTop>
+              <CartLineMiddle>{item.timeText}</CartLineMiddle>
+              <CartLineBottom>
+                출발: {item.startLabel} / 도착: {item.endLabel}
+              </CartLineBottom>
 
-        <HintText>
-          출발/도착지는 나중에 위치등록으로 저장해 두고 다시 사용할 수 있어요.
-        </HintText>
+              <CartPriceLine>
+                요금 {KRW(item.priceKRW)}원
+              </CartPriceLine>
+            </CartCard>
+          ))}
+        </CartList>
+      </RightWrap>
 
-        <MapBox>
-          <MapContainer ref={mapRef} />
-          <DistanceRow>
-            현재 선택 거리:{" "}
-            <strong>{distanceKm > 0 ? distanceKm.toFixed(1) : "0.0"} km</strong>{" "}
-            · 예상 요금(기본 기준):{" "}
-            <strong>{estimatedFare.toLocaleString("ko-KR")}원</strong>
-          </DistanceRow>
-        </MapBox>
-      </SearchBlock>
+      {showPlacesModal && (
+        <ModalBackdrop
+          onClick={() => {
+            setShowPlacesModal(false);
+          }}
+        >
+          <ModalCard
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <ModalHeaderRow>
+              <ModalTitle>픽업 정류소 선택</ModalTitle>
+              <ModalCloseBtn onClick={() => setShowPlacesModal(false)}>
+                ×
+              </ModalCloseBtn>
+            </ModalHeaderRow>
 
-      {/* 3) 메모 */}
-      <MemoLabel>메모 (선택)</MemoLabel>
-      <MemoArea
-        placeholder="기사님께 전달하고 싶은 내용을 자유롭게 남겨주세요."
-        value={memo}
-        onChange={(e) => setMemo(e.target.value)}
-      />
-    </RightWrap>
+            <ModalSearchWrap>
+              <ModalSearchInput
+                placeholder="정류소 이름 또는 주소를 검색해 보세요"
+                value={placesSearch}
+                onChange={(e) => setPlacesSearch(e.target.value)}
+              />
+              <ModalSearchIcon src={pickupSearchIcon} alt="검색" />
+            </ModalSearchWrap>
+
+            <ModalList>
+              {placesLoading ? (
+                <ModalEmpty>정류장 목록을 불러오는 중입니다...</ModalEmpty>
+              ) : !groupedPlaces.length ? (
+                <ModalEmpty>조건에 맞는 정류장이 없습니다.</ModalEmpty>
+              ) : (
+                <>
+                  {groupedPlaces.map((section) => (
+                    <ModalSection key={section.label}>
+                      <ModalSectionHeader>{section.label}</ModalSectionHeader>
+                      {section.items.map((p) => (
+                        <ModalItem
+                          key={p.id}
+                          type="button"
+                          onClick={() => handleSelectPlace(p)}
+                        >
+                          <ModalItemName>{p.placeName || "이름 없음"}</ModalItemName>
+                          <ModalItemAddress>{p.address || ""}</ModalItemAddress>
+                        </ModalItem>
+                      ))}
+                    </ModalSection>
+                  ))}
+
+          
+                </>
+              )}
+            </ModalList>
+
+          </ModalCard>
+        </ModalBackdrop>
+      )}
+    </>
   );
 }
 
-/* ================== 하단 안내/CTA (InfoBox + 버튼) ================== */
+
+/* ================== 하단 안내/CTA ================== */
 
 const InfoBoxWrap = styled.div`
   margin-top: 40px;
@@ -1402,25 +2102,34 @@ const InfoItem = styled.li`
     cursor: pointer;
   }
 `;
-
-// 하단 픽업 신청하기 버튼 (피그마 스타일)
 const BottomBar = styled.div`
-  margin-top: 18px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 16px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  pointer-events: none;     /* 안 보이는 영역 클릭 막기 */
+  z-index: 50;
+
+  @media (max-width: 768px) {
+    bottom: 100px;
+  }
 `;
 
 const ApplyButton = styled.button`
-  min-width: 190px;
-  height: 44px;
+  width: 90%;
+  max-width: 480px;
+  height: 50px;
   border-radius: 999px;
   border: none;
-  background: #e5e5e5;           /* 연한 회색 배경 */
-  color: #4b5563;                /* 진한 회색 글자 */
+  background: #e5e5e5;
+  color: #4b5563;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   padding: 0 24px;
+  pointer-events: auto;     /* 버튼은 클릭 가능하게 */
 
   &:hover {
     filter: brightness(0.98);
@@ -1428,13 +2137,19 @@ const ApplyButton = styled.button`
   &:active {
     transform: translateY(1px);
   }
+
+  @media (min-width: 960px) {
+    max-width: 420px;
+  }
 `;
+
 
 /* ================== 페이지 컴포넌트 ================== */
 
 export default function PickupApplyPage() {
-  const nav = useNavigate();
   const [slots, setSlots] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
     // 진입 로깅 등 필요하면 여기
@@ -1443,17 +2158,21 @@ export default function PickupApplyPage() {
   return (
     <Page>
       <PageInner>
-        <PageTitle>픽업 예약하기</PageTitle>
+        <PageTitle>픽업 신청</PageTitle>
         <PageSub>
           안전하고 믿을 수 있는 픽업 서비스 — 여러 건을 한 번에 신청할 수 있어요.
         </PageSub>
 
         <MainGrid>
-        <PickupLeftColumn slots={slots} onChangeSlots={setSlots} />
-        <PickupRightColumn slots={slots} onChangeSlots={setSlots} />
+          <PickupLeftColumn slots={slots} onChangeSlots={setSlots} />
+          <PickupRightColumn
+            slots={slots}
+            onChangeSlots={setSlots}
+            cartItems={cartItems}
+            onChangeCartItems={setCartItems}
+          />
         </MainGrid>
 
-        {/* 하단 안내 사항 + 픽업 신청하기 버튼 */}
         <InfoBoxWrap>
           <InfoTitleRow>
             <InfoTitle>안내 사항</InfoTitle>
@@ -1500,14 +2219,30 @@ export default function PickupApplyPage() {
           <ApplyButton
             type="button"
             onClick={() => {
-              console.log("[PickupApplyPage] 픽업 신청하기", { slots });
-              alert("픽업 신청하기 실제 로직은 나중에 연결하자 :)");
+              if (!cartItems.length) {
+                alert("장바구니에 담긴 픽업 예약이 없습니다.");
+                return;
+              }
+              setCheckoutOpen(true);
             }}
           >
             픽업 신청하기
           </ApplyButton>
         </BottomBar>
       </PageInner>
+
+      <CheckoutPickupDialog
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        items={cartItems}
+        onProceed={(res) => {
+          if (res?.ok) {
+            // 결제 완료 시 장바구니/슬롯 초기화 정도만
+            setCartItems([]);
+            setSlots([]);
+          }
+        }}
+      />
     </Page>
   );
 }

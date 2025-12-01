@@ -3,13 +3,16 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import styled from "styled-components";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/images/mainlogo2.png";
+
+import logo from "../assets/images/agitlogo.png";
+import fallbackAvatar from "../assets/images/avatar_default.png";
 import { useUser } from "../contexts/UserContext";
 import {
   getStorage,
   ref as storageRef,
   getDownloadURL,
 } from "firebase/storage";
+
 /* ===== Palette & Layout ===== */
 
 const HEADER_BG = "#FFFCF4";
@@ -48,7 +51,6 @@ function formatKRPhone(raw) {
 /* ===== Storage helpers (DB profile.avatarUrl → 표시용 URL, cache-bust) ===== */
 const storage = getStorage();
 
-
 const isStoragePath = (v) =>
   typeof v === "string" &&
   v &&
@@ -57,7 +59,7 @@ const isStoragePath = (v) =>
 
 async function pathToUrl(path) {
   if (!path) return "";
-  if (!isStoragePath(path)) return path; // 이미 https면 그대로
+  if (!isStoragePath(path)) return path;
 
   try {
     return await getDownloadURL(storageRef(storage, path));
@@ -98,8 +100,6 @@ function useStorageUrl(path, bustKey) {
   return url;
 }
 
-
-
 /* ===== Styles ===== */
 
 const Bar = styled.header`
@@ -108,8 +108,11 @@ const Bar = styled.header`
   z-index: 20;
   background: ${HEADER_BG};
   border-bottom: 1px solid ${BORDER_COLOR};
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+  font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont, system-ui,
     "Segoe UI", "Noto Sans KR", sans-serif;
+
+  /* 🔹 헤더 높이 밖으로 튀어 나간 로고/요소는 잘라서 클릭 안 되게 */
+  overflow: hidden;
 `;
 
 const Inner = styled.div`
@@ -124,7 +127,8 @@ const Inner = styled.div`
 
   @media (max-width: 960px) {
     padding: 0 16px;
-    column-gap: 16px;
+    column-gap: 12px;
+    height: 56px;
   }
 `;
 
@@ -137,44 +141,51 @@ const BrandArea = styled.div`
 const Brand = styled(Link)`
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
 `;
 
 const Logo = styled.img`
-  width: 32px;
-  height: 32px;
+  width: 122px;
+  height: 122px;
   object-fit: contain;
   display: block;
   border-radius: 8px;
+
+  @media (max-width: 960px) {
+    width: 120px;
+    height: 120px;
+  }
 `;
 
 const Title = styled.span`
   font-size: 20px;
-  font-weight: 700;          /* 세미볼드 느낌 */
+  font-weight: 700;
   letter-spacing: 0.1px;
-  color: ${TEXT_MAIN};       /* #111111 계열, 로고랑 메뉴랑 같은 톤 */
-`;
+  color: ${TEXT_MAIN};
 
+  @media (max-width: 960px) {
+    font-size: 18px;
+  }
+`;
 
 const NavArea = styled.nav`
   display: flex;
   align-items: center;
   flex: 1;
-  margin-left: 48px;         /* 로고와 메뉴 사이 간격 */
-  gap: 28px;                 /* 메뉴 간 간격 */
+  margin-left: 48px;
+  gap: 28px;
 
   @media (max-width: 960px) {
     display: none;
   }
 `;
 
-
 const NavItem = styled(NavLink)`
   position: relative;
   font-size: 15px;
-  font-weight: 600;          /* SemiBold */
-  color: ${TEXT_MAIN};       /* 거의 검정색 (#111) */
+  font-weight: 600;
+  color: ${TEXT_MAIN};
   text-decoration: none;
   padding: 4px 0;
   line-height: 1.4;
@@ -203,36 +214,16 @@ const NavItem = styled(NavLink)`
   }
 `;
 
-
 const Actions = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-`;
-const AppDownloadLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${BRAND_COLOR};
-  text-decoration: none;
-  padding: 0 4px;
-  height: 34px;
-  white-space: nowrap;
-  cursor: pointer;
 
-  &:hover {
-    text-decoration: underline;
+  @media (max-width: 960px) {
+    gap: 8px;
   }
 `;
-
-const AppDownloadArrow = styled.span`
-  font-size: 11px;
-  transform: translateY(1px);
-`;
-
 
 const OutlineButton = styled.button`
   height: 34px;
@@ -256,109 +247,6 @@ const OutlineButton = styled.button`
   }
 `;
 
-const OutlineLink = styled(Link)`
-  height: 34px;
-  padding: 0 20px;
-  border-radius: 12px;
-  border: 1px solid ${BRAND_COLOR};
-  background: transparent;
-  color: ${BRAND_COLOR};
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    background: rgba(255, 122, 0, 0.06);
-  }
-`;
-
-const PrimaryLink = styled(Link)`
-  height: 36px;
-  padding: 0 24px;
-  border-radius: 12px;
-  border: none;
-  background: ${BRAND_COLOR};
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: opacity 0.12s ease, transform 0.12s ease;
-
-  &:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    opacity: 0.9;
-    transform: translateY(0);
-  }
-`;
-
-
-const PrimaryButton = styled.button`
-  height: 36px;
-  padding: 0 18px;
-  border-radius: 999px;
-  border: none;
-  background: ${BRAND_COLOR};
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 10px rgba(255, 122, 0, 0.25);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(255, 122, 0, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 8px rgba(255, 122, 0, 0.22);
-    opacity: 0.92;
-  }
-`;
-
-const UserChip = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  background: #ffffff;
-  color: ${TEXT_MAIN};
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
-
-  &:hover {
-    background: #fffaf4;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  }
-`;
-
 const Avatar = styled.span`
   width: 26px;
   height: 26px;
@@ -379,22 +267,33 @@ const Avatar = styled.span`
   }
 `;
 
-const UserLabel = styled.span`
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
+const ProfileIconButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1.5px solid #111111;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
 
-const SubHint = styled.span`
-  display: block;
-  font-size: 11px;
-  font-weight: 400;
-  color: ${TEXT_SUB};
-  margin-top: 2px;
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
 
   @media (max-width: 960px) {
-    display: none;
+    width: 32px;
+    height: 32px;
   }
 `;
 
@@ -410,6 +309,23 @@ export default function Header() {
     profile?.updatedAt
   );
 
+  const [isInAppShell, setIsInAppShell] = useState(false);
+
+  useEffect(() => {
+    try {
+      const search = window.location.search || "";
+      const params = new URLSearchParams(search);
+      const inappParam = params.get("inapp");
+
+      const inWebview =
+        typeof window !== "undefined" &&
+        (window.ReactNativeWebView || inappParam === "1");
+
+      setIsInAppShell(!!inWebview);
+    } catch {
+      setIsInAppShell(false);
+    }
+  }, []);
 
   const userLabel = useMemo(() => {
     const name = (profile?.displayName || "").trim();
@@ -421,10 +337,8 @@ export default function Header() {
     return last4 ? `${last4}님` : "내정보";
   }, [profile?.displayName, phoneE164]);
 
-
-
   const handleLogin = useCallback(() => nav("/login"), [nav]);
-  const handleSignup = useCallback(() => nav("/signup"), [nav]);
+
   const handleLogout = useCallback(() => {
     try {
       localStorage.removeItem("auth_dev_session");
@@ -434,7 +348,21 @@ export default function Header() {
     bootWithPhone?.("");
     nav("/", { replace: true });
   }, [nav, bootWithPhone]);
-  const goMyPage = useCallback(() => nav("/mypage"), [nav]);
+
+  const goMyPage = useCallback(() => {
+    try {
+      const isMobileWidth =
+        typeof window !== "undefined" && window.innerWidth <= 960;
+      if (isInAppShell || isMobileWidth) {
+        nav("/m/account");
+      } else {
+        nav("/mypage");
+      }
+    } catch {
+      nav("/mypage");
+    }
+  }, [nav, isInAppShell]);
+
   useEffect(() => {
     if (initialized && phoneE164) {
       try {
@@ -444,6 +372,7 @@ export default function Header() {
       }
     }
   }, [location.pathname, initialized, phoneE164, refresh]);
+
   return (
     <Bar>
       <Inner>
@@ -451,13 +380,11 @@ export default function Header() {
         <BrandArea>
           <Brand to="/">
             <Logo src={logo} alt="withagit" />
-            <div>
-              <Title>withagit</Title>
-            </div>
+        
           </Brand>
         </BrandArea>
 
-        {/* 가운데 네비게이션 — 피그마 메뉴명 */}
+        {/* 가운데 네비게이션 — PC 전용 */}
         <NavArea>
           <NavItem to="/membership">멤버십/서비스</NavItem>
           <NavItem to="/price">구독/결제</NavItem>
@@ -466,46 +393,23 @@ export default function Header() {
           <NavItem to="/help">소식/문의</NavItem>
         </NavArea>
 
-        {/* 우측 액션 버튼들 — 앱 다운로드 / 회원가입 / 로그인 */}
-
-
+        {/* 우측 액션 영역 */}
         <Actions>
-          <AppDownloadLink to="/download">
-            앱 다운로드
-            <AppDownloadArrow>▼</AppDownloadArrow>
-          </AppDownloadLink>
-
-          {!isLoggedIn ? (
-            <>
-              <OutlineLink to="/signup" onClick={handleSignup}>
-                회원가입
-              </OutlineLink>
-              <PrimaryLink to="/login" onClick={handleLogin}>
-                로그인
-              </PrimaryLink>
-            </>
+          {isLoggedIn ? (
+            <ProfileIconButton onClick={goMyPage} aria-label={userLabel}>
+              <Avatar>
+                <img src={avatarUrl || fallbackAvatar} alt="avatar" />
+              </Avatar>
+            </ProfileIconButton>
           ) : (
-            <>
-                <UserChip onClick={goMyPage} title="내정보">
-                  {/* <Avatar>
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="avatar" />
-                    ) : (
-                      <span>
-                        {(formatKRPhone(phoneE164) || "").slice(-2) || "ME"}
-                      </span>
-                    )}
-                  </Avatar> */}
-                  <UserLabel>{userLabel}</UserLabel>
-                </UserChip>
-
-                <OutlineButton onClick={handleLogout}>로그아웃</OutlineButton>
-            </>
+            <ProfileIconButton onClick={handleLogin} aria-label="로그인">
+              <Avatar>
+                <img src={fallbackAvatar} alt="login avatar" />
+              </Avatar>
+            </ProfileIconButton>
           )}
         </Actions>
-
       </Inner>
     </Bar>
   );
-
 }

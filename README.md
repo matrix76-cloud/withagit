@@ -612,3 +612,405 @@ Bootpay 설정/redirect 정책 변경	Bootpay.requestPayment.extra
 
 이 구조는 **Withagit의 결제/멤버십 시스템의 SSOT(단일 진실)**이기 때문에
 이후 기능 추가·UI 수정·에러 검증 시에도 기준점이 됨.
+
+
+Withagit Web Typography v1 (NanumSquareRound 버전)
+0) Global 기본값
+html,
+body {
+  font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
+    sans-serif;
+
+  font-size: 16px;             /* 루트 폰트 */
+  line-height: 1.5;            /* 기본 라인 */
+  
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+NanumSquareRound 특징
+
+기본적으로 Pretendard보다 약간 두껍게 보임
+
+특히 400/700 weight 간 차이가 크게 체감됨
+
+모바일 WebView에서도 가독성이 좋음
+
+버튼/타이틀을 너무 무겁게 만들면 안 예뻐지므로 600은 최소 사용
+
+그래서 아래처럼 weight 조합을 최적화해서 정의함.
+
+🔠 타입 스케일 (NanumSquareRound 최적화 버전)
+1) 제목 계열
+
+H1 — 페이지 최상단 타이틀
+
+font-size: 28px
+
+font-weight: 700
+
+line-height: 1.3
+
+letter-spacing: -0.02em
+
+H2 — 큰 섹션 타이틀
+
+font-size: 24px
+
+font-weight: 700
+
+line-height: 1.35
+
+letter-spacing: -0.02em
+
+H3 — 카드 타이틀
+
+font-size: 20px
+
+font-weight: 600 ← NanumSquareRound에서 가장 안정적인 weight
+
+line-height: 1.4
+
+letter-spacing: -0.01em
+
+SectionTitle — 페이지 내 중간 섹션
+
+font-size: 17px
+
+font-weight: 600
+
+line-height: 1.4
+
+letter-spacing: -0.01em
+
+2) 본문 텍스트 계열
+
+Body — 기본 본문
+
+font-size: 15px
+
+font-weight: 400
+
+line-height: 1.6
+
+letter-spacing: -0.01em
+
+BodySmall — 작은 본문/서브텍스트
+
+font-size: 13px
+
+font-weight: 400
+
+line-height: 1.5
+
+letter-spacing: 0
+
+Caption — 매우 작은 부가 텍스트
+
+font-size: 12px
+
+font-weight: 400
+
+line-height: 1.4
+
+letter-spacing: 0
+
+3) 버튼/라벨
+
+ButtonLabel
+
+font-size: 15px
+
+font-weight: 700 ← NanumSquareRound 버튼은 700이 가장 예쁨
+
+line-height: 1.2
+
+letter-spacing: -0.01em
+
+Badge/Tag
+
+font-size: 12px
+
+font-weight: 600
+
+line-height: 1.2
+
+
+
+Checkout 정책 요약 — “누가 무엇을 살 수 있냐”
+0. 공통 가드 (모든 상품 공통)
+
+결제 버튼이 활성화(canPay === true)가 되려면 항상 아래 조건을 모두 만족해야 한다.
+
+약관 동의
+
+agree === true
+
+체크 안 되어 있으면 무조건 canPay = false (terms_not_agreed)
+
+금액 유효
+
+total > 0
+
+포인트/정액권의 경우 → pointsAmount > 0 이고, 이 값이 total로 계산됨
+
+아니면 invalid_amount
+
+자녀 존재 + 선택 필수
+
+childrenForUI.length > 0 (내 자녀가 최소 1명 있어야 함) → 아니면 child_required
+
+selectedChildIds.length > 0 (선택한 자녀가 있어야 함) → 아니면 child_not_selected
+
+로딩 중이 아니어야 함
+
+!loading 인 경우에만 결제 가능
+
+kind 유효 + 로그인 필수
+
+ALLOWED.has(kind) → AGITZ / FAMILY / TIMEPASS / CASHPASS / "points" 만 허용 (invalid_kind)
+
+effectivePhoneE164 존재해야 함 → 로그인 필수 (no_phone)
+
+선택한 자녀가 “내 자녀”인지 검증
+
+selectedChildIds 의 모든 값이 childrenForUI 안에 있어야 함
+
+아니면 child_not_owned
+
+이 공통 가드를 통과한 뒤에, 각 kind(AGITZ/FAMILY/…) 별 가드가 한 번 더 얹힌다.
+
+1. 정규 멤버십 — AGITZ
+1-1. 선택 규칙
+
+한 번에 자녀 1명만 선택 가능 (라디오)
+
+이미 정규 멤버십이 있는 자녀(agitzAppliedSet.has(childId) === true)는:
+
+UI에서 비활성화 (라디오 disabled)
+
+canPay 단계에서 차단
+
+preflightValidateDb에서 최종 차단
+
+1-2. canPay 레벨
+if (kind === MEMBERSHIP_KIND.AGITZ) {
+  const target = selectedChildIds[0];
+  if (!target || agitzAppliedSet.has(target)) return false;
+}
+
+1-3. preflight 레벨
+if (kind === MEMBERSHIP_KIND.AGITZ) {
+  const id = selectedChildIds[0];
+  if (agitzAppliedSet.has(id)) {
+    return fail(
+      "agitz_child_already_applied",
+      "이미 정규 멤버십이 적용된 자녀입니다."
+    );
+  }
+}
+
+1-4. 한 줄 요약
+
+AGITZ는 “아직 정규 멤버십이 없는 자녀 1명”에게만 살 수 있다.
+이미 정규인 자녀에게는 UI·canPay·preflight 3중 가드로 절대 판매되지 않는다.
+
+2. 패밀리 멤버십 — FAMILY
+2-1. 선택 규칙
+
+체크박스 멀티 선택 가능
+
+FAMILY_MAX (기본 10명) 초과 선택 불가
+→ 초과 시 alert 후 무시 / preflight 에서 family_over_quota
+
+이미 정규/패밀리 멤버십이 있는 자녀는 FAMILY 대상에서 제외:
+
+const alreadyAgitz = agitzAppliedSet.has(childId);
+const alreadyFamily = familyAppliedSet.has(childId);
+
+const disabledForKindBase =
+  (kind === FAMILY && (alreadyFamily || alreadyAgitz));
+
+2-2. canPay 레벨
+if (kind === MEMBERSHIP_KIND.FAMILY) {
+  if (!effectiveSelectedChildIds.length) return false;
+  if (effectiveSelectedChildIds.length > FAMILY_MAX) return false;
+}
+
+2-3. preflight 레벨
+if (kind === MEMBERSHIP_KIND.FAMILY) {
+  if (selectedChildIds.length > FAMILY_MAX) {
+    return fail(
+      "family_over_quota",
+      `패밀리 멤버십은 최대 ${FAMILY_MAX}명까지 선택할 수 있습니다.`
+    );
+  }
+
+  if (
+    selectedChildIds.some(
+      (id) => familyAppliedSet.has(id) || agitzAppliedSet.has(id)
+    )
+  ) {
+    return fail(
+      "family_child_already_applied",
+      "이미 정규/패밀리 멤버십이 적용된 자녀가 포함되어 있습니다."
+    );
+  }
+}
+
+2-4. 한 줄 요약
+
+FAMILY는 “정규·패밀리 아무 것도 안 붙어 있는 자녀들만 최대 N명(FAMILY_MAX)까지 묶어서” 살 수 있다.
+선택된 자녀 중 한 명이라도 AGITZ/FAMILY가 이미 있으면, 결제 전체가 막힌다.
+
+3. 시간권 — TIMEPASS
+3-1. 선택 규칙
+
+자녀 선택은 단일 선택(라디오)
+
+AGITZ/FAMILY 적용 여부와 완전히 무관
+
+forceEnable 때문에 disabled 되지 않음:
+
+const forceEnable =
+  kind === CASHPASS ||
+  kind === TIMEPASS ||
+  kind === "points";
+
+const disabledForKind = forceEnable ? false : disabledForKindBase;
+
+3-2. canPay 레벨
+if (kind === MEMBERSHIP_KIND.TIMEPASS) {
+  const m = resolveTimepassMinutes(product, payload);
+  if (!(m > 0)) return false;
+}
+
+3-3. preflight 레벨
+if (kind === MEMBERSHIP_KIND.TIMEPASS) {
+  const minutes = resolveTimepassMinutes(product, payload);
+  if (!(minutes > 0)) {
+    return fail(
+      "timepass_minutes_invalid",
+      "시간권 분 설정이 올바르지 않습니다."
+    );
+  }
+}
+
+
+resolveTimepassMinutes는
+
+payload.minutes > 0 이면 그 값을 사용
+
+아니면 product.variant 문자열에서 "2h" / "120m" / "2시간" 등에서 분을 파싱
+
+3-4. 한 줄 요약
+
+TIMEPASS는 “멤버십 상태와 상관없이, 분(minute) 설정만 올바르면 누구에게나 추가로 사줄 수 있는 시간권”이다.
+
+4. 정액권 — CASHPASS
+4-1. 선택 규칙
+
+forceEnable 대상 → 자녀 선택이 AGITZ/FAMILY와 무관하게 가능
+
+정규/패밀리 여부 보지 않고, 공통 가드만 통과하면 OK
+
+4-2. 금액 로직
+const baseSubtotal = Number(priceInput.subtotal ?? priceInput.total ?? 0);
+const baseDiscount = Number(priceInput.discount ?? 0);
+const tot = sub - disc;
+
+
+실질적으로 입력 금액 > 0이면 구매 가능
+
+4-3. 한 줄 요약
+
+CASHPASS는 “멤버십과 독립적인 충전형 상품”으로, 금액만 유효하면 어떤 자녀에게도 제한 없이 여러 번 구매할 수 있다.
+
+5. 포인트 충전 — POINTS
+5-1. 선택 규칙
+
+kind === "points" 일 때 isPoints === true
+
+TIMEPASS/CASHPASS와 마찬가지로 forceEnable → 멤버십 상태 무시
+
+5-2. 금액 로직
+// 예시: 10,000 ~ 50,000원 박스 중 선택
+POINT_PACKS = [10000, 20000, 30000, 40000, 50000];
+
+if (isPoints) {
+  return {
+    subtotal: pointsAmount,
+    discount: 0,
+    total: pointsAmount,
+    meta: { kind },
+  };
+}
+
+
+pointsAmount > 0 이면 OK, 그 값이 그대로 total이 됨.
+
+5-3. 한 줄 요약
+
+POINTS는 “정액권 잔액과 비슷한 충전 상품”으로, 멤버십 상태와 완전히 무관하게 금액만 정해서 충전할 수 있다.
+
+6. 최종 요약 — 진짜 딱 한 페이지로 보고 싶으면
+AGITZ (정규 멤버십)
+
+대상: 정규 멤버십이 없는 자녀 1명
+
+제한:
+
+이미 AGITZ인 자녀 → 절대 불가
+
+멤버십 중복:
+
+FAMILY 여부는 체크 안 함 (AGITZ only 관점)
+
+FAMILY (패밀리 멤버십)
+
+대상: AGITZ/FAMILY 둘 다 없는 자녀들 (최대 FAMILY_MAX명)
+
+제한:
+
+선택된 자녀 중 한 명이라도 AGITZ/FAMILY가 있으면 전체 결제 불가
+
+멤버십 중복:
+
+AGITZ/FAMILY와 절대 중복 불가
+
+TIMEPASS (시간권)
+
+대상: 모든 자녀
+
+제한:
+
+minutes > 0 이어야만 구매 가능
+
+멤버십 중복:
+
+정규/패밀리와 얼마든지 중복 가능
+
+CASHPASS (정액권)
+
+대상: 모든 자녀
+
+제한:
+
+total > 0 이기만 하면 됨
+
+멤버십 중복:
+
+완전 자유
+
+POINTS (포인트)
+
+대상: 모든 자녀
+
+제한:
+
+충전 금액 > 0
+
+멤버십 중복:
+
+완전 자유

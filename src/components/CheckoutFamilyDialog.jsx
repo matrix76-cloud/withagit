@@ -443,6 +443,12 @@ export default function CheckoutFamilyDialog({
 
   const navigate = useNavigate();
 
+  const handleGoToBuy = () => {
+    // 상세 탭에서 CTA 누르면 결제 말고 "구매하기" 탭으로만 이동
+    setActiveTab("buy");
+  };
+
+
   const {
     phoneE164,
     profile,
@@ -1096,11 +1102,16 @@ export default function CheckoutFamilyDialog({
         </Body>
 
         <Footer>
-          <CTAButton onClick={handleCTA} disabled={!canPay}>
-            {loading
-              ? "결제 진행 중…"
-              : `패밀리 이용하기${
-                  total > 0 ? ` (${KRW(total)}원)` : ""
+          <CTAButton
+            type="button"
+            onClick={activeTab === "detail" ? handleGoToBuy : handleCTA}
+            disabled={activeTab === "buy" && !canPay}
+          >
+            {activeTab === "detail"
+              ? "패밀리 멤버십 이용하기"
+              : loading
+                ? "결제 진행 중…"
+                : `패밀리 멤버십 결제하기${total > 0 ? ` (${KRW(total)}원)` : ""
                 }`}
           </CTAButton>
         </Footer>

@@ -423,6 +423,150 @@ function isDevTestPhoneLocal(localDigits) {
   );
 }
 
+const accent = "var(--color-accent, #F07A2A)";
+const navy = "#1A2B4C";
+const line = "rgba(0,0,0,.10)";
+const blueBtn = "#1236D0";
+const blueBtnDark = "#0E2CAE";
+const POINT_PACKS = [10000, 20000, 30000, 40000, 50000];
+
+/* ===== 결제약관 팝업 (약관 전체 본문, 생략 없음) ===== */
+const TermsBg = styled.div`
+  position: fixed; inset: 0; z-index: 10000;
+  background: rgba(0,0,0,.45);
+  display: grid; place-items: center;
+`;
+const TermsCard = styled.div`
+  width: min(720px, 94vw); max-height: 86vh; overflow: hidden;
+  background: #fff; border-radius: 14px; border: 1px solid #e9edf3;
+  box-shadow: 0 24px 64px rgba(0,0,0,.25);
+  display: grid; grid-template-rows: auto 1fr auto;
+`;
+const TermsHead = styled.div`
+  padding: 12px 16px; border-bottom: 1px solid #eef1f4; display:flex; align-items:center; justify-content:space-between;
+  h4{ margin:0; font-size:16px; color:${navy}; }
+  button{ appearance:none; border:0; background:transparent; font-size:18px; cursor:pointer; color:#666; }
+`;
+const TermsBody = styled.div`
+  padding: 12px 16px; overflow: auto; font-size:14px; color:#1f2937; line-height:1.7;
+  .sep{ height:1px; background:#eef1f4; margin:12px 0; }
+  ul{ margin:6px 0 10px 16px; padding:0; }
+  li{ margin:2px 0; }
+`;
+const TermsFoot = styled.div`
+  padding: 10px 16px; border-top: 1px solid #eef1f4; display:flex; justify-content:flex-end; gap:8px;
+`;
+const LinkBtn = styled.button`
+  padding:0; border:0; background:transparent; cursor:pointer;
+  color:${accent}; text-decoration:underline; text-underline-offset:3px; font-size:14px;
+`;
+
+
+function PaymentTermsModal({ open, onClose }) {
+    if (!open) return null;
+
+
+
+    return createPortal(
+        <TermsBg onClick={onClose}>
+            <TermsCard onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="전자상거래 이용약관">
+                <TermsHead>
+                    <h4>전자상거래 이용약관 (결제·환불)</h4>
+                    <button onClick={onClose} aria-label="닫기">✕</button>
+                </TermsHead>
+                <TermsBody>
+                    <h5>제1장 멤버십</h5>
+
+                    <p><strong>제1조 (거래조건 안내)</strong><br />
+                        멤버십의 종류, 혜택, 가격, 이용 기간, 환불 기준, 유의사항 등은 웹사이트와 안내문을 통해 사전에 고지하며, 회원은 결제 전에 이를 충분히 확인하여야 합니다.</p>
+
+                    <div className="sep" />
+
+                    <p><strong>제2조 (멤버십 가입)</strong><br />
+                        멤버십 가입 절차는 다음과 같습니다. ① 멤버십 종류 선택 ② 회원 및 자녀 정보 확인 ③ 요금 결제 ④ 가입 완료 안내. 멤버십은 자녀 단위(child-scoped)로 관리되며, 선택된 자녀에 귀속됩니다.</p>
+
+                    <div className="sep" />
+
+                    <p><strong>제3조 (결제 방법)</strong><br />
+                        회원은 회사가 제공하는 카드 결제, 간편결제, 가상계좌, 기타 회사가 정한 방법으로 결제할 수 있습니다. 결제 수단 제공사의 사정으로 일부 수단 이용이 제한될 수 있습니다.</p>
+
+                    <div className="sep" />
+
+                    <p><strong>제4조 (계약의 성립)</strong><br />
+                        회사가 회원의 결제에 대해 승인한 시점에 계약이 성립합니다. 허위 정보 기재, 자격 요건 미충족 등 부정 사유가 확인될 경우 회사는 가입을 거절하거나 취소할 수 있습니다.</p>
+
+                    <div className="sep" />
+
+                    <p><strong>제5조 (멤버십 혜택)</strong></p>
+                    <ul>
+                        <li>주중 매일 2시간 돌봄 기본 이용 포함(정규/패밀리 멤버십 기준)</li>
+                        <li>초과 이용 시 10분당 2,500원 추가 요금 부과</li>
+                        <li>프로그램·키트 등 부가 상품 할인 제공(멤버십 종류별 상이)</li>
+                        <li>픽업 서비스는 정규(아지트) 및 패밀리 멤버십 회원에 한해 신청 가능</li>
+                    </ul>
+
+                    <div className="sep" />
+
+                    <p><strong>제6조 (만료)</strong><br />
+                        멤버십 이용 기간이 종료되면 계약은 자동 종료되며 잔여 혜택(시간/금액/할인 등)은 소멸합니다. 기간형 상품의 종료 시각은 KST 자정 기준 배타(Exclusive)로 계산합니다.</p>
+
+                    <div className="sep" />
+
+                    <p><strong>제7조 (정규 멤버십[아지트, 패밀리] 해지 및 환불)</strong></p>
+                    <p><em>① 회원의 해지 요청</em><br />
+                        회원은 마이페이지의 ‘멤버십 해지’ 기능을 통해 언제든지 해지를 신청할 수 있습니다. 해지 시점에 따라 환불 가능 여부 및 이용 종료일은 아래 기준을 따릅니다.</p>
+                    <p><em>② 결제일로부터 14일 이내 해지(일할 환불)</em></p>
+                    <ul>
+                        <li>가. 14일 이내 해지 요청 시, 이미 이용한 기간에 해당하는 금액을 공제한 후 잔여 금액을 환불합니다.</li>
+                        <li>나. 환불금액 = 결제금액 − (이용일수 일할비용 × 환불 위약금 10%)</li>
+                        <li>다. 해지 승인 시점부터 이용은 즉시 종료되며, 자동결제 등록분은 다음 회차부터 취소됩니다.</li>
+                    </ul>
+                    <p><em>③ 결제일로부터 14일 경과 후 해지(익월 적용)</em></p>
+                    <ul>
+                        <li>가. 14일 경과 후 해지 요청 시 환불은 불가합니다.</li>
+                        <li>나. 회원은 이미 결제된 이용기간 종료일까지 서비스를 계속 이용할 수 있으며, 해지 예정일은 다음 결제일 전날로 처리됩니다.</li>
+                        <li>다. 자동결제가 등록되어 있는 경우, 다음 결제는 자동 취소됩니다.</li>
+                    </ul>
+                    <p><em>④ 회사의 해지 권한</em><br />
+                        회원이 본 약관 또는 관계 법령을 위반한 경우 회사는 즉시 멤버십을 해지할 수 있으며, 이 경우 환불은 불가합니다.</p>
+
+                    <div className="sep" />
+
+                    <p><strong>제8조 (기타 서비스 상품: 타임패스·정액권[Cashpass] 해지 및 환불)</strong></p>
+                    <ul>
+                        <li><em>① 구매 후 7일 이내 미사용 시 전액 환불 가능</em>
+                            <ul>
+                                <li>결제일로부터 7일 이내에 이용 내역(예약, 출석, 간식 교환, 프로그램 수강 등)이 전혀 없는 경우 전액 환불 가능합니다.</li>
+                                <li>7일 경과 또는 1회라도 이용(예약 포함)이 발생한 경우 환불 불가합니다.</li>
+                            </ul>
+                        </li>
+                        <li><em>② 법령 위반 또는 부정 사용 시</em>
+                            <ul>
+                                <li>부정 결제, 타인 명의 도용, 불법 전매 등의 사유가 확인될 경우 회사는 즉시 이용을 정지하며 환불은 불가합니다.</li>
+                            </ul>
+                        </li>
+                        <li><em>③ 정규 멤버십 전환 시 타임패스 자동 해지</em>
+                            <ul>
+                                <li>타임패스 보유 상태에서 정규 멤버십(아지트/패밀리)을 신규 가입하는 경우, 타임패스는 자동 해지됩니다.</li>
+                                <li>자동 해지 시 잔여 시간은 상품 별 정책(10분당 금액)에 따라 금액으로 환산되어 <strong>정액권(Cashpass)</strong>으로 자동 충전됩니다.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <div className="sep" />
+
+                    <p><strong>제9조 (양도 금지)</strong><br />
+                        멤버십 및 서비스 이용 권리는 타인에게 양도, 증여, 담보 제공할 수 없습니다. 자녀 단위로 귀속된 권리는 해당 자녀에 한해 이용 가능합니다.</p>
+                </TermsBody>
+                <TermsFoot>
+                    <button onClick={onClose} style={{ height: 38, padding: "0 14px", borderRadius: 10, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer" }}>닫기</button>
+                </TermsFoot>
+            </TermsCard>
+        </TermsBg>,
+        document.body
+    );
+}
+
 function mapKindToOrderType(k) {
   if (k === MEMBERSHIP_KIND.TIMEPASS) return ORDER_TYPE.TIMEPASS;
   return null;
@@ -451,6 +595,14 @@ export default function CheckoutTimepassDialog({
     () => (Array.isArray(ctxChildren) ? ctxChildren : []),
     [ctxChildren]
   );
+
+  const handleGoToBuy = () => {
+    // 상세 탭에서 CTA 누르면 "구매하기" 탭으로만 전환
+    setActiveTab("buy");
+  };
+
+  const [termsOpen, setTermsOpen] = useState(false); // 약관 모달
+  
 
   useEffect(() => {
     let el = document.getElementById("modal-root");
@@ -768,9 +920,9 @@ export default function CheckoutTimepassDialog({
       </div>
 
       <SummaryList>
-        <li>시간 단위로 원하는 만큼</li>
-        <li>단기·체험 고객 추천</li>
-        <li>간단한 예약, 부담 없는 이용</li>
+        <li>분 단위로 원하는 만큼 자유롭게</li>
+        <li>단기·체험 고객에게 딱 맞는 선택</li>
+        <li>예약없이 언제든지 이용하세요!</li>
       </SummaryList>
 
       <PassRow>
@@ -906,6 +1058,7 @@ export default function CheckoutTimepassDialog({
           <SectionLabel>확인하세요!</SectionLabel>
           <button
             type="button"
+            onClick={() => setTermsOpen(true)}
             style={{
               border: "0",
               background: "transparent",
@@ -935,43 +1088,57 @@ export default function CheckoutTimepassDialog({
   );
 
   return createPortal(
-    <Backdrop onClick={handleBackdrop}>
-      <Dialog role="dialog" aria-modal="true" aria-label="타임패스 멤버십 상세">
-        <Header>
-          <HeaderTop>
-            <CloseBtn type="button" aria-label="닫기" onClick={onClose}>
-              ✕
-            </CloseBtn>
-          </HeaderTop>
-          <TabsBar>
-            <Tabs>
-              <Tab
-                $active={activeTab === "detail"}
-                onClick={() => setActiveTab("detail")}
-              >
-                상세정보 확인
-              </Tab>
-              <Tab
-                $active={activeTab === "buy"}
-                onClick={() => setActiveTab("buy")}
-              >
-                구매하기
-              </Tab>
-            </Tabs>
-          </TabsBar>
-        </Header>
+    <>
+      <Backdrop onClick={handleBackdrop}>
+        <Dialog role="dialog" aria-modal="true" aria-label="타임패스 멤버십 상세">
+          <Header>
+            <HeaderTop>
+              <CloseBtn type="button" aria-label="닫기" onClick={onClose}>
+                ✕
+              </CloseBtn>
+            </HeaderTop>
+            <TabsBar>
+              <Tabs>
+                <Tab
+                  $active={activeTab === "detail"}
+                  onClick={() => setActiveTab("detail")}
+                >
+                  상세정보 확인
+                </Tab>
+                <Tab
+                  $active={activeTab === "buy"}
+                  onClick={() => setActiveTab("buy")}
+                >
+                  구매하기
+                </Tab>
+              </Tabs>
+            </TabsBar>
+          </Header>
 
-        <Body>
-          {activeTab === "detail" ? renderDetail() : renderPurchase()}
-        </Body>
+          <Body>
+            {activeTab === "detail" ? renderDetail() : renderPurchase()}
+          </Body>
+          <Footer>
+            <CTAButton
+              type="button"
+              onClick={activeTab === "detail" ? handleGoToBuy : handleCTA}
+              disabled={activeTab === "buy" && !canPay}
+            >
+              {activeTab === "detail"
+                ? "타임패스 이용하기" // ✅ 상세 탭: 결제 안 하고 탭만 전환
+                : loading
+                  ? "결제 진행 중…"
+                  : `타임패스 결제하기 (${KRW(total)}원)`}
+            </CTAButton>
+          </Footer>
 
-        <Footer>
-          <CTAButton type="button" onClick={handleCTA} disabled={!canPay}>
-            {loading ? "결제 진행 중…" : `타임패스 이용하기 (${KRW(total)}원)`}
-          </CTAButton>
-        </Footer>
-      </Dialog>
-    </Backdrop>,
+        </Dialog>
+      </Backdrop>,
+
+      {/* 🔥 전자상거래 이용약관(결제·환불) 팝업 */}
+      < PaymentTermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
+    
+    </>,
     portalEl
   );
 }

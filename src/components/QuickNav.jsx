@@ -58,7 +58,7 @@ export default function QuickNav() {
                 <IconHold><Icon src={icCoin} alt="" /></IconHold>
                 <Caption>정액권 충전</Caption>
             </Item>
-            <Item to="/programs" $bg="#FF578F">
+            <Item to="/price" $bg="#FF578F">
                 <IconHold><Icon src={icProgram} alt="" /></IconHold>
                 <Caption>프로그램 예약</Caption>
             </Item>

@@ -39,7 +39,7 @@ const QUICK_MENUS = [
     label: "프로그램",
     icon: icoProgram,
     bg: "#FFE4E4",
-    to: "/programs",
+    to: "/price",
     type: "link",
   },
   {
@@ -47,34 +47,36 @@ const QUICK_MENUS = [
     label: "정액권",
     icon: icoPass,
     bg: "#E7F1FF",
-    type: "charge", // 🔥 이 키만 팝업으로 처리
-  },
-  {
-    key: "snack",
-    label: "간식 신청",
-    icon: icoFood,
-    bg: "#FFE0E0",
-    to: "/snack",
-    type: "link",
+    type: "charge",
   },
 ];
 
-/* 배경은 투명, 위로 당겨서 Hero와 CoreValues 사이에 걸치게 */
+/* ===== Layout ===== */
+
+/* PC: 위/아래 섹션 사이에 살짝 걸치는 느낌
+   모바일: 독립된 흰색 영역(평평한 띠) */
 const Section = styled.section`
   position: relative;
-  margin-top: -36px;     /* 바로 위 HomeHero 밑으로 파고들기 */
-  margin-bottom: -16px;  /* 아래 노란 섹션 쪽으로도 조금 걸치게 */
-  z-index: 3;            /* 배너/노란 배경보다 앞에 나오도록 */
+  margin-top: -36px;
+  margin-bottom: -16px;
+  z-index: 3;
+
+  @media (max-width: 960px) {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    background: #ffffff; /* 모바일: 흰색 배경 블록 */
+  }
 `;
 
-/* 실제 바 위치 */
 const QuickMenuWrap = styled.div`
   position: relative;
   max-width: 960px;
   margin: 0 auto;
   padding: 0 32px;
 
-  @media (key863: 960px) {
+  @media (max-width: 960px) {
     padding: 0 16px;
   }
 `;
@@ -88,15 +90,18 @@ const QuickMenuBar = styled.div`
   display: flex;
   align-items: center;
   gap: 32px;
-  font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 
   @media (max-width: 960px) {
-    border-radius: 24px;
-    padding: 16px 20px;
+    /* 모바일: 카드 느낌 삭제 → 평평하게 */
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 10px;
   }
 `;
 
@@ -105,6 +110,10 @@ const QuickMenuTitle = styled.div`
   font-weight: 700;
   color: #111111;
   white-space: nowrap;
+
+  @media (max-width: 960px) {
+    display: none; /* 모바일: 텍스트 제목 없음 */
+  }
 `;
 
 const QuickMenuList = styled.div`
@@ -116,9 +125,10 @@ const QuickMenuList = styled.div`
 
   @media (max-width: 960px) {
     width: 100%;
-    justify-content: space-between;
-    gap: 16px;
-    limit: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 모바일: 4개 한 줄 */
+    column-gap: 0;
+    row-gap: 14px;
   }
 `;
 
@@ -127,8 +137,9 @@ const QuickMenuItem = styled.button`
   background: none;
   padding: 0;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
@@ -138,31 +149,54 @@ const QuickMenuItem = styled.button`
   &:hover {
     opacity: 0.9;
   }
+
+  @media (max-width: 960px) {
+    width: 100%;
+    align-items: center;
+  }
 `;
 
+/* 🔥 여기: 이미지 크기는 유지, 감싸는 카드(라운드 박스)만 키움 */
 const QuickMenuIcon = styled.span`
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
+  width: 68px;
+  height: 68px;
+  border-radius: 24px;
   background: ${({ $bg }) => $bg || "#f5f5f5"};
   display: inline-grid;
   place-items: center;
 
   img {
-    width: 26px;
-    height: 26px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     display: block;
   }
+
+  @media (max-width: 960px) {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+
+    img {
+      width: 48px;
+      height: 48px; /* 이미지 크기는 그대로 */
+    }
+  }
 `;
 
+/* 🔥 여기: 모바일에서 글씨 2px 줄이기 */
 const QuickMenuLabel = styled.span`
   font-size: 13px;
   font-weight: 600;
   color: #333333;
+  text-align: center;
+
+  @media (max-width: 960px) {
+    font-size: 11px;
+  }
 `;
 
-/* E.164 유틸 (MembershipPurchasePage에서 쓰던 것과 동일) */
+/* ===== util ===== */
 const toE164 = (v) => {
   if (!v) return "";
   let d = String(v).replace(/\D/g, "");
@@ -172,21 +206,23 @@ const toE164 = (v) => {
   return d;
 };
 
+/* ===== Component ===== */
 export default function HomeQuickMenu() {
   const nav = useNavigate();
   const { phoneE164, profile } = useUser() || {};
 
-  // 정액권 팝업 제어
   const [chargeOpen, setChargeOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutPayload, setCheckoutPayload] = useState(null);
 
-  // CheckoutConfirmDialog에서 사용할 주문 생성 로직
   const handleCreateOrder = async (draft) => {
     try {
       const phone = toE164(draft?.buyer?.phoneE164 || phoneE164);
       if (!phone) {
-        return { ok: false, error: new Error("전화번호가 없어 결제를 진행할 수 없어요.") };
+        return {
+          ok: false,
+          error: new Error("전화번호가 없어 결제를 진행할 수 없어요."),
+        };
       }
 
       const res = await createOrderDraft(phone, {
@@ -198,7 +234,10 @@ export default function HomeQuickMenu() {
       });
 
       if (!res?.orderId) {
-        return { ok: false, error: new Error("주문 생성 중 오류가 발생했어요.") };
+        return {
+          ok: false,
+          error: new Error("주문 생성 중 오류가 발생했어요."),
+        };
       }
 
       return { ok: true, orderId: res.orderId };
@@ -214,6 +253,7 @@ export default function HomeQuickMenu() {
         <QuickMenuWrap>
           <QuickMenuBar>
             <QuickMenuTitle>자주 찾는 메뉴</QuickMenuTitle>
+
             <QuickMenuList>
               {QUICK_MENUS.map((m) => (
                 <QuickMenuItem
@@ -221,7 +261,6 @@ export default function HomeQuickMenu() {
                   type="button"
                   onClick={() => {
                     if (m.key === "pass") {
-                      // 🔥 정액권은 팝업 오픈
                       setChargeOpen(true);
                     } else if (m.to) {
                       nav(m.to);
@@ -239,14 +278,12 @@ export default function HomeQuickMenu() {
         </QuickMenuWrap>
       </Section>
 
-      {/* 정액권 충전 팝업 */}
       <CheckoutChargeDialog
         open={chargeOpen}
         onClose={() => setChargeOpen(false)}
         onProceed={(payload) => {
-          // 정액권 팝업에서 "충전하러 가기" 눌렀을 때 → 결제 확인 모달 열기
           const buyerDefault = {
-            name: (profile?.name || ""),
+            name: profile?.name || "",
             phoneE164: toE164(phoneE164),
             email: profile?.email || "",
           };
@@ -261,7 +298,12 @@ export default function HomeQuickMenu() {
         }}
       />
 
-
+      <CheckoutConfirmDialog
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        payload={checkoutPayload}
+        onCreateOrder={handleCreateOrder}
+      />
     </>
   );
 }

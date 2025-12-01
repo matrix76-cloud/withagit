@@ -4,7 +4,7 @@ import { createGlobalStyle } from "styled-components";
 
 export const GlobalFonts = createGlobalStyle`
   :root{
-    --font-round: "Varela Round", "Pretendard", "Noto Sans KR",
+    --font-round: "NanumSquareRound", "Pretendard", "Noto Sans KR",
       -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
       "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
   }

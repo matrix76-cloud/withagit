@@ -23,19 +23,25 @@ const CATS_PRESET = [
     "기타 문의",
 ];
 
-/* 레이아웃 */
+/* ===== 레이아웃 ===== */
 const Wrap = styled.div`
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 40px;
+
   @media (max-width: 860px) {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 24px;
   }
 `;
 
 const Side = styled.aside`
   padding-top: 8px;
+
+  /* 🔸 모바일에서는 카테고리 네비게이터 완전히 숨김 */
+  @media (max-width: 860px) {
+    display: none;
+  }
 `;
 
 const CatList = styled.ul`
@@ -110,7 +116,8 @@ const List = styled.div`
   margin-top: 6px;
 `;
 
-/* 질문 카드 영역 */
+/* ===== 질문 카드 영역 ===== */
+
 const QCard = styled.div`
   border-radius: 18px;
   background: #f7f7f7;
@@ -127,9 +134,16 @@ const Row = styled.div`
   cursor: pointer;
 `;
 
+/* 🔸 태그 위 / 질문 아래로 세로 배치 */
+const QHead = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+`;
+
 const Badge = styled.span`
   display: inline-block;
-  margin-right: 14px;
   padding: 5px 14px;
   border-radius: 999px;
   background: rgba(240, 122, 42, 0.12);
@@ -142,8 +156,12 @@ const Q = styled.span`
   font-size: 17px;
   color: ${text};
   letter-spacing: -0.1px;
-`;
 
+  /* 🔸 모바일에서는 질문 폰트 살짝 줄이기 */
+  @media (max-width: 860px) {
+    font-size: 15px;
+  }
+`;
 const More = styled.span`
   color: #c3cad5;
   font-size: 22px;
@@ -152,7 +170,7 @@ const More = styled.span`
 /* 답변 영역 */
 const A = styled.div`
   margin-top: 10px;
-  padding-left: 36px;
+  padding-left: 4px;      /* 🔸 기존 36px → 태그 위로 올라가서 들여쓰기 줄임 */
   padding-right: 4px;
   color: ${text};
   font-size: 15px;
@@ -196,22 +214,19 @@ export default function FaqSection({
     showSearch = true,
 }) {
     const [items, setItems] = useState([]);
-    const [cat, setCat] = useState(CATS_PRESET[0]); // "공지사항" 기본
+    const [cat, setCat] = useState(CATS_PRESET[0]);
     const [innerQ, setInnerQ] = useState("");
     const [open, setOpen] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 실제 사용할 검색어 = 외부 query 있으면 그걸 우선
-    const effectiveQ =
-        typeof query === "string" ? query : innerQ;
+    const effectiveQ = typeof query === "string" ? query : innerQ;
 
     useEffect(() => {
         let alive = true;
         (async () => {
             setLoading(true);
-            const { faqs } = await getFaqData(); // 서비스에서 전량 로드
+            const { faqs } = await getFaqData(); // 🔸 서버에서 FAQ 데이터 로드
             if (!alive) return;
-            // cat 없는 항목은 "기타 문의"로 정규화
             const normalized = (faqs || []).map((it, idx) => ({
                 ...it,
                 id: it.id || `faq_${idx}`,
@@ -229,9 +244,8 @@ export default function FaqSection({
         const s = (effectiveQ || "").trim().toLowerCase();
         let list = items;
         if (cat && cat !== "전체") list = list.filter((x) => x.cat === cat);
-        if (s) list = list.filter((x) =>
-            (x.q + " " + x.a).toLowerCase().includes(s)
-        );
+        if (s)
+            list = list.filter((x) => (x.q + " " + x.a).toLowerCase().includes(s));
         return list;
     }, [items, cat, effectiveQ]);
 
@@ -242,7 +256,7 @@ export default function FaqSection({
 
     return (
         <Wrap>
-            {/* 좌측 카테고리: 고정 프리셋을 항상 노출 */}
+            {/* 좌측 카테고리 — 데스크탑에서만 노출 */}
             <Side>
                 <CatList>
                     {CATS_PRESET.map((c) => (
@@ -262,7 +276,7 @@ export default function FaqSection({
             </Side>
 
             <Main>
-                {/* 검색바: 상단 헤더에서 쓸 때는 showSearch=false 로 숨김 */}
+                {/* 검색바: 상단 Hero에서 쓸 때는 showSearch=false 로 숨김 */}
                 {showSearch && (
                     <SearchBar>
                         <SearchIcon />
@@ -293,10 +307,11 @@ export default function FaqSection({
                                         aria-expanded={on}
                                         onClick={() => setOpen(on ? null : it.id)}
                                     >
-                                        <div>
+                                        {/* 🔸 카테고리 뱃지 위 / 질문 아래 */}
+                                        <QHead>
                                             <Badge>{it.cat}</Badge>
                                             <Q>{it.q}</Q>
-                                        </div>
+                                        </QHead>
                                         <More>{on ? "−" : "+"}</More>
                                     </Row>
                                     <Collapsible open={on}>

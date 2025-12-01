@@ -55,6 +55,18 @@ import PrivacyPage from './pages/PrivacyPage.jsx';
 import HelpLanding from './pages/HelpLanding.jsx';
 import HelpFeedback from './pages/HelpFeedback.jsx';
 import MembershipPurchasePage from './pages/MembershipPurchasePage.jsx';
+import AccountHomePage from './pages/mobile/AccountHomePage.jsx';
+import AccountProfilePage from './pages/mobile/AccountProfilePage.jsx';
+import AccountChildrenPage from './pages/mobile/AccountChildrenPage.jsx';
+import AccountMembershipsPage from './pages/mobile/AccountMembershipsPage.jsx';
+import AccountPaymentsPage from './pages/mobile/AccountPaymentsPage.jsx';
+import AccountUsagePage from './pages/mobile/AccountUsagePage.jsx';
+import AccountPickupsPage from './pages/mobile/AccountPickupsPage.jsx';
+import AccountProgramsPage from './pages/mobile/AccountProgramsPage.jsx';
+import AccountMobileFAQPage from './pages/mobile/AccountMobileFAQPage.jsx';
+import AccountNewsPage from './pages/mobile/AccountNewsPage.jsx';
+
+import SplashPage from "./pages/SplashPage.jsx";
 
 export default function Router() {
     /* ===== 유틸: 세션/가드 ===== */
@@ -81,10 +93,13 @@ export default function Router() {
         <>
             <GlobalFonts />
             <ScrollToTop />
+
             <Routes>
                 {/* 🔶 일반 페이지: 헤더/푸터 포함 */}
                 <Route element={<MainLayout />}>
-                    <Route path="/" element={<HomePage />} />
+                    {/* 🔺 홈은 이제 /home */}
+                    <Route path="/home" element={<HomePage />} />
+
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/about/care" element={<CarePage />} />
                     <Route path="/about/time" element={<TimePage />} />
@@ -132,14 +147,27 @@ export default function Router() {
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/privacy" element={<PrivacyPage />} />
                     <Route path="/help/feedback" element={<HelpFeedback />} />
+                    <Route path="/m/account" element={<AccountHomePage />} />
+                    <Route path="/m/account/profile" element={<AccountProfilePage />} />
+                    <Route path="/m/account/children" element={<AccountChildrenPage />} />
+                    <Route path="/m/account/memberships" element={<AccountMembershipsPage />} />
+                    <Route path="/m/account/payments" element={<AccountPaymentsPage />} />
+                    <Route path="/m/account/usage" element={<AccountUsagePage />} />
+                    <Route path="/m/account/pickups" element={<AccountPickupsPage />} />
+                    <Route path="/m/account/programs" element={<AccountProgramsPage />} />
+                    <Route path="/m/account/news" element={<AccountNewsPage />} />
+                    <Route path="/m/faq" element={<AccountMobileFAQPage />} />
 
+                    <Route path="/suggest" element={<SuggestPage />} />
 
                     {/* 보호 라우트 */}
                     <Route path="/mypage" element={<RequireAuth><MyPage /></RequireAuth>} />
                 </Route>
 
-                {/* 🔷 콜백 전용: 헤더/푸터 제거 */}
+                {/* 🔷 헤더/푸터 없는 전용 페이지들 */}
                 <Route element={<EmptyLayout />}>
+                    {/* 루트 진입 → 스플래시 */}
+                    <Route path="/" element={<SplashPage />} />
                     <Route path="/auth/callback/kakao" element={<AuthKakaoCallback />} />
                 </Route>
             </Routes>

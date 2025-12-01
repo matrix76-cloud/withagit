@@ -18,9 +18,10 @@
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <script type="text/javascript"
-    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=fa8b2ab6ad866b7a83369650e8355ade&libraries=services,clusterer"></script>
-
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=f3884aa215c7467194b2bdaa264ec201&libraries=services,clusterer"
+    onload="console.log('[KAKAO-MAPS] loaded:', !!window.kakao, !!(window.kakao && window.kakao.maps))"
+    onerror="console.error('[KAKAO-MAPS] load failed')"></script>
+    
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
     onload="console.log('[KAKAO] SDK loaded:', !!window.Kakao)"
     onerror="console.error('[KAKAO] SDK load failed')"></script>

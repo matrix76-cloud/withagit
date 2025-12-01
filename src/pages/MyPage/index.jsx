@@ -15,7 +15,7 @@ import { collection, getDocs, query, where, orderBy, limit as qlimit } from "fir
 import { getStorage, ref as storageRef, uploadString, getDownloadURL } from "firebase/storage";
 
 /* ===== 공통 정의 ===== */
-import { ORDER_STATUS, RESERVATION_STATUS, RESERVATION_QUERY } from "../../constants/defs";
+import { ORDER_STATUS, RESERVATION_STATUS, RESERVATION_QUERY, ORDER_TYPE } from "../../constants/defs";
 import {
     MEMBERSHIP_KIND,
     MEMBERSHIP_STATUS,
@@ -104,7 +104,7 @@ const NavBtn = styled.button`
   justify-content:center;
   padding: 12px 20px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 10px;
   cursor: pointer;
   background: ${({ active }) => (active ? "#e86a20" : "transparent")};
   color: ${({ active }) => (active ? "#ffffff" : "#b3b3b3")};
@@ -114,7 +114,7 @@ const NavBtn = styled.button`
 
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
 
   transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
 
@@ -2378,55 +2378,86 @@ export default function MyPage() {
         if (!phoneE164) return;
         setPickupsLoading(true);
         try {
-            const col = collection(
-                db,
-                "members",
-                phoneE164,
-                "reservations"
+            console.group("[MyPage] loadPickups (orders/PICKUP)");
+            console.log("phoneE164:", phoneE164);
+
+            const col = collection(db, "members", phoneE164, "orders");
+            const qy = query(
+                col,
+                where("type", "==", ORDER_TYPE.PICKUP), // ★ PICKUP 주문만
+                orderBy("createdAt", "desc"),
+                qlimit(50)
             );
-            const snap = await getDocs(
-                query(col, orderBy("createdAt", "desc"), qlimit(200))
-            ).catch(() => null);
+            const snap = await getDocs(qy).catch((err) => {
+                console.error("[MyPage] loadPickups getDocs error:", err);
+                return null;
+            });
 
-            const rows = snap
-                ? snap.docs.map((d) => {
-                    const x = d.data() || {};
-                    const dateStr =
-                        x.date && x.hour != null && x.minute != null
-                            ? `${x.date} ${String(x.hour).padStart(2, "0")}:${String(
-                                x.minute
-                            ).padStart(2, "0")}`
-                            : x.createdAt;
-
-                    const s = String(x.status || "").toLowerCase();
-                    let statusLabel = "픽업 신청";
-                    if (
-                        s === "done" ||
-                        s === "completed" ||
-                        s === "complete"
-                    )
-                        statusLabel = "픽업 신청 완료";
-                    else if (s === "canceled" || s === "cancelled")
-                        statusLabel = "취소됨";
-                    else if (s === "requested" || s === "request")
-                        statusLabel = "픽업 신청";
-
-                    return {
+            console.log(
+                "[MyPage] loadPickups raw order docs:",
+                snap
+                    ? snap.docs.map((d) => ({
                         id: d.id,
-                        when: dateStr,
-                        route: `${x.origin?.name || "-"} → ${x.dest?.name || "-"
-                            }`,
-                        childName: x.childName || x.childId || "-",
-                        fare: x.fareKRW || 0,
-                        statusLabel,
-                    };
-                })
-                : [];
+                        data: d.data(),
+                    }))
+                    : "no snapshot"
+            );
+
+            const rows = [];
+
+            if (snap) {
+                snap.docs.forEach((docSnap) => {
+                    const v = docSnap.data() || {};
+                    const meta = v.meta || {};
+                    const pickups = Array.isArray(meta.pickups)
+                        ? meta.pickups
+                        : [];
+
+                    if (pickups.length > 0) {
+                        // ✅ 새 구조: meta.pickups[] 기준(나중 확장용)
+                        pickups.forEach((p, idx) => {
+                            const whenStr =
+                                p.date && p.timeText
+                                    ? `${p.date} ${p.timeText}`
+                                    : v.createdAt || null;
+
+                            rows.push({
+                                id: `${docSnap.id}_${idx}`,
+                                when: whenStr,
+                                route: `${p.startLabel || "-"} → ${p.endLabel || "-"
+                                    }`,
+                                childName: p.childName || p.childId || "-",
+                                fare: p.priceKRW || v.amountKRW || 0,
+                                statusLabel: "픽업 신청 완료",
+                            });
+                        });
+                    } else {
+                        // ✅ 지금 상태: meta 비어 있을 때 — 주문 1건을 픽업 1건으로 표시
+                        rows.push({
+                            id: docSnap.id,
+                            when: v.createdAt || null,
+                            route: "픽업 예약",             // 지금은 라벨만
+                            childName: "-",                 // 나중에 meta 붙이면 교체
+                            fare: v.amountKRW || 0,
+                            statusLabel: "픽업 신청 완료",
+                        });
+                    }
+                });
+            }
+
+            console.log("[MyPage] loadPickups mapped rows:", rows);
+            console.groupEnd();
+
             setPickupsRows(rows);
         } finally {
             setPickupsLoading(false);
         }
     };
+
+
+
+
+
 
     const loadCancels = async () => {
         if (!phoneE164) return;
@@ -2490,52 +2521,102 @@ export default function MyPage() {
         }
     };
 
- const loadReserves = async () => {
-    if (!phoneE164) return;
-    setReserveLoading(true);
-    try {
-        // PROGRAM 타입 주문만 가져오기
-        const orders = await listProgramOrders(phoneE164, { limit: 50 });
+    const loadReserves = async () => {
+        if (!phoneE164) return;
+        setReserveLoading(true);
+        try {
+            console.group("[MyPage] loadReserves (orders/PROGRAM)");
+            console.log("phoneE164:", phoneE164);
 
-        const rows = [];
-        orders.forEach((o) => {
-            const status = o.status || ORDER_STATUS.PAID;
-            const statusLabel =
-                status === ORDER_STATUS.PAID
-                    ? "결제완료"
-                    : status === ORDER_STATUS.PENDING
-                    ? "결제대기"
-                    : status;
+            const col = collection(db, "members", phoneE164, "orders");
+            const qy = query(
+                col,
+                where("type", "==", ORDER_TYPE.PROGRAM), // ★ PROGRAM 주문만
+                orderBy("createdAt", "desc"),
+                qlimit(50)
+            );
 
-            const bookings = Array.isArray(o.bookings) ? o.bookings : [];
-
-            bookings.forEach((b, idx) => {
-                rows.push({
-                    id: `${o.id}_${idx}`,
-                    orderId: o.id,
-                    // 일시: 사람이 보기 좋게 라벨 위주로 구성
-                    when: `${b.dateLabel || b.date || ""} ${b.slotLabel || ""}`.trim() ||
-                        o.createdAt ||
-                        "",
-                    programTitle: [
-                        b.programTitle || "프로그램",
-                        b.slotTitle || "",
-                    ]
-                        .filter(Boolean)
-                        .join(" · "),
-                    childName: b.childName || "",
-                    childId: b.childId || "",
-                    status,
-                    statusLabel,
-                });
+            const snap = await getDocs(qy).catch((err) => {
+                console.error("[MyPage] loadReserves getDocs error:", err);
+                return null;
             });
-        });
 
-        setReserveRows(rows);
-    } finally {
-        setReserveLoading(false);
-    }
-};
+            console.log(
+                "[MyPage] loadReserves raw program orders:",
+                snap
+                    ? snap.docs.map((d) => ({
+                        id: d.id,
+                        data: d.data(),
+                    }))
+                    : "no snapshot"
+            );
+
+            const rows = [];
+
+            if (snap) {
+                snap.docs.forEach((docSnap) => {
+                    const v = docSnap.data() || {};
+                    const status = v.status || ORDER_STATUS.PAID;
+                    const statusLabel =
+                        status === ORDER_STATUS.PAID
+                            ? "결제완료"
+                            : status === ORDER_STATUS.PENDING
+                                ? "결제대기"
+                                : status;
+
+                    const meta = v.meta || {};
+                    const bookings = Array.isArray(meta.bookings)
+                        ? meta.bookings
+                        : [];
+
+                    if (bookings.length > 0) {
+                        // ✅ 새 구조: meta.bookings[] 기준
+                        bookings.forEach((b, idx) => {
+                            const whenLabel =
+                                `${b.dateLabel || b.date || ""} ${b.slotLabel || ""
+                                    }`.trim() || v.createdAt || "";
+
+                            rows.push({
+                                id: `${docSnap.id}_${idx}`,
+                                orderId: docSnap.id,
+                                when: whenLabel,
+                                programTitle: [
+                                    b.programTitle || "프로그램",
+                                    b.slotTitle || "",
+                                ]
+                                    .filter(Boolean)
+                                    .join(" · "),
+                                childName: b.childName || "",
+                                childId: b.childId || "",
+                                status,
+                                statusLabel,
+                            });
+                        });
+                    } else {
+                        // ✅ meta.bookings 없는 주문도 1건짜리 예약으로 fallback
+                        rows.push({
+                            id: docSnap.id,
+                            orderId: docSnap.id,
+                            when: v.createdAt || "",
+                            programTitle:
+                                v.product?.name || "프로그램 예약",
+                            childName: meta.childName || "",
+                            childId: meta.childId || "",
+                            status,
+                            statusLabel,
+                        });
+                    }
+                });
+            }
+
+            console.log("[MyPage] loadReserves mapped rows:", rows);
+            console.groupEnd();
+
+            setReserveRows(rows);
+        } finally {
+            setReserveLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!initialized || !phoneE164) return;

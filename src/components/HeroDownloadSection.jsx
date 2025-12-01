@@ -5,8 +5,11 @@
 import React from "react";
 import styled from "styled-components";
 
-
 import heroPhoneImage from "../assets/Layer3/Frame70.png";
+
+// 🔸 형이 준비할 아이콘 이미지 (파일명/경로는 형이 실제에 맞게 수정하면 됨)
+import googlePlayIcon from "../assets/Layer3/icon-googleplay.png";
+import appStoreIcon from "../assets/Layer3/icon-appstore.png";
 
 const Section = styled.section`
   width: 100%;
@@ -44,12 +47,11 @@ const LeftImage = styled.div`
     max-width: 520px;
     height: auto;
     border-radius: 40px;
-
   }
 
   @media (max-width: 960px) {
     img {
-      max-width: 420px;
+      max-width: 380px;
     }
   }
 `;
@@ -61,6 +63,10 @@ const RightText = styled.div`
 
   @media (max-width: 960px) {
     width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 `;
 
@@ -69,15 +75,23 @@ const Eyebrow = styled.p`
   font-size: 15px;
   font-weight: 700;
   color: #f07a2a;
+
+  @media (max-width: 960px) {
+    font-size: 14px;
+  }
 `;
 
 const Heading = styled.h2`
   margin: 0 0 16px;
   font-size: clamp(28px, 3.8vw, 40px);
   line-height: 1.35;
-  font-weight: 900;
   color: #1b130c;
   letter-spacing: -0.03em;
+
+  @media (max-width: 960px) {
+    font-size: 22px;
+    line-height: 1.4;
+  }
 `;
 
 const Body = styled.p`
@@ -85,17 +99,21 @@ const Body = styled.p`
   font-size: 15px;
   line-height: 1.7;
   color: #4a3b2a;
+
+  @media (max-width: 960px) {
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
 `;
 
 const ButtonsRow = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  flex-wrap: nowrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 `;
 
 const Highlight = styled.span`
@@ -109,23 +127,30 @@ const Highlight = styled.span`
     position: absolute;
     left: -4px;
     right: -4px;
-    bottom: 6px;        /* 글자와의 거리 */
-    height: 55%;        /* 아래 절반 정도 채우기 */
-    background: #fbd889;/* 다른 섹션이랑 맞춘 노랑 하이라이트 */
+    bottom: 6px;
+    height: 55%;
+    background: #fbd889;
     border-radius: 999px;
     z-index: -1;
   }
 `;
 
+/* 🔹 아이콘 이미지 자리 */
+const StoreIcon = styled.img`
+  width: 18px;
+  height: 18px;
+  display: block;
+  object-fit: contain;
+`;
 
 const StoreButton = styled.a`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 26px;
+  padding: 12px 26px;
   border-radius: 999px;
-  background: #f07a2a;
+  background: #f07a2a; /* 피그마 primary 주황 */
   color: #ffffff;
   font-size: 14px;
   font-weight: 800;
@@ -133,10 +158,8 @@ const StoreButton = styled.a`
   letter-spacing: 0.04em;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
   cursor: pointer;
-
-  svg {
-    display: block;
-  }
+  white-space: nowrap;
+  min-width: 150px;
 
   &:hover {
     filter: brightness(1.03);
@@ -150,70 +173,54 @@ const StoreButton = styled.a`
 `;
 
 const StoreButtonGhost = styled(StoreButton)`
-  background: transparent;
-  color: #f07a2a;
-  border: 1.5px solid rgba(240, 122, 42, 0.8);
-  box-shadow: none;
+  /* 두 번째 버튼도 같은 주황 단색으로 */
+  background: #f07a2a;
+  color: #ffffff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  border: none;
 
   &:hover {
-    background: rgba(240, 122, 42, 0.06);
+    filter: brightness(1.03);
+    transform: translateY(-1px);
   }
 `;
 
 export default function HeroDownloadSection() {
-    return (
-        <Section>
-            <Inner>
-                {/* 왼쪽: 통 이미지 */}
-                <LeftImage>
-                    <img src={heroPhoneImage} alt="위드아지트 앱 미리보기" />
-                </LeftImage>
+  return (
+    <Section>
+      <Inner>
+        {/* 왼쪽: 통 이미지 */}
+        <LeftImage>
+          <img src={heroPhoneImage} alt="위드아지트 앱 미리보기" />
+        </LeftImage>
 
-                {/* 오른쪽: 카피 + 버튼 */}
-                <RightText>
-                    <Eyebrow>우리 아이의 하루를 지켜보세요.</Eyebrow>
-                    <Heading>
-                        <Highlight>믿을 수 있는 돌봄,</Highlight>
-                        <br />
-                        손 안에서 시작됩니다.
-                    </Heading>
-                    <Body>
-                        앱스토어 또는 구글플레이스토어에서
-                        <br />
-                        간편하게 설치하세요.
-                    </Body>
+        {/* 오른쪽: 카피 + 버튼 */}
+        <RightText>
+          <Eyebrow>우리 아이의 하루를 지켜보세요.</Eyebrow>
+          <Heading>
+            <Highlight>믿을 수 있는 돌봄,</Highlight>
+            <br />
+            손 안에서 시작됩니다.
+          </Heading>
+          <Body>
+            앱스토어 또는 구글플레이스토어에서
+            <br />
+            간편하게 설치하세요.
+          </Body>
 
-                    <ButtonsRow>
-                        <StoreButton
-                            href="#"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    fill="currentColor"
-                                    d="M3 4.27v15.46c0 .36.09.68.24.97L13.39 12 3.24 3.3A2 2 0 0 0 3 4.27Zm1.86 16.84L15.05 12 5 20.11c.54.37 1.24.44 1.86.99Zm13.2-3.59L16.02 13l-2.23 2.02 4.21 4.21c.75-.1 1.39-.54 1.79-1.18l-1.73-1.53ZM15.02 11l3.99-3.73l1.73-1.53a2.2 2.2 0 0 0-1.79-1.18L13.79 8.58z"
-                                />
-                            </svg>
-                            구글 플레이
-                        </StoreButton>
+          <ButtonsRow>
+            <StoreButton href="#" target="_blank" rel="noreferrer">
+              <StoreIcon src={googlePlayIcon} alt="구글 플레이" />
+              구글 플레이
+            </StoreButton>
 
-                        <StoreButtonGhost
-                            href="#"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    fill="currentColor"
-                                    d="M16.7 2c-1.1.08-2.4.75-3.15 1.61c-.69.8-1.26 2.09-1.1 3.3h.08c1.2 0 2.43-.66 3.18-1.52c.7-.79 1.23-2.08 1.09-3.39Zm3.12 7.29c-1.74-.07-3.23 1-4.07 1c-.85 0-2.14-.96-3.52-.93c-1.8.03-3.45 1.05-4.37 2.67c-1.87 3.24-.48 8.03 1.32 10.66c.88 1.28 1.92 2.71 3.3 2.66c1.32-.05 1.82-.86 3.42-.86c1.61 0 2.05.86 3.45.83c1.42-.02 2.32-1.29 3.2-2.58c1.01-1.48 1.43-2.92 1.45-3c-.03-.01-2.8-1.07-2.83-4.21c-.02-2.63 2.15-3.89 2.25-3.95c-1.23-1.8-3.16-2.01-3.76-2.04Z"
-                                />
-                            </svg>
-                            앱 스토어
-                        </StoreButtonGhost>
-                    </ButtonsRow>
-                </RightText>
-            </Inner>
-        </Section>
-    );
+            <StoreButtonGhost href="#" target="_blank" rel="noreferrer">
+              <StoreIcon src={appStoreIcon} alt="앱 스토어" />
+              앱 스토어
+            </StoreButtonGhost>
+          </ButtonsRow>
+        </RightText>
+      </Inner>
+    </Section>
+  );
 }

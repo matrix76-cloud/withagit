@@ -175,6 +175,9 @@ const LinkBtn = styled.button`
 
 function PaymentTermsModal({ open, onClose }) {
     if (!open) return null;
+
+
+
     return createPortal(
         <TermsBg onClick={onClose}>
             <TermsCard onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="전자상거래 이용약관">

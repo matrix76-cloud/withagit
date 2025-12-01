@@ -19,6 +19,9 @@ import * as membershipService from "./membershipService";
 /* =========================
  * Utils
  * ========================= */
+/* =========================
+ * Utils
+ * ========================= */
 const nowMs = () => Date.now();
 const randomId = (len = 6) =>
     Array.from({ length: len }, () => Math.floor(Math.random() * 36).toString(36)).join("");
@@ -32,9 +35,10 @@ function assertOrderType(t) {
         ORDER_TYPE.AGITZ,
         ORDER_TYPE.FAMILY,
         ORDER_TYPE.TIMEPASS,
-        ORDER_TYPE.CASHPASS, // ✅ 정액권
-        ORDER_TYPE.POINTS,   // (지갑 충전형, 멤버십 생성 없음)
-        ORDER_TYPE.PROGRAM,  // ✅ 프로그램 예약(멤버십 생성 없음)
+        ORDER_TYPE.CASHPASS, // 정액권
+        ORDER_TYPE.POINTS,   // 지갑 충전형
+        ORDER_TYPE.PROGRAM,  // 프로그램 예약
+        ORDER_TYPE.PICKUP,   // ★ 픽업 예약 (새로 추가)
     ].includes(t);
     if (!ok) throw new Error(`invalid ORDER_TYPE: ${t}`);
 }
@@ -42,6 +46,7 @@ function assertAmountKRW(v) {
     const n = Number(v || 0);
     if (!(n > 0)) throw new Error("amountKRW must be > 0");
 }
+
 
 /* =========================
  * Public API
@@ -64,6 +69,14 @@ function assertAmountKRW(v) {
  */
 export async function createOrderDraft(phoneE164, payload = {}) {
     assertPhone(phoneE164);
+
+    console.group("[orderService] createOrderDraft");
+    console.log("phoneE164:", phoneE164);
+    console.log("payload.type:", payload?.type);
+    console.log("payload.meta?.kind:", payload?.meta?.kind);
+    console.log("payload:", payload);
+    console.groupEnd();
+
 
     const {
         type,

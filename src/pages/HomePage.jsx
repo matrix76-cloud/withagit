@@ -27,8 +27,9 @@ import HeroDownloadSection from "../components/HeroDownloadSection";
 import SpotsSection from "../components/SpotsSection";
 import CallToActionSection from "../components/CallToActionSection";
 import Banner from "../components/Banner";
-import Layer1 from "../components/Layer1";
 import HomeQuickMenu from "../components/HomeQuickMenu";
+import CoreValue from "../components/CoreValue";
+import { useNavigate } from "react-router-dom";
 
 
 const Wrap = styled.main`
@@ -37,13 +38,32 @@ const Wrap = styled.main`
 `;
 
 export default function HomePage() {
+
+    const navigate = useNavigate();
+
+    const onClickViewAll = () => {
+        navigate("/Space");
+    }
+
+    const onClickSignup = () =>{
+        navigate("/signup");
+    }
+
+    const onClickContact = () => {
+        navigate("/m/faq");
+    }
+
+    const onClickSuggest = () => {
+        navigate("/suggest");
+    }
+
     return (
         <Wrap>
             <Banner />
        
             <HomeQuickMenu />           {/* ⬅️ 여기! */}
 
-            <Layer1/>
+            <CoreValue/>
 
             <CoreValuesSplit
                 label="CORE VALUES"
@@ -56,9 +76,9 @@ export default function HomePage() {
             <HeroDownloadSection />
 
 
-            <SpotsSection />
+            <SpotsSection onClickViewAll={onClickViewAll} onClickSuggest={onClickSuggest} />
 
-            <CallToActionSection />
+            <CallToActionSection onClickContact={onClickContact} onClickSignup={onClickSignup} />
     
     
 

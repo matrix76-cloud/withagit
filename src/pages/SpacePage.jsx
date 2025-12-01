@@ -1,157 +1,171 @@
 /* eslint-disable */
 // /src/pages/SpacePageSets.jsx
+// Withagit — 아지트 지점 소개 (PC + 모바일 공통, Figma 스타일)
+
 import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import { listIntroSpots } from "../services/introSpotsService";
 
 /* ===== 공통 레이아웃 ===== */
+
 const Section = styled.section`
-  background: #fff;
-  padding: 56px 16px;
-  min-height : 900px;
+  min-height: 100vh;
+  padding: 56px 16px 80px;
+  background: radial-gradient(circle at top, #fffaf0 0%, #f5f7fb 42%, #f3f4f6 100%);
+  box-sizing: border-box;
+
+  @media (max-width: 720px) {
+    padding: 36px 16px 64px;
+  }
 `;
+
 const Wrap = styled.div`
-  max-width: ${({ theme }) => theme?.sizes?.container || "1120px"};
+  max-width: 1120px;
   margin: 0 auto;
   display: grid;
   gap: 24px;
 `;
-const Head = styled.div`display: grid; gap: 6px;`;
+
+/* ===== 모바일 전용 상단 헤더 (뒤로가기) ===== */
+
+const MobileHeaderBar = styled.div`
+  display: none;
+
+  @media (max-width: 720px) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+`;
+
+const BackButton = styled.button`
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.7);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  cursor: pointer;
+  color: #4b5563;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+
+  &:active {
+    background: #e5e7eb;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
+  }
+`;
+
+const MobileHeaderTitle = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+`;
+
+/* 헤더 (공통) */
+
+const Head = styled.div`
+  display: grid;
+  gap: 6px;
+`;
+
 const Title = styled.h1`
   margin: 0;
-  color: ${({ theme }) => theme?.colors?.navy || "#1A2B4C"};
+  color: #141b2f;
   font-weight: 900;
-  font-size: clamp(22px, 3.2vw, 30px);
-  letter-spacing: -0.2px;
+  font-size: clamp(24px, 3vw, 30px);
+  letter-spacing: -0.04em;
 `;
+
 const Sub = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme?.colors?.navy || "#1A2B4C"};
-  opacity: .7;
+  color: #4b5563;
+  font-size: 14px;
 `;
 
-/* ===== 세트/행/슬롯 ===== */
-const SetBlock = styled.div`display: grid; gap: 14px;`;
-const Row = styled.div`
+/* ===== 지점 카드 리스트 ===== */
+
+const BranchList = styled.div`
+  margin-top: 16px;
   display: grid;
-  grid-template-columns: repeat(${({ $cols }) => $cols}, 1fr);
-  gap: 12px;
+  gap: 18px;
 `;
 
-/* 오버레이 (하단에서 슬라이드 인) */
-const Overlay = styled.div`
-  position: absolute; left: 0; right: 0; bottom: 0;
-  display: grid; align-content: end;
-  padding: 16px;
-  height: 40%;
-  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.68) 100%);
-  transform: translateY(10px);
-  opacity: 0;
-  transition: opacity 200ms ease, transform 200ms cubic-bezier(.2,.65,.2,1);
-  pointer-events: none;
-  @media (max-width: 640px) { opacity: 1; transform: none; height: 42%; }
-`;
-
-const CapTitle = styled.div`
-  color: #fff; font-weight: 900;
-  font-size: clamp(16px, 1.7vw, 20px);
-  letter-spacing: -0.2px; line-height: 1.2;
-`;
-const CapSub = styled.div` margin-top: 4px; color: rgba(255,255,255,.9); font-size: 12px; line-height: 1.35; `;
-const Badge = styled.span`
-  display: inline-grid; place-items: center;
-  height: 18px; padding: 0 8px; border-radius: 999px;
-  background: rgba(255,255,255,.92);
-  color: ${({ theme }) => theme?.colors?.navy || "#1A2B4C"};
-  font-size: 11px; font-weight: 800;
-  margin-bottom: 8px; width: max-content;
-`;
-
-/* 카드(슬롯) */
-const Slot = styled.div`
-  position: relative;
-  border-radius: 14px;
+// 공통 카드 베이스
+const CardBase = styled.article`
+  border-radius: 32px;
   overflow: hidden;
-  background: #eef2f6;
-  box-shadow: 0 10px 24px rgba(0,0,0,.06);
-  aspect-ratio: ${({ $ratio }) => $ratio || "4 / 3"};
 
-  /* 등장 애니메이션 */
-  opacity: ${({ $show }) => ($show ? 1 : 0)};
-  transform: translateY(${({ $show }) => ($show ? "0" : "10px")});
-  transition: opacity 520ms ease ${({ $delay = 0 }) => $delay}ms,
-              transform 520ms cubic-bezier(.2,.65,.2,1) ${({ $delay = 0 }) => $delay}ms;
-  will-change: opacity, transform;
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none; opacity: 1; transform: none;
-  }
-
-  img {
-    width: 100%; height: 100%;
-    object-fit: cover; display: block;
-    transition: transform .22s cubic-bezier(.2,.65,.2,1);
-    will-change: transform;
-  }
-  &:hover img, &:focus-within img { transform: scale(1.05); }
-  &:hover ${Overlay}, &:focus-within ${Overlay} { opacity: 1; transform: translateY(0); }
-`;
-
-
-const SpotInfo = styled.div`
-  padding: 14px 18px 18px 18px;
-  background: #ffe9a7;
-  border-radius: 0 0 36px 36px;
-`;
-
-const SpotName = styled.div`
-  font-size: 15px;
-  font-weight: 800;
-  color: #342313;
-  margin-bottom: 6px;
-`;
-
-const SpotLocationRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #6b4b2b;
-`;
-
-const CardBase = styled.div`
-  position: relative;
-  border-radius: 36px;
-  overflow: hidden;
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.08),
-    0 6px 14px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  min-height: 260px;
+  max-width: 640px;
+  margin: 0 auto;
 
-  @media (max-width: 960px) {
-    min-height: 0;
+  @media (max-width: 720px) {
+    border-radius: 26px;
+    width: 90%;
+  }
+`;
+
+/* 지점 카드 */
+
+const BranchCard = styled(CardBase)``;
+
+const BranchHero = styled.div`
+  position: relative;
+  height: 210px;
+  background: #e5e7eb;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @media (max-width: 720px) {
+    height: 190px;
   }
 `;
 
 const StatusPill = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 6px 11px;
   border-radius: 999px;
-  background: #ff7e32;
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
+  color: #b45309;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
 `;
 
-const StatusPillDark = styled(StatusPill)`
-  background: rgba(255, 255, 255, 0.22);
+const BranchInfo = styled.div`
+  background: #ffe9a7;
+  padding: 14px 18px 18px;
+  border-radius: 0 0 32px 32px;
+  color: #4b3a2a;
 `;
 
-const LocationIcon = () => (
+const BranchName = styled.div`
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 6px;
+`;
+
+const BranchLocRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+`;
+
+const LocIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
     <path
       fill="currentColor"
@@ -160,21 +174,7 @@ const LocationIcon = () => (
   </svg>
 );
 
-
-
-const CardsRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-
-/* ===== 2번째 카드 — Coming Soon! + 하단 크림 인포 영역 ===== */
+/* ===== Coming Soon 카드 ===== */
 
 const ComingCard = styled(CardBase)`
   background: radial-gradient(circle at 0% 0%, #544032 0%, #2b211c 60%);
@@ -189,13 +189,16 @@ const ComingUpper = styled.div`
   flex-direction: column;
 `;
 
-const ComingFooter = styled.div`
-  margin-top: 24px;
-  background: #ffe5aa;
-  padding: 14px 24px 18px;
-  border-radius: 0 0 36px 36px;
-  color: #4b3a2a;
-  font-size: 13px;
+const ComingStatus = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #f9fafb;
+  font-size: 11px;
+  font-weight: 700;
 `;
 
 const ComingTitleText = styled.div`
@@ -203,6 +206,20 @@ const ComingTitleText = styled.div`
   font-size: 30px;
   font-weight: 900;
   line-height: 1.3;
+
+  @media (max-width: 720px) {
+    margin-top: 30px;
+    font-size: 26px;
+  }
+`;
+
+const ComingFooter = styled.div`
+  margin-top: 24px;
+  background: #ffe5aa;
+  padding: 14px 24px 18px;
+  border-radius: 0 0 32px 32px;
+  color: #4b3a2a;
+  font-size: 13px;
 `;
 
 const ComingBottomName = styled.div`
@@ -210,11 +227,11 @@ const ComingBottomName = styled.div`
   margin-bottom: 4px;
 `;
 
-const ComingBottomLoc = styled(SpotLocationRow)`
+const ComingBottomLoc = styled(BranchLocRow)`
   color: #4b3a2a;
 `;
 
-/* ===== 3번째 카드 — 다음 아지트 제안 ===== */
+/* ===== 제안 카드 ===== */
 
 const SuggestCard = styled(CardBase)`
   background: radial-gradient(circle at 0% 0%, #5b4332 0%, #2b211c 60%);
@@ -223,17 +240,16 @@ const SuggestCard = styled(CardBase)`
 `;
 
 const SuggestInner = styled.div`
-  flex: 1;
-  padding: 22px 24px 24px 24px;
+  padding: 22px 24px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  gap: 18px;
 `;
 
 const SuggestTopLabel = styled.div`
   font-size: 12px;
   color: #f7e6c6;
-  margin-bottom: 14px;
 `;
 
 const SuggestMain = styled.div`
@@ -247,12 +263,12 @@ const SuggestMain = styled.div`
 `;
 
 const SuggestButtonWrap = styled.div`
-  margin-top: 30px;
   display: flex;
-  justify-content: center;   /* ⬅️ 버튼을 카드 가운데로 */
+  justify-content: center;
 `;
+
 const SuggestButton = styled.button`
-  min-width: 260px;          /* ⬅️ 가로폭 어느 정도 고정 */
+  min-width: 260px;
   padding: 13px 26px;
   border-radius: 999px;
   border: none;
@@ -275,218 +291,147 @@ const SuggestButton = styled.button`
   }
 `;
 
-/* ===== 그리드 패턴 정의 ===== */
-const SETS = [
-  { key: "S1", rows: [{ cols: 3, ratios: ["16/10", "16/10", "16/10"] }, { cols: 4, ratios: ["4/3", "4/3", "4/3", "4/3"] }] },
-  { key: "S2", rows: [{ cols: 4, ratios: ["4/3", "4/3", "4/3", "4/3"] }, { cols: 3, ratios: ["16/10", "16/10", "16/10"] }] },
-  { key: "S3", rows: [{ cols: 2, ratios: ["16/9", "16/9"] }, { cols: 3, ratios: ["1/1", "1/1", "1/1"] }, { cols: 2, ratios: ["4/3", "4/3"] }] },
-  { key: "S5", rows: [{ cols: 3, ratios: ["4/3", "4/3", "4/3"] }, { cols: 2, ratios: ["16/9", "16/9"] }, { cols: 3, ratios: ["4/3", "4/3", "4/3"] }] },
-  { key: "R4", rows: [{ cols: 4, ratios: ["4/3", "4/3", "4/3", "4/3"] }] },
-  { key: "R3", rows: [{ cols: 3, ratios: ["4/3", "4/3", "4/3"] }] },
-  { key: "R2", rows: [{ cols: 2, ratios: ["16/10", "16/10"] }] },
-  { key: "R1", rows: [{ cols: 1, ratios: ["21/9"] }] },
-];
-SETS.forEach(s => { s.size = s.rows.reduce((a, r) => a + r.ratios.length, 0); });
+/* ===== 데이터 매핑 유틸 ===== */
 
-/* ===== 유틸 ===== */
-const shuffle = (arr) => {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0;[a[i], a[j]] = [a[j], a[i]]; }
-  return a;
-};
-
-/** intro_spots → 그리드 배치용 블록으로 잘라내기 */
-function planSetsRandom(spots) {
-  const imgs = spots.map(s => ({
-    src: s.imageUrl,
-    title: s.title,
-    subtitle: s.subtitle,
-    badge: s.badge
+function mapSpotsToBranches(spots) {
+  return spots.map((s, idx) => ({
+    id: s.branchId || s.id || `branch_${idx}`,
+    name: s.branchName || s.title || "첫 번째 아지트",
+    city: s.city || s.region || "",
+    district: s.district || "",
+    status: s.status || "open",
+    heroImage: s.imageUrl || s.image || "",
   }));
-  const pool = shuffle(imgs);
-  const out = [];
-  let i = 0, p = 0;
-
-  const pick = (size) => {
-    const slice = pool.slice(i, i + size);
-    if (!slice.length) return null;
-    i += slice.length;
-    return slice;
-  };
-
-  // 큰 세트부터 채우고 남는 수량은 R*로 마감
-  const keys = shuffle(["S1", "S2", "S3", "S5"]);
-  while (i < pool.length) {
-    const s = SETS.find(x => x.key === keys[p % keys.length]);
-    if (!s) break;
-    if ((pool.length - i) < s.size) break;
-    out.push({ set: s, images: pick(s.size) });
-    p++;
-  }
-  // 나머지 마감
-  const endings = ["R4", "R3", "R2", "R1"].map(k => SETS.find(x => x.key === k));
-  for (const end of endings) {
-    while (i < pool.length && (pool.length - i) >= end.size) {
-      out.push({ set: end, images: pick(end.size) });
-    }
-  }
-  if (i < pool.length) {
-    const last = SETS.find(s => s.key === "R1");
-    const rest = pick(pool.length - i);
-    if (rest) out.push({ set: last, images: rest });
-  }
-  return out;
 }
 
-/* ===== 페이지 ===== */
-export default function SpacePageSets() {
+/* ===== 페이지 컴포넌트 ===== */
+
+export default function SpacePage() {
+  const nav = useNavigate();
   const [spots, setSpots] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 진입 시 fetch
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const { items } = await listIntroSpots({ publishedOnly: true, pageSize: 48 });
+        const { items } = await listIntroSpots({
+          publishedOnly: true,
+          pageSize: 48,
+        });
         if (!alive) return;
         setSpots(items || []);
       } catch (e) {
-        console.error("[SpacePageSets] load error:", e);
+        console.error("[SpacePage] load error:", e);
         if (alive) setSpots([]);
       } finally {
         if (alive) setLoading(false);
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const blocks = useMemo(() => planSetsRandom(spots), [spots]);
-
-  // ▶ 페이지 진입 후 살짝 지연을 주어 페이드-인
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 50);
-    return () => clearTimeout(t);
-  }, [spots.length]);
-
-  const handleViewAll = () => {
-
-  };
+  const branches = useMemo(() => mapSpotsToBranches(spots), [spots]);
 
   const handleSuggest = () => {
-
+    nav("/suggest");
   };
 
-
-  const BASE_DELAY = 60;
-  let gIdx = 0;
+  const handleBack = () => {
+    // 기본은 바로 이전 화면으로
+    nav(-1);
+  };
 
   return (
     <Section>
       <Wrap>
+        {/* 모바일 전용 뒤로가기 헤더 */}
+        <MobileHeaderBar>
+          <BackButton onClick={handleBack}>‹</BackButton>
+          <MobileHeaderTitle>아지트 지점 소개</MobileHeaderTitle>
+        </MobileHeaderBar>
+
+        {/* 헤더 (PC/모바일 공통) */}
         <Head>
-          <Title>공간 소개</Title>
+          <Title>아지트 지점 소개</Title>
           <Sub>우리 공간의 다양한 스팟을 미리 만나보세요.</Sub>
         </Head>
 
-        {loading && <div style={{ color: "#6b7280" }}>로딩 중…</div>}
+        {/* 지점 카드 리스트 */}
+        {loading && (
+          <div style={{ color: "#6b7280", paddingTop: 12 }}>로딩 중…</div>
+        )}
 
-        {/* {!loading && blocks.length === 0 && (
-          <div style={{ color: "#6b7280" }}>등록된 이미지가 없습니다. 관리자에서 <b>intro_spots</b> 컬렉션에 스팟을 추가하세요.</div>
-        )} */}
+        {!loading && branches.length === 0 && (
+          <div style={{ color: "#6b7280", paddingTop: 12 }}>
+            등록된 지점이 없습니다. 관리자에서 <b>intro_spots</b> 를 추가해 주세요.
+          </div>
+        )}
 
+        {!loading && branches.length > 0 && (
+          <BranchList>
+            {branches.map((b) => (
+              <BranchCard key={b.id}>
+                <BranchHero>
+                  {b.heroImage && <img src={b.heroImage} alt={b.name} />}
+                  {b.status === "open" && <StatusPill>운영 중</StatusPill>}
+                  {b.status === "coming" && <StatusPill>Open 예정</StatusPill>}
+                </BranchHero>
+                <BranchInfo>
+                  <BranchName>{b.name}</BranchName>
+                  <BranchLocRow>
+                    <LocIcon />
+                    <span>
+                      {b.city} {b.district}
+                    </span>
+                  </BranchLocRow>
+                </BranchInfo>
+              </BranchCard>
+            ))}
+          </BranchList>
+        )}
 
-          {blocks.map(({ set, images: slice }, bi) => {
-            let k = 0;
-            return (
-              <SetBlock key={`${set.key}-${bi}`}>
-                {set.rows.map((row, ri) => (
-                  <Row key={ri} $cols={row.cols}>
-                    {row.ratios.map((ratio, si) => {
-                      const it = slice[k++] || {};
-                      const delay = (gIdx++) * BASE_DELAY;
-                      const badge = it.badge;
-                      const title = it.title || "스팟";
-                      const subtitle = it.subtitle || "withagit 공간 스냅샷";
-                      const src = it.src;
+        {/* Coming Soon + 제안 카드 */}
+        <BranchList>
+          <ComingCard>
+            <ComingUpper>
+              <ComingStatus>Open 예정</ComingStatus>
+              <ComingTitleText>
+                Coming
+                <br />
+                Soon!
+              </ComingTitleText>
+            </ComingUpper>
 
-                      return (
-                        <Slot key={`${bi}-${ri}-${si}`}
-                          $ratio={ratio}
-                          $show={visible}
-                          $delay={delay}
-                          tabIndex={0}
-                          aria-label={`${title} 이미지`}>
-                          <img src={src} alt={title} />
-                          {(badge || title || subtitle) && (
-                            <Overlay>
-                              {badge ? <Badge>{badge}</Badge> : null}
-                              {title ? <CapTitle>{title}</CapTitle> : null}
-                              {subtitle ? <CapSub>{subtitle}</CapSub> : null}
-                            </Overlay>
-                          )}
-                        </Slot>
-                      );
-                    })}
-                  </Row>
-                ))}
-              </SetBlock>
-            );
-          })}
-  
+            <ComingFooter>
+              <ComingBottomName>두 번째 아지트</ComingBottomName>
+              <ComingBottomLoc>
+                <LocIcon />
+                <span>위치 공개 전</span>
+              </ComingBottomLoc>
+            </ComingFooter>
+          </ComingCard>
 
-
-
-        {/* 2. Coming Soon 카드 */}
-        {
-          blocks.length > 0 && <CardsRow>
-
-            <ComingCard>
-              <ComingUpper>
-                <StatusPillDark>Open 예정</StatusPillDark>
-                <ComingTitleText>
-                  Coming
+          <SuggestCard>
+            <SuggestInner>
+              <div>
+                <SuggestTopLabel>우리 동네에 아지트가 필요하세요?</SuggestTopLabel>
+                <SuggestMain>
+                  <span>다음 아지트를</span>
                   <br />
-                  Soon!
-                </ComingTitleText>
-              </ComingUpper>
-
-              <ComingFooter>
-                <ComingBottomName>두 번째 아지트</ComingBottomName>
-                <ComingBottomLoc>
-                  <LocationIcon />
-                  <span>위치 공개 전</span>
-                </ComingBottomLoc>
-              </ComingFooter>
-            </ComingCard>
-
-            {/* 3. 제안 카드 */}
-            <SuggestCard>
-              <SuggestInner>
-                <div>
-                  <SuggestTopLabel>
-                    우리 동네에 아지트가 필요하세요?
-                  </SuggestTopLabel>
-                  <SuggestMain>
-                    <span>다음 아지트를</span>
-                    <br />
-                    제안해주세요!
-                  </SuggestMain>
-                </div>
-                <SuggestButtonWrap>
-                  <SuggestButton type="button" onClick={handleSuggest}>
-                    제안 남기기
-                  </SuggestButton>
-                </SuggestButtonWrap>
-              </SuggestInner>
-            </SuggestCard>
-
-          </CardsRow>
-        }
-
-
-
+                  제안해주세요!
+                </SuggestMain>
+              </div>
+              <SuggestButtonWrap>
+                <SuggestButton type="button" onClick={handleSuggest}>
+                  제안 남기기
+                </SuggestButton>
+              </SuggestButtonWrap>
+            </SuggestInner>
+          </SuggestCard>
+        </BranchList>
       </Wrap>
     </Section>
   );

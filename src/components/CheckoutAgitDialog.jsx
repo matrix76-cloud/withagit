@@ -450,6 +450,11 @@ export default function CheckoutAgitDialog({
 
   const navigate = useNavigate();
 
+  const handleGoToBuy = () => {
+    // 상세 탭에서 CTA 누르면 결제 말고 "구매하기" 탭으로만 이동
+    setActiveTab("buy");
+  };
+
   const {
     phoneE164,
     profile,
@@ -1048,12 +1053,19 @@ export default function CheckoutAgitDialog({
         </Body>
 
         <Footer>
-          <CTAButton onClick={handleCTA} disabled={!canPay}>
-            {loading
-              ? "결제 진행 중…"
-              : `아지트 멤버십 이용하기 (${KRW(total)}원)`}
+          <CTAButton
+            type="button"
+            onClick={activeTab === "detail" ? handleGoToBuy : handleCTA}
+            disabled={activeTab === "buy" && !canPay}
+          >
+            {activeTab === "detail"
+              ? "아지트 멤버십 이용하기" // 상세 탭: 그냥 구매 탭으로 이동만
+              : loading
+                ? "결제 진행 중…"
+                : `아지트 멤버십 결제하기 (${KRW(total)}원)`}
           </CTAButton>
         </Footer>
+
       </Dialog>
     </Backdrop>,
     portalEl

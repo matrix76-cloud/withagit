@@ -12,10 +12,8 @@ import banner3 from "../assets/Banner/Banner3.png";
 import banner4 from "../assets/Banner/Banner4.png";
 import banner5 from "../assets/Banner/Banner5.png";
 
-
-
-// 세로는 조금 줄이고, 가로는 넓게
-const HERO_H = "clamp(300px, 32vw, 400px)";
+// 🔹 배너를 살짝 더 크게: 세로 높이 한 단계 업
+const HERO_H = "clamp(320px, 36vw, 440px)";
 
 const Section = styled.section`
   position: relative;
@@ -59,18 +57,18 @@ const SlidesRow = styled.div`
   }
 `;
 
-// 👉 가로폭을 더 넓게, 세로는 HERO_H와 맞춤
+// 👉 가로폭/세로 모두 살짝 키운 카드
 const SlideCard = styled.div`
   position: relative;
-  flex: 0 0 clamp(380px, 46vw, 580px);
+  flex: 0 0 clamp(420px, 52vw, 640px);
   height: ${HERO_H};
   border-radius: 32px;
   overflow: hidden;
   background: #ffffff;
   box-shadow: ${({ $active }) =>
     $active
-      ? "0 20px 46px rgba(0,0,0,0.12)"
-      : "0 10px 26px rgba(0,0,0,0.06)"};
+      ? "0 20px 46px rgba(0, 0, 0, 0.12)"
+      : "0 10px 26px rgba(0, 0, 0, 0.06)"};
   transform: ${({ $active }) =>
     $active ? "translateY(0) scale(1)" : "translateY(10px) scale(0.94)"};
   opacity: ${({ $active }) => ($active ? 1 : 0.38)};
@@ -80,8 +78,8 @@ const SlideCard = styled.div`
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
 
   @media (max-width: 900px) {
-    flex: 0 0 92%;
-    height: clamp(260px, 60vw, 360px);
+    flex: 0 0 96%;
+    height: clamp(240px, 70vw, 400px);
   }
 `;
 
@@ -89,23 +87,28 @@ const SlideImg = styled.img`
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;       /* 카드 전체를 채우되 */
-  object-position: center; /* 가운데 기준으로 아주 조금만 잘리도록 */
+  object-position: center;
 `;
+
+/* ===== 하단 컨트롤 바 ===== */
 
 const NavBar = styled.div`
   margin-top: 18px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+
+  @media (max-width: 960px) {
+    gap: 12px;
+  }
 `;
 
 const NavCircleBtn = styled.button`
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1.5px solid #dedede;
   background: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -113,23 +116,53 @@ const NavCircleBtn = styled.button`
   cursor: pointer;
   padding: 0;
   outline: none;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
     background: #faf7ef;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  }
+
+  @media (max-width: 960px) {
+    width: 36px;
+    height: 36px;
   }
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
+
+    @media (max-width: 960px) {
+      width: 14px;
+      height: 14px;
+    }
   }
 `;
 
+/* 👉 가운데 인덱스 텍스트 (1 / 3) — 피그마 느낌 */
 const IndexText = styled.div`
-  font-size: 13px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 15px;
   font-weight: 600;
-  color: #444444;
-  min-width: 56px;
-  text-align: center;
+  color: #222222;
+
+  @media (max-width: 960px) {
+    font-size: 14px;
+  }
+
+  span:nth-child(2) {
+    color: #b0b0b0;
+    display: inline-block;
+    transform: rotate(-10deg);
+  }
+
+  span:nth-child(3) {
+    color: #9a9a9a;
+  }
 `;
 
 const LOCAL_BANNERS = [
@@ -161,10 +194,10 @@ export default function HomeHero() {
     if (total <= 1) return;
     if (paused) return;
 
-    const id = setInterval(
-      () => setCur((prev) => (prev + 1) % total),
-      3000
-    );
+    const id = setInterval(() => {
+      setCur((prev) => (prev + 1) % total);
+    }, 3000);
+
     return () => clearInterval(id);
   }, [total, paused]);
 
@@ -219,28 +252,34 @@ export default function HomeHero() {
           </Window>
 
           <NavBar>
+            {/* 이전 버튼 — SVG 화살표 */}
             <NavCircleBtn type="button" onClick={handlePrev}>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="currentColor"
-                  d="M14.71 6.71a1 1 0 0 1 0 1.41L11.83 11H19a1 1 0 0 1 0 2h-7.17l2.88 2.88a1 1 0 1 1-1.42 1.42l-4.59-4.6a1 1 0 0 1 0-1.4l4.59-4.6a1 1 0 0 1 1.42 0Z"
+                  d="M15.5 5.5a1 1 0 0 1 0 1.4L11.4 11.9l4.1 5a1 1 0 1 1-1.5 1.3l-4.7-5.7a1 1 0 0 1 0-1.3l4.7-5.7a1 1 0 0 1 1.5 0z"
                 />
               </svg>
             </NavCircleBtn>
 
+            {/* 가운데 인덱스 텍스트 */}
             <IndexText>
-              {cur + 1} / {total}
+              <span>{cur + 1}</span>
+              <span>/</span>
+              <span>{total}</span>
             </IndexText>
 
+            {/* 다음 버튼 — SVG 화살표 */}
             <NavCircleBtn type="button" onClick={handleNext}>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="currentColor"
-                  d="M9.29 6.71a1 1 0 0 0 0 1.41L12.17 11H5a1 1 0 0 0 0 2h7.17l-2.88 2.88a1 1 0 1 0 1.42 1.42l-4.59-4.6a1 1 0 0 0 0-1.4l-4.59-4.6a1 1 0 0 0-1.42 0Z"
+                  d="M8.5 5.5a1 1 0 0 0 0 1.4l4.1 5-4.1 5a1 1 0 1 0 1.5 1.3l4.7-5.7a1 1 0 0 0 0-1.3l-4.7-5.7a1 1 0 0 0-1.5 0z"
                 />
               </svg>
             </NavCircleBtn>
 
+            {/* 재생/일시정지 버튼 */}
             <NavCircleBtn type="button" onClick={togglePause}>
               {paused ? (
                 <svg viewBox="0 0 24 24" aria-hidden="true">
