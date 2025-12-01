@@ -1574,34 +1574,46 @@ function ProfileEditSection({ phoneE164, initName, ctxChildren, onRefetch, mode 
     };
 
     /* 자녀 삭제 가드 */
-    const handleDeleteFromCard = async (c) => {
-        if (!phoneE164) {
-            alert("로그인이 필요합니다.");
-            return;
-        }
-        const childId = String(c.childId || "").trim();
-        if (!childId) {
-            alert("잘못된 자녀 ID입니다.");
-            return;
-        }
+const handleDeleteFromCard = async (c) => {
+  if (!phoneE164) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
 
-        const guard = await hasBlockingMembership(phoneE164, childId);
-        if (guard.block) {
-            alert(guard.reason || "연결된 멤버십/정액권 상태 때문에 삭제할 수 없습니다.");
-            return;
-        }
+  const childId = String(c.childId || "").trim();
+  if (!childId) {
+    alert("잘못된 자녀 ID입니다.");
+    return;
+  }
 
-        try {
-            await deleteChild(phoneE164, childId);
-            setSavedChildren((prev) => prev.filter((x) => x.childId !== childId));
-            await onRefetch?.();
-            await refetchMemberships();
-            alert("자녀가 삭제되었습니다.");
-        } catch (e) {
-            console.error(e);
-            alert("삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-        }
-    };
+  const guard = await hasBlockingMembership(phoneE164, childId);
+  if (guard.block) {
+    alert(
+      guard.reason ||
+        "연결된 멤버십/정액권 상태 때문에 삭제할 수 없습니다."
+    );
+    return;
+  }
+
+  // ✅ 최종 확인 모달
+  const childName = c.name || c.nickname || "";
+  const ok = window.confirm(
+    `정말 '${childName || "이 자녀"}'(을)를 삭제할까요?\n보유 멤버십은 자동 해지되며 삭제 후 되돌릴 수 없습니다.`
+  );
+  if (!ok) return;
+
+  try {
+    await deleteChild(phoneE164, childId);
+    setSavedChildren((prev) => prev.filter((x) => x.childId !== childId));
+    await onRefetch?.();
+    await refetchMemberships();
+    alert("자녀가 삭제되었습니다.");
+  } catch (e) {
+    console.error(e);
+    alert("삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+  }
+};
+
 
     const childNameById = useMemo(() => {
         const m = new Map();

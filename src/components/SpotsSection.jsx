@@ -113,8 +113,9 @@ const ViewAllText = styled.button`
   padding: 0;
   font-size: 13px;
   font-weight: 600;
-  color: #444444;
+  color: #111;
   cursor: pointer;
+  font-family:Pretendard;
 `;
 
 const ViewAllCircle = styled.button`
@@ -392,10 +393,14 @@ export default function SpotsSection({ onClickViewAll, onClickSuggest }) {
             </ViewAllText>
             <ViewAllCircle type="button" onClick={handleViewAll}>
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fill="currentColor"
-                  d="M9.29 6.71a1 1 0 0 0 0 1.41L12.17 11H5a1 1 0 0 0 0 2h7.17l-2.88 2.88a1 1 0 1 0 1.42 1.42l4.59-4.6a1 1 0 0 0 0-1.4l-4.59-4.6a1 1 0 0 0-1.42 0Z"
-                />
+              <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 6l6 6-6 6"
+              />
               </svg>
             </ViewAllCircle>
           </ViewAllArea>

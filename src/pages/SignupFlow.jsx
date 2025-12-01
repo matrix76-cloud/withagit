@@ -44,14 +44,19 @@ const Head = styled.div`
 
   h1 {
     margin: 0 0 10px;
-    font-size: clamp(22px, 3.2vw, 36px);
+    font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont,
+      system-ui, "Segoe UI", sans-serif;
+    font-size: 24px;
+    font-weight: 800; /* ExtraBold */
     color: #1b2b3a;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.03em;
     line-height: 1.3;
   }
 
   p {
     margin: 0;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+      "Segoe UI", sans-serif;
     color: #6b7280;
     font-size: 14px;
     line-height: 1.5;
@@ -72,9 +77,11 @@ const Head = styled.div`
 
 /**
  * 모바일에서 약관/문구 전체 폰트 살짝 줄이는 래퍼
- * - 상단 큰 박스 레이아웃은 그대로 두고, 글자만 전체적으로 1px 정도 줄이는 느낌
  */
 const ContentWrap = styled.div`
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+
   @media (max-width: 768px) {
     font-size: 13px;
 
@@ -111,9 +118,48 @@ const SectionTitle = styled.h3`
   margin: 0 0 12px;
   color: #1b2b3a;
   font-size: 18px;
+  font-weight: 800; /* Pretendard ExtraBold 느낌 */
+  letter-spacing: -0.02em;
 
   @media (max-width: 768px) {
     font-size: 16px;
+  }
+`;
+
+const SectionText = styled.p`
+  margin: 0 0 12px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.6;
+`;
+
+/* 학부모 이름 필드 */
+const Field = styled.div`
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+`;
+
+const Label = styled.label`
+  font-size: 13px;
+  font-weight: 800;
+  color: #374151;
+`;
+
+const Input = styled.input`
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 0 12px;
+  font-size: 14px;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+  color: #111827;
+  outline: none;
+
+  &:focus {
+    border-color: #f07a2a;
+    box-shadow: 0 0 0 1px rgba(240, 122, 42, 0.18);
   }
 `;
 
@@ -121,7 +167,7 @@ const ButtonRow = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 24px;
+  margin-top: 20px;
 
   @media (max-width: 768px) {
     margin-top: 18px;
@@ -132,14 +178,17 @@ const BaseBtn = styled.button`
   width: 260px;
   height: 56px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 24px;
   font-size: 16px;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+  font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   cursor: pointer;
-  transition: filter 0.12s, transform 0.04s;
+  transition: filter 0.12s, transform 0.04s, box-shadow 0.12s;
 
   &:hover {
     filter: brightness(0.98);
@@ -152,6 +201,7 @@ const BaseBtn = styled.button`
     cursor: default;
     filter: none;
     transform: none;
+    box-shadow: none;
   }
 
   @media (max-width: 768px) {
@@ -170,7 +220,6 @@ const PhoneBtn = styled(BaseBtn)`
     0 22px 36px rgba(0, 0, 0, 0.1),
     0 2px 0 rgba(255, 255, 255, 0.65) inset,
     inset 0 1px 3px rgba(0, 0, 0, 0.06);
-  border-radius: 18px;
 `;
 
 /* ===== 페이지 ===== */
@@ -181,6 +230,7 @@ export default function SignupFlow() {
   const [openPhone, setOpenPhone] = useState(false);
   const [terms, setTerms] = useState({});
   const [termsOk, setTermsOk] = useState(false);
+  const [parentName, setParentName] = useState("");
 
   const handleTermsChange = useCallback((val, ok) => {
     setTerms(val || {});
@@ -208,7 +258,11 @@ export default function SignupFlow() {
       const now = Date.now();
       const memberSkeleton = {
         phoneE164,
-        profile: { displayName: "", avatarUrl: "", email: "" },
+        profile: {
+          displayName: parentName.trim() || "",
+          avatarUrl: "",
+          email: "",
+        },
         memberships: {
           agitz: null,
           agitzList: [],
@@ -235,7 +289,7 @@ export default function SignupFlow() {
             "withagit.memberdata",
             JSON.stringify(memberSkeleton)
           );
-        } catch { }
+        } catch {}
       } catch (e) {
         // 업서트 실패해도 플로우는 진행 (완료 페이지/마이페이지에서 재시도)
         console.warn(
@@ -247,11 +301,17 @@ export default function SignupFlow() {
       // 3) 컨텍스트 최신화 & 완료 페이지 이동
       try {
         await refresh?.();
-      } catch { }
-      nav("/signup/done", { replace: true, state: { phoneE164 } });
+      } catch {}
+      nav("/signup/done", {
+        replace: true,
+        state: { phoneE164, parentName: parentName.trim() },
+      });
     },
-    [nav, refresh, terms]
+    [nav, refresh, terms, parentName]
   );
+
+  const phoneButtonDisabled =
+    !termsOk || !parentName || parentName.trim().length === 0;
 
   return (
     <Page>
@@ -270,12 +330,26 @@ export default function SignupFlow() {
           {/* 본인인증 */}
           <SectionBox>
             <SectionTitle>본인인증</SectionTitle>
-            <p style={{ color: "#6b7280", margin: "0 0 12px" }}>
-              위드아지트 회원가입을 위해서는 본인인증이 필요합니다.
-              회원님 명의의 휴대폰 번호로 본인 인증을 진행합니다.
-            </p>
+            <SectionText>
+              위드아지트 회원가입을 위해서는 본인인증이 필요합니다. 회원님
+              명의의 휴대폰 번호로 본인 인증을 진행합니다.
+            </SectionText>
+
+            <Field>
+              <Label htmlFor="parentName">학부모 이름</Label>
+              <Input
+                id="parentName"
+                placeholder="예: 김위드"
+                value={parentName}
+                onChange={(e) => setParentName(e.target.value)}
+              />
+            </Field>
+
             <ButtonRow>
-              <PhoneBtn onClick={() => setOpenPhone(true)} disabled={!termsOk}>
+              <PhoneBtn
+                onClick={() => setOpenPhone(true)}
+                disabled={phoneButtonDisabled}
+              >
                 휴대폰 인증
               </PhoneBtn>
             </ButtonRow>

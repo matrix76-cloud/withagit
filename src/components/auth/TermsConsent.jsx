@@ -10,6 +10,8 @@ const Box = styled.section`
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 18px;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
 
   @media (max-width: 768px) {
     padding: 12px 12px 14px;
@@ -21,6 +23,7 @@ const Title = styled.h3`
   margin: 0 0 12px;
   color: #1b2b3a;
   font-size: 18px;
+  font-weight: 800;
 
   @media (max-width: 768px) {
     font-size: 16px;
@@ -83,7 +86,7 @@ const Label = styled.span`
   line-height: 1.4;
 
   @media (max-width: 768px) {
-    font-size: 12px;
+    font-size: 11px;
   }
 `;
 
@@ -111,6 +114,18 @@ const LinkBtn = styled.button`
   white-space: nowrap;
 
   @media (max-width: 768px) {
+    font-size: 11px;
+  }
+`;
+
+/* 마케팅 안내 문구 */
+const Helper = styled.div`
+  margin: 4px 0 0 34px; /* 체크박스 오른쪽 기준으로 들여쓰기 */
+  font-size: 12px;
+  color: #9ca3af;
+
+  @media (max-width: 768px) {
+    margin-left: 30px;
     font-size: 11px;
   }
 `;
@@ -174,8 +189,6 @@ export default function TermsConsent({
             </span>
           </div>
         </div>
-     
-    
       </AllRow>
 
       <Row>
@@ -186,41 +199,37 @@ export default function TermsConsent({
         <Label>
           <Pill>필수</Pill>&nbsp; 위드아지트 이용약관동의
         </Label>
-        <LinkBtn onClick={() => openDoc("service")}>보기</LinkBtn>
+        <LinkBtn type="button" onClick={() => openDoc("service")}>
+          보기
+        </LinkBtn>
       </Row>
 
       <Row>
-        <Check
-          checked={val.privacy}
-          onChange={() => toggle("privacy")}
-        />
+        <Check checked={val.privacy} onChange={() => toggle("privacy")} />
         <Label>
           <Pill>필수</Pill>&nbsp; 개인정보 수집 및 이용동의
         </Label>
-        <LinkBtn onClick={() => openDoc("privacy")}>보기</LinkBtn>
+        <LinkBtn type="button" onClick={() => openDoc("privacy")}>
+          보기
+        </LinkBtn>
       </Row>
 
       <Row>
-        <Check
-          checked={val.ecommerce}
-          onChange={() => toggle("ecommerce")}
-        />
+        <Check checked={val.ecommerce} onChange={() => toggle("ecommerce")} />
         <Label>
-          <Pill>필수</Pill>&nbsp; 전자상거래(결제/환불) 약관동의
+          <Pill>필수</Pill>&nbsp; 전자상거래 약관동의
         </Label>
-        <LinkBtn onClick={() => openDoc("ecommerce")}>보기</LinkBtn>
+        <LinkBtn type="button" onClick={() => openDoc("ecommerce")}>
+          보기
+        </LinkBtn>
       </Row>
 
       <Row>
-        <Check
-          checked={val.marketing}
-          onChange={() => toggle("marketing")}
-        />
-        <Label style={{ fontWeight: 700 }}>
-          마케팅 정보 수신 동의(선택)
-        </Label>
+        <Check checked={val.marketing} onChange={() => toggle("marketing")} />
+        <Label style={{ fontWeight: 700 }}>마케팅 정보 수신 동의(선택)</Label>
         <span />
       </Row>
+      <Helper>할인 이벤트·신규 클래스·조기예약 혜택을 놓치지 마세요!</Helper>
 
       {/* 약관/개인정보/전자상거래 모달 */}
       <TermsModal open={modal.open} doc={modal.doc} onClose={closeDoc} />
