@@ -130,7 +130,9 @@ const Desc = styled.p`
   margin: 8px 0 0;
   font-size: 14px;
   line-height: 1.55;
-  color: #555555;
+  color: #111;
+  font-weight :600;
+  font-family:Pretendard;
 
   @media (max-width: 960px) {
     font-size: 13px;
@@ -187,8 +189,11 @@ const LeftBody = styled.p`
   font-family: "NanumSquareRound";
   font-size: 18px;
   line-height: 1.8;
-  color: #757575;
+  color: #111;
+  font-weight :600;
   white-space: pre-line;
+  font-family:Pretendard;
+
 
   @media (max-width: 960px) {
     font-size: 14px;
@@ -288,7 +293,7 @@ const TLineTop = styled.div`
   font-size: 20px;
   font-weight: 900;
   line-height: 1.2;
-  color: #444444;
+  color: #111;
 
   @media (max-width: 960px) {
     font-size: 17px;
@@ -339,10 +344,11 @@ const TSingle = styled.div`
 
 const TBody = styled.p`
   margin: 0;
-  color: #666666;
+  color: #111;
   font-size: 14px;
   line-height: 1.55;
   white-space: pre-line;
+  font-family:Pretendard;
 
   @media (max-width: 960px) {
     font-size: 13px;
@@ -419,7 +425,7 @@ function CoreValueCards() {
                     </TLineBottom>
                   </TTitle>
                   <TBody>
-                    모든 교사는 아동학대·성범죄 이력 조회를 완료한
+                    모든 교사는 아동학대·성범죄 이력 조회를 완료한{"\n"}
                     안전 인증 인력이며, 교육·보육 등
                     {"\n"}
                     관련 경력 보유자를 중심으로 선발합니다.
@@ -531,11 +537,13 @@ export default function CoreValue({ label = "CORE VALUE" }) {
               <TitleHighlight>따뜻한 돌봄</TitleHighlight>
             </MainTitle>
             <Desc>
-              아이들의 일상 돌봄부터 배움, 놀이터까지
+              아이들의 일상 돌봄 부터 배움, 놀이까지
               <br />
-              한 공간에서 함께 누릴 수 있어요.
+             놀이까지 한 공간에서 
             </Desc>
           </TopText>
+
+      
 
           <MidGrid>
             <OrbitWrap>
@@ -553,8 +561,7 @@ export default function CoreValue({ label = "CORE VALUE" }) {
                 {"\n"}
                 아이에게는 안전과 창의적 경험을.
                 {"\n"}
-                지역사회와 <Em>함께 성장하며 지속하는 돌봄 생태계</Em>를 구축
-                합니다.
+                지역사회와 <Em>함께 성장하며 자족하는 돌봄 생태계 </Em>구축
               </LeftBody>
             </LeftBlock>
           </MidGrid>

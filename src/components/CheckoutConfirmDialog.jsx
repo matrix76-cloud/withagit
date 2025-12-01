@@ -318,7 +318,7 @@ export default function CheckoutConfirmDialog({
     const PRICING = payload?.pricing || {};
     const months = Number(payload?.months ?? 1);
     const AGITZ_PRICE_BASE = Number(PRICING?.agitz?.price ?? 59900);
-    const FAMILY_PRICE_BASE = Number(PRICING?.family?.base ?? PRICING?.base ?? 59900);
+    const FAMILY_PRICE_BASE = Number(PRICING?.family?.base ?? PRICING?.base ?? 50915);
     const FAMILY_ADD_DISCOUNT_RATE = Number(PRICING?.family?.addDiscountRate ?? 0.15); // 15%
     const FAMILY_MAX = Number(PRICING?.family?.max ?? PRICING?.max ?? 10); // 🔟 기본 최대 10명
 

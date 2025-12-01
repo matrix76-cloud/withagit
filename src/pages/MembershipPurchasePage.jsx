@@ -4,7 +4,8 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import MembershipPlans from "../components/MembershipPlans";
 import CheckoutChargeDialog from "../components/CheckoutChargeDialog";
@@ -118,7 +119,11 @@ const TopTabIcon = styled.img`
 
 const TopTabLabel = styled.span`
   line-height: 1.3;
+  font-family :"NanumSquareRound",
+  font-weight :900;
+  font-size :12px;
 `;
+
 
 /* 탭바 높이만큼 스페이서 */
 
@@ -1976,10 +1981,24 @@ function ProgramDetail({ program }) {
 
 
 export default function MembershipPurchasePage() {
-  const [topTab, setTopTab] = useState("membership");
-  const [chargeDialogOpen, setChargeDialogOpen] = useState(false);
 
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const tabFromQuery = searchParams.get("tab");
+
+  const initialTab =
+    tabFromQuery === "program"
+      ? "program"
+      : tabFromQuery === "charge"
+      ? "charge"
+      : tabFromQuery === "others"
+      ? "others"
+      : "membership";
+
+  const [topTab, setTopTab] = useState(initialTab);
+  const [chargeDialogOpen, setChargeDialogOpen] = useState(false);
+
 
   const [otherProducts, setOtherProducts] = useState([]);
   const [programs, setPrograms] = useState([]);
@@ -2019,6 +2038,59 @@ export default function MembershipPurchasePage() {
     }
   };
 
+    useEffect(() => {
+    if (tabFromQuery !== "program") return;
+    if (inProgramDetailMode) return;
+
+    setTopTab("program");
+    scrollToSection("section-program");
+  }, [tabFromQuery, inProgramDetailMode]);
+
+  
+
+  // 🔹 스크롤 위치에 따라 탭 자동 변경 (기본 모드에서만)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // URL 쿼리로 탭이 지정된 경우(예: ?tab=program)에는
+    // 스크롤 스파이가 탭 상태를 덮어쓰지 않도록 막기
+    if (tabFromQuery === "program") return;
+
+    const HEADER_OFFSET = 140; // 헤더 + 탭 높이 합친 정도
+
+    const handleScroll = () => {
+      // 디테일 모드일 땐 탭 자동 변경 안 함
+      if (inProgramDetailMode) return;
+
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+
+      let activeKey = "membership";
+
+      SECTION_MAP.forEach(({ key, id }) => {
+        if (!id) return;
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const sectionTop = el.offsetTop - HEADER_OFFSET;
+
+        if (scrollY >= sectionTop - 10) {
+          activeKey = key;
+        }
+      });
+
+      setTopTab((prev) => (prev === activeKey ? prev : activeKey));
+    };
+
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [inProgramDetailMode, tabFromQuery]);
+
+
+
+
+
 
   // 기타 상품 로드
   useEffect(() => {
@@ -2037,46 +2109,7 @@ export default function MembershipPurchasePage() {
     };
   }, []);
 
-  // 🔹 스크롤 위치에 따라 탭 자동 변경 (기본 모드에서만)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const HEADER_OFFSET = 140; // 헤더 + 탭 높이 합친 정도
-
-    const handleScroll = () => {
-      // 디테일 모드일 땐 탭 자동 변경 안 함
-      if (inProgramDetailMode) return;
-
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-
-      let activeKey = "membership";
-
-      SECTION_MAP.forEach(({ key, id }) => {
-        if (!id) return;
-        const el = document.getElementById(id);
-        if (!el) return;
-
-        // 문서 기준 섹션의 Y 위치
-        const sectionTop = el.offsetTop - HEADER_OFFSET;
-
-        // 현재 스크롤이 이 섹션 시작 지점 이후면, 일단 이 섹션을 후보로
-        if (scrollY >= sectionTop - 10) {
-          activeKey = key;
-        }
-      });
-
-      // functional set 사용해서 이전 값과 다를 때만 변경
-      setTopTab((prev) => (prev === activeKey ? prev : activeKey));
-    };
-
-    // 처음 한 번도 호출
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [inProgramDetailMode]);
-
-
+ 
 
   // 프로그램 목록 로드
   useEffect(() => {

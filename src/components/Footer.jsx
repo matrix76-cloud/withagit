@@ -6,12 +6,14 @@ import { Link } from "react-router-dom";
 const Bar = styled.footer`
   background: #3b3b3b;
   color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
-  padding: 32px 16px 20px; /* 기본: PC 등 */
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 32px 16px 20px;
 
-  /* 🔽 모바일에서는 바텀 탭바만큼 여유를 더 줌 */
   @media (max-width: 720px) {
-    padding-bottom: 88px; /* 원래 20px + 탭바 높이(≈60~68) 정도 */
+    padding-bottom: 88px;
   }
 `;
 
@@ -20,7 +22,7 @@ const Wrap = styled.div`
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px; /* 24 → 16 */
+  gap: 16px;
 
   @media (max-width: 720px) {
     display: flex;
@@ -32,7 +34,7 @@ const Wrap = styled.div`
 
 const Col = styled.div`
   display: grid;
-  gap: 8px; /* 10 → 8 */
+  gap: 8px;
 
   @media (max-width: 720px) {
     &.mobile-center {
@@ -47,7 +49,6 @@ const BrandCol = styled(Col)`
   }
 `;
 
-/* 모바일에서 숨길 컬럼 */
 const ColHideMobile = styled(Col)`
   @media (max-width: 720px) {
     display: none;
@@ -55,27 +56,31 @@ const ColHideMobile = styled(Col)`
 `;
 
 const Title = styled.div`
-  font-weight: 800;
-  margin-bottom: 4px; /* 6 → 4 */
+  font-weight: 800; /* Pretendard ExtraBold */
+  margin-bottom: 4px;
   color: #fff;
-  font-size: 13px;
+  font-size: 12px;
 `;
 
 const Desc = styled.p`
   margin: 0;
   opacity: 0.8;
   line-height: 1.4;
+  font-size: 12px;
 `;
 
 /* 공용 링크 스타일 */
 const Links = styled.div`
   display: grid;
-  gap: 4px; /* 6 → 4 */
+  gap: 4px;
+
   a {
     color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 400; /* Regular */
   }
+
   a:hover {
     color: #fff;
   }
@@ -88,11 +93,12 @@ const TopLinksRow = styled.div`
   @media (max-width: 720px) {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;          /* 16 → 12 */
-    margin-top: 8px;    /* 12 → 8 */
+    gap: 12px;
+    margin-top: 8px;
 
     a {
       font-size: 12px;
+      font-weight: 400;
       color: rgba(255, 255, 255, 0.85);
       text-decoration: none;
     }
@@ -104,14 +110,14 @@ const TopLinksRow = styled.div`
 
 const ContactCol = styled(Col)`
   @media (max-width: 720px) {
-    gap: 6px; /* 8 → 6 */
+    gap: 6px;
   }
 `;
 
 const ContactRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 10px; /* 14 → 10 */
+  gap: 10px;
 
   @media (max-width: 720px) {
     justify-content: flex-start;
@@ -123,17 +129,18 @@ const ContactItem = styled.div`
   align-items: center;
   gap: 6px;
   opacity: 0.9;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 400;
 `;
 
 const BizBox = styled.div`
   grid-column: 1 / -1;
-  margin-top: 4px;           /* 8 → 4 */
-  padding: 10px 12px;        /* 12/14 → 10/12 */
+  margin-top: 4px;
+  padding: 10px 12px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   font-size: 12px;
-  line-height: 1.5;          /* 1.6 → 1.5 */
+  line-height: 1.5;
   background: rgba(255, 255, 255, 0.03);
 
   @media (max-width: 720px) {
@@ -144,26 +151,30 @@ const BizBox = styled.div`
 `;
 
 const BizTitle = styled.div`
-  font-weight: 800;
+  font-weight: 800; /* ExtraBold */
+  font-size: 12px;
   color: #fff;
-  margin-bottom: 4px; /* 6 → 4 */
+  margin-bottom: 4px;
 `;
 
 const BizLine = styled.div`
   opacity: 0.85;
+  font-size: 12px;
+  font-weight: 400;
 `;
 
 const Inline = styled.span`
   display: inline-block;
-  margin-right: 8px; /* 10 → 8 */
+  margin-right: 8px;
 `;
 
 const Bottom = styled.div`
   max-width: ${({ theme }) => theme?.sizes?.container || "1120px"};
-  margin: 16px auto 0;      /* 24 → 16 */
-  padding-top: 10px;        /* 16 → 10 */
+  margin: 16px auto 0;
+  padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   font-size: 12px;
+  font-weight: 400;
   opacity: 0.7;
   text-align: center;
 `;

@@ -352,7 +352,7 @@ export async function markOrderPaid(args = {}) {
                 const ids = Array.isArray(current?.meta?.selectedChildIds) ? current.meta.selectedChildIds : [];
                 if (!ids.length && !childId) throw new Error("FAMILY requires selectedChildIds");
 
-                const base = Number(current?.meta?.pricing?.base ?? 59900);
+                const base = Number(current?.meta?.pricing?.base ?? 50915);
                 const disc = Number(current?.meta?.pricing?.discount ?? 0.15);
                 const per2 = Math.round(base * (1 - disc));
                 const monthsN = Number(months || 1) || 1;

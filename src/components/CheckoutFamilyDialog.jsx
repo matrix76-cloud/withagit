@@ -438,7 +438,7 @@ export default function CheckoutFamilyDialog({
 
   const FAMILY_MAX = 10;
   const months = 1;
-  const FAMILY_PRICE_BASE = 59900;
+  const FAMILY_PRICE_BASE = 50915;
   const FAMILY_ADD_DISCOUNT_RATE = 0.15;
 
   const navigate = useNavigate();

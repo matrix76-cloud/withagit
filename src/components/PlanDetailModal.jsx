@@ -157,7 +157,7 @@ export default function PlanDetailModal({
                     "예약/퇴장 및 공간 이용 실시간 알림",
                 ],
                 options: [
-                    { v: "m-59900", label: "월정액 (59,900원)" },
+                    { v: "m-50915", label: "월정액 (50,915)" },
                 ],
                 cta: "결제",
                 note: "패밀리 멤버십(형제/자매)은 정규 멤버십 활성 상태가 필요합니다.",

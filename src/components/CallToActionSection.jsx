@@ -23,40 +23,54 @@ const Inner = styled.div`
   color: #ffffff;
 `;
 
+/* "지금 바로 시작해보세요!" — NanumSquareRound ExtraBold 24px */
 const Heading = styled.h2`
   margin: 0 0 18px;
-  font-size: clamp(26px, 3.4vw, 36px);
+  font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+  font-size: 24px;
   line-height: 1.4;
-  font-weight: 900;
+  font-weight: 800; /* ExtraBold */
   letter-spacing: -0.03em;
+
+  @media (max-width: 480px) {
+    font-size: 22px;
+  }
 `;
 
+/* 본문 — Pretendard Regular 14px */
 const Body = styled.p`
   margin: 0 0 30px;
-  font-size: 13px;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+  font-size: 14px;
   line-height: 1.8;
+  font-weight: 400;
   opacity: 0.95;
 `;
 
-/* ✅ 항상 한 줄 배치 (모바일에서도 row 유지) */
+/* 항상 한 줄 배치 (모바일에서도 row 유지) */
 const ButtonsRow = styled.div`
   display: flex;
   gap: 12px;
   justify-content: center;
   align-items: center;
   width: 100%;
-  max-width: 480px;   /* 모바일 기준폭 */
-  margin: 0 auto;     /* 가운데 정렬 */
+  max-width: 480px;
+  margin: 0 auto;
 `;
 
+/* 버튼 공통 — Pretendard SemiBold 16px */
 const BaseButton = styled.button`
-  flex: 1 1 0;                /* ➜ 두 버튼이 1:1로 폭 나눠 쓰기 */
-  min-width: 0;               /* ➜ 작아질 수 있게 */
+  flex: 1 1 0;
+  min-width: 0;
   padding: 13px 16px;
   border-radius: 999px;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 600; /* SemiBold */
+  letter-spacing: 0.02em;
   cursor: pointer;
   outline: none;
   transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,

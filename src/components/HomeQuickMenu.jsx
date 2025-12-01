@@ -39,7 +39,7 @@ const QUICK_MENUS = [
     label: "프로그램",
     icon: icoProgram,
     bg: "#FFE4E4",
-    to: "/price",
+    to: "/price?tab=program",   // ← 쿼리로 program 탭 지정
     type: "link",
   },
   {

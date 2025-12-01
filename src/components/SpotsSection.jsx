@@ -224,7 +224,7 @@ const SpotInfo = styled.div`
 const SpotName = styled.div`
   font-size: 15px;
   font-weight: 800;
-  color: #342313;
+  color: #111;
   margin-bottom: 6px;
 `;
 
@@ -234,6 +234,8 @@ const SpotLocationRow = styled.div`
   gap: 6px;
   font-size: 13px;
   color: #6b4b2b;
+  font-family:Pretendard;
+    font-weight: 500;
 `;
 
 const LocationIcon = () => (
@@ -284,7 +286,7 @@ const ComingTitleText = styled.div`
   align-self: center; /* 카드 브라운 영역 가운데로 */
 
   @media (max-width: 960px) {
-    font-size: 50px;
+    font-size: 56px;
   }
 `;
 
@@ -342,8 +344,9 @@ const SuggestButton = styled.button`
   border: none;
   background: #ff7e32;
   color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 16px;
+  font-family:Pretendard;
+  font-weight: 700;
   cursor: pointer;
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
   outline: none;
@@ -430,11 +433,11 @@ export default function SpotsSection({ onClickViewAll, onClickSuggest }) {
             </ComingUpper>
 
             <ComingFooter>
-              <ComingBottomName>두 번째 아지트</ComingBottomName>
-              <ComingBottomLoc>
+              <SpotName>두 번째 아지트</SpotName>
+              <SpotLocationRow>
                 <LocationIcon />
                 <span>위치 공개 전</span>
-              </ComingBottomLoc>
+              </SpotLocationRow>
             </ComingFooter>
           </ComingCard>
 

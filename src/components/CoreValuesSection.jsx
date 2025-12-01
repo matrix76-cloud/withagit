@@ -127,8 +127,8 @@ const Title = styled.h2`
   margin: 0 0 12px;
   font-family: "NanumSquareRound";
   font-size: clamp(28px, 3.1vw, 34px);
-  line-height: 1.2;
-  font-weight: 900;
+  line-height: 1.5;
+  font-weight: 800;
   color: #1a1a1a;
   letter-spacing: -0.04em;
 
@@ -160,11 +160,11 @@ const Title = styled.h2`
 
 const Body = styled.p`
   margin: 0;
-  font-family: "NanumSquareRound";
+  font-family: "Pretendard";
   font-size: 16px;
   line-height: 1.55;
   letter-spacing: -0.01em;
-  color: #555555;
+  color: #111;
   white-space: pre-line;
   max-width: 520px;
 
@@ -194,9 +194,9 @@ export default function CoreValuesSection() {
             <Body>
               필요한 순간에 원하는 만큼 이용할 수 있는 아지트 생활.
               {"\n"}
-              픽업부터 공간 이용까지 일정에 맞춰
+              픽업부터 공간 이용까지 
               {"\n"}
-              자유롭게 조합할 수 있습니다.
+              일정에 맞춰 자유롭게 조합할 수 있습니다.
             </Body>
           </ColText>
 
@@ -226,9 +226,9 @@ export default function CoreValuesSection() {
             <Body>
               학교·학원 일정은 물론, 주말과 방학에도
               {"\n"}
-              돌봄·체험·창의활동 등 다양한 프로그램을
-              {"\n"}
-              운영합니다.
+              돌봄·체험·창의활동 등 다양한 프로그램을 운영합니다.
+             
+              
             </Body>
           </ColText>
 

@@ -18,7 +18,7 @@ const HERO_H = "clamp(320px, 36vw, 440px)";
 const Section = styled.section`
   position: relative;
   width: 100%;
-  background: #fffcf4;
+  background: #FFFCF4;
   padding: 40px 0 56px;
 
   @media (max-width: 960px) {
