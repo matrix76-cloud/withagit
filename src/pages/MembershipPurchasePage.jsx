@@ -256,8 +256,8 @@ const IconImage = styled.img`
 
 
 const IconTitle = styled.div`
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 600;
   color: #222;
   text-align: center;
   letter-spacing: -0.02em;
@@ -301,18 +301,19 @@ const ChargeTitle = styled.h3`
 const ChargeTitleHighlight = styled.span`
   position: relative;
   display: inline-block;
-  padding: 0 6px;                     /* 텍스트 주변 살짝만 여유 */
+  padding: 0 6px;
+  z-index: 0;                 /* ✅ 스택 컨텍스트 생성 */
 
   &::before {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 4px;                      /* 텍스트 바로 아래쪽 */
-    height: 40%;                      /* 글자의 40% 정도 높이 */
-    background: #ffd87a;              /* 형광펜 색 */
+    bottom: 4px;
+    height: 40%;
+    background: #ffd87a;
     border-radius: 999px;
-    z-index: -1;
+    z-index: -1;              /* 이제 span 안에서만 텍스트 뒤로 감 */
   }
 `;
 
@@ -394,60 +395,113 @@ const PrimaryButton = styled.button`
 /* ============ 기타 상품 카드 ============ */
 
 const CardsRow = styled.div`
-  margin-top: 28px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-
-  @media (max-width: 960px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-`;
-
-const ProgramCard = styled.div`
-  width: min(420px, 100%);
-  border-radius: 20px;
-  background: ${cardBg};
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 640px) {
+    gap: 12px;
+  }
 `;
 
-const ProgramThumb = styled.div`
+
+const ProgramHeaderTitleHighlight = styled.span`
+  position: relative;
+  display: inline-block;
+  padding: 0 6px;
+  z-index: 0; /* 스택 컨텍스트 생성 */
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4px;       /* 글자와의 간격 */
+    height: 40%;       /* 형광펜 두께 */
+    background: #cfe3ff; /* 연한 파란 형광펜 */
+    border-radius: 999px;
+    z-index: -1;       /* 텍스트 뒤로 */
+  }
+`;
+
+
+
+const ProgramCard = styled.div`
   width: 100%;
-  padding-top: 75%;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(15, 35, 75, 0.06);
+  padding: 14px 18px;
+  box-sizing: border-box;
+
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  row-gap: 4px;
+  cursor: pointer;
+  text-align: left;
+
+  @media (max-width: 768px) {
+    border-radius: 20px;
+    padding: 12px 14px;
+  }
+`;
+
+
+const ProgramThumb = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  overflow: hidden;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  grid-row: 1 / 4;
+
+  @media (max-width: 768px) {
+    width: 72px;
+    height: 72px;
+  }
 `;
 
+
 const ProgramBody = styled.div`
-  padding: 18px 20px 20px;
+  grid-column: 2 / 3;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 `;
 
 const ProgramTitleText = styled.div`
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 800;
   color: ${primaryText};
 `;
 
+const ProgramMeta = styled.div`
+  font-size: 12px;
+  color: ${subText};
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+`;
+
 const ProgramPriceRow = styled.div`
-  margin-top: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
   color: ${primaryText};
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
+
+
+
 
 const ProgramBadgeRow = styled.div`
   display: flex;
@@ -469,13 +523,7 @@ const Badge = styled.span`
   color: ${({ $tone = "accent" }) => ($tone === "accent" ? accent : "#666")};
 `;
 
-const ProgramMeta = styled.div`
-  font-size: 12px;
-  color: ${subText};
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-`;
+
 
 const Muted = styled.span`
   font-size: 11px;
@@ -532,55 +580,83 @@ const CarouselPageIndicator = styled.div`
 /* ============ FAQ 섹션 ============ */
 
 const FaqList = styled.div`
-  margin-top: 32px;
+  margin-top: 28px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;           /* ⬅️ 카드 사이 간격 살짝 줄임 */
+  max-width: 720px;    /* ⬅️ 전체 폭 좁게 */
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const FaqItem = styled.div`
   width: 100%;
   max-width: 980px;
-  padding: 18px 28px;
+  padding: 14px 20px;
   border-radius: 18px;
   background: ${({ $tone = "gray" }) =>
     $tone === "white" ? "#ffffff" : "#f7f7f7"};
   border: 0;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 12px;
-  row-gap: 26px;
-  font-size: 15px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  font-size: 14px;
   color: ${primaryText};
 
   @media (max-width: 768px) {
-    padding: 14px 18px;
+    padding: 12px 16px;
     border-radius: 14px;
-    font-size: 14px;
+    font-size: 13px;
   }
 `;
 
-const FaqQ = styled.div`
-  font-weight: 700;
-  font-size: 16px;
-`;
-
-const FaqA = styled.div`
-  grid-column: 2 / 3;
-  color: ${subText};
-  font-size: 14px;
-  line-height: 1.7;
-`;
-
+/* 슬림 버전 그대로 유지 */
 const FaqItemWhite = styled(FaqItem)`
   background: #f5f5f5;
   border-radius: 18px;
-  padding: 20px 32px;
+  padding: 14px 20px;
 
   @media (max-width: 768px) {
-    padding: 16px 20px;
+    padding: 12px 16px;
   }
 `;
+
+/* Q */
+const FaqQ = styled.div`
+  position: relative;
+  padding-left: 28px;  /* ← Q/A 모두 동일 padding */
+  font-weight: 600;
+  font-size: 14px;
+
+  &::before {
+    content: "Q.";
+    position: absolute;
+    left: 8px;          /* ← Q/A 같은 위치 */
+    top: 0;
+    font-weight: 700;
+  }
+`;
+
+/* A */
+const FaqA = styled.div`
+  position: relative;
+  padding-left: 28px;   /* ← Q와 텍스트 시작점 일치 */
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
+
+  &::before {
+    content: "A.";
+    position: absolute;
+    left: 8px;           /* ← Q와 동일 */
+    top: 0;
+    font-weight: 800;
+  }
+`;
+
+
 
 /* ===== 프로그램 상단 설명 + 목록 + 상세 영역 ===== */
 
@@ -656,16 +732,17 @@ function formatKRW(n) {
 const ProgramPageWrap = styled.section`
   max-width: 1120px;
   margin: 0 auto;
-  padding: 40px 20px 80px;
+  padding: 40px 24px 80px;   /* ⬅️ 좌우 20 → 24로 살짝 넉넉하게 */
 
   /* 탭 스크롤용 여유 */
   scroll-margin-top: 140px;
 
   @media (max-width: 768px) {
-    padding: 32px 16px 64px;
+    padding: 32px 20px 64px; /* 모바일도 16 → 20으로 조금 더 여유 */
     scroll-margin-top: 120px;
   }
 `;
+
 
 const ProgramHeader = styled.div`
   text-align: center;
@@ -701,13 +778,103 @@ const ProgramHeaderSubtitle = styled.p`
   }
 `;
 
+
 const ProgramListGrid = styled.div`
-  margin-top: 40px;
+  margin-top: 28px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 28px;
-  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
 `;
+
+/* 프로그램 목록용 컴팩트 카드 */
+const ProgramListCard = styled.button`
+  width: 100%;
+  border: none;
+  padding: 14px 18px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(15, 35, 75, 0.06);
+
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  row-gap: 4px;
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    border-radius: 20px;
+    padding: 12px 14px;
+  }
+`;
+
+/* 왼쪽 썸네일 */
+const ProgramListThumb = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f3f4f6;
+  grid-row: 1 / 4; /* 제목/설명/메타와 같은 열 */
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @media (max-width: 768px) {
+    width: 72px;
+    height: 72px;
+  }
+`;
+
+/* 오른쪽 상단: 제목 + 가격 줄 */
+const ProgramListTopRow = styled.div`
+  grid-column: 2 / 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ProgramListTitle = styled.div`
+  font-size: 16px;
+  font-weight: 800;
+  color: ${primaryText};
+`;
+
+const ProgramListPrice = styled.div`
+  font-size: 15px;
+  font-weight: 800;
+  color: ${primaryText};
+`;
+
+/* 설명 & 메타 줄 */
+const ProgramListSubtitle = styled.div`
+  grid-column: 2 / 3;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const ProgramListMeta = styled.div`
+  grid-column: 2 / 3;
+  font-size: 12px;
+  color: ${subText};
+  margin-top: 2px;
+`;
+
+
+
 
 /* 상세 섹션 전체 래퍼 */
 
@@ -883,6 +1050,8 @@ const DetailShellDescription = styled.div`
   color: #444;
   white-space: pre-line;
 `;
+
+
 
 const ProgramImagesWrap = styled.div`
   margin-top: 16px;
@@ -2234,213 +2403,205 @@ export default function MembershipPurchasePage() {
     );
   }
 
-  function ProgramSection() {
-    if (programsLoading) {
-      return (
-        <ProgramPageWrap id="section-program">
-          <ProgramHeader>
-            <ProgramHeaderTitle>프로그램 예약</ProgramHeaderTitle>
-            <ProgramHeaderSubtitle>
-              프로그램 정보를 불러오는 중입니다...
-            </ProgramHeaderSubtitle>
-          </ProgramHeader>
-        </ProgramPageWrap>
-      );
-    }
-
-    if (programsError) {
-      return (
-        <ProgramPageWrap id="section-program">
-          <ProgramHeader>
-            <ProgramHeaderTitle>프로그램 예약</ProgramHeaderTitle>
-            <ProgramHeaderSubtitle>{programsError}</ProgramHeaderSubtitle>
-          </ProgramHeader>
-        </ProgramPageWrap>
-      );
-    }
-
+function ProgramSection() {
+  if (programsLoading) {
     return (
       <ProgramPageWrap id="section-program">
         <ProgramHeader>
-          <ProgramHeaderTitle>프로그램 예약하기</ProgramHeaderTitle>
+          <ProgramHeaderTitle>
+          <ProgramHeaderTitleHighlight>
+            프로그램 예약하기
+          </ProgramHeaderTitleHighlight>
+          </ProgramHeaderTitle>
           <ProgramHeaderSubtitle>
-            주말·방학에 진행되는 특별 프로그램을 한눈에 확인하고
-            <br />
-            원하는 프로그램을 선택해 자세한 정보와 예약 가능 일정을
-            확인해보세요.
+            프로그램 정보를 불러오는 중입니다...
           </ProgramHeaderSubtitle>
         </ProgramHeader>
-
-        {/* 1단계: 프로그램 썸네일/요약 카드 목록 */}
-        <ProgramListGrid>
-          {programs.map((p, index) => {
-            const firstDateSlot = p.dateSlots?.[0];
-            const firstTimeSlot = firstDateSlot?.timeSlots?.[0];
-
-            const summaryDateLabel = firstDateSlot?.date
-              ? firstDateSlot.date.replace(/-/g, ".")
-              : "";
-            const summaryTimeLabel = firstTimeSlot?.label || "";
-            const capacity = Number(
-              firstTimeSlot?.capacity || p.totalCapacity || 0
-            );
-            const reserved = Number(
-              firstTimeSlot?.reserved || p.totalReserved || 0
-            );
-            const remain =
-              capacity > 0 ? Math.max(capacity - (reserved || 0), 0) : null;
-
-            const metaParts = [];
-            if (summaryDateLabel) metaParts.push(summaryDateLabel);
-            if (summaryTimeLabel) metaParts.push(summaryTimeLabel);
-            if (remain != null) metaParts.push(`잔여 ${remain}석`);
-            const summaryMeta =
-              metaParts.join(" · ") ||
-              p.description ||
-              "상세 정보를 확인해 주세요.";
-
-            const priceLabel =
-              typeof p.priceKRW === "number" && p.priceKRW > 0
-                ? `${formatKRW(p.priceKRW)}`
-                : "가격 미정";
-
-            const isActive = p.id === selectedProgramId;
-
-            return (
-              <ProgramCard
-                key={p.id || index}
-                onClick={() => {
-                  // 🔹 디테일 모드 진입
-                  setSelectedProgramId(p.id);
-                  setInProgramDetailMode(true);
-                  try {
-                    if (typeof window !== "undefined") {
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                  } catch {
-                    // ignore
-                  }
-                }}
-                style={{
-                  cursor: "pointer",
-                  border: isActive ? `2px solid ${accent}` : "none",
-                }}
-              >
-                {p.heroImageUrl && (
-                  <ProgramThumb
-                    style={{
-                      backgroundImage: `url("${p.heroImageUrl}")`,
-                    }}
-                  />
-                )}
-                <ProgramBody>
-                  <ProgramBadgeRow>
-                    <Badge $tone="accent">프로그램</Badge>
-                    {remain != null && (
-                      <Badge $tone="neutral">잔여 {remain}석</Badge>
-                    )}
-                  </ProgramBadgeRow>
-                  <ProgramTitleText>{p.title || "프로그램"}</ProgramTitleText>
-                  <ProgramMeta>{summaryMeta}</ProgramMeta>
-                  <ProgramPriceRow>
-                    <span>{priceLabel}</span>
-                    {capacity > 0 && <Muted>정원 {capacity}명</Muted>}
-                  </ProgramPriceRow>
-                </ProgramBody>
-              </ProgramCard>
-            );
-          })}
-        </ProgramListGrid>
-
-        {/* FAQ */}
-        <FaqList>
-          {FAQ_ITEMS.map((item, idx) => (
-            <FaqItemWhite key={`other-${idx}`}>
-              <FaqQ>Q.</FaqQ>
-              <div>{item.q}</div>
-              <FaqA>{item.a}</FaqA>
-            </FaqItemWhite>
-          ))}
-        </FaqList>
-
-        {/* 기본 모드에서는 여기서 ProgramDetail 렌더 안 함
-            디테일 모드는 inProgramDetailMode 분기에서 별도로 렌더 */}
       </ProgramPageWrap>
     );
   }
 
-  function OthersSection() {
+  if (programsError) {
     return (
-      <SectionGrayBg>
-        <Section id="section-others" $pt={24} $pb={96}>
-          <SectionTitle>기타 상품 이용하기</SectionTitle>
-          <SectionSubtitle>
-            다양한 상품을 정액권과 함께 편하게 이용해보세요.
-          </SectionSubtitle>
-
-          <OtherHeaderRow>
-            <PrimaryButton type="button" onClick={handleOtherProductsClick}>
-              상품 보러 가기
-            </PrimaryButton>
-
-            {otherPageCount > 1 && (
-              <CarouselControls>
-                <RoundNavButton
-                  type="button"
-                  onClick={handleOtherPrev}
-                  aria-label="이전 상품"
-                >
-                  ‹
-                </RoundNavButton>
-                <RoundNavButton
-                  type="button"
-                  onClick={handleOtherNext}
-                  aria-label="다음 상품"
-                >
-                  ›
-                </RoundNavButton>
-              </CarouselControls>
-            )}
-          </OtherHeaderRow>
-
-          <CardsRow>
-            {otherPageItems.map((p) => (
-              <ProgramCard key={`${p.key}-other`}>
-                <ProgramThumb
-                  style={{
-                    backgroundImage: `url("${p.thumb}")`,
-                  }}
-                />
-                <ProgramBody>
-                  <ProgramBadgeRow>
-                    <Badge $tone="neutral">기타 상품</Badge>
-                  </ProgramBadgeRow>
-                  <ProgramTitleText>{p.title}</ProgramTitleText>
-                  <ProgramMeta>
-                    <span>{p.place}</span>
-                    <span>·</span>
-                    <span>{p.time}</span>
-                  </ProgramMeta>
-                  <ProgramPriceRow>
-                    <span>{p.price}</span>
-                    <Muted>{p.remain}</Muted>
-                  </ProgramPriceRow>
-                </ProgramBody>
-              </ProgramCard>
-            ))}
-          </CardsRow>
-
-          <CarouselPageIndicator>
-            {otherPageCount > 0 && (
-              <span>
-                {safeOtherPage + 1} / {otherPageCount}
-              </span>
-            )}
-          </CarouselPageIndicator>
-        </Section>
-      </SectionGrayBg>
+      <ProgramPageWrap id="section-program">
+        <ProgramHeader>
+          <ProgramHeaderTitle>
+          <ProgramHeaderTitleHighlight>
+            프로그램 예약하기
+          </ProgramHeaderTitleHighlight>
+          </ProgramHeaderTitle>
+          <ProgramHeaderSubtitle>{programsError}</ProgramHeaderSubtitle>
+        </ProgramHeader>
+      </ProgramPageWrap>
     );
   }
+
+  return (
+    <ProgramPageWrap id="section-program">
+      <ProgramHeader>
+        <ProgramHeaderTitle>프로그램 예약하기</ProgramHeaderTitle>
+        <ProgramHeaderSubtitle>
+          주말·방학에 진행되는 특별 프로그램을
+          <br />
+          한눈에 확인하고 바로 예약하세요
+        </ProgramHeaderSubtitle>
+      </ProgramHeader>
+
+      {/* ✅ 프로그램 목록 — 컴팩트 카드 리스트 */}
+      <ProgramListGrid>
+        {programs.map((p, index) => {
+          const firstDateSlot = p.dateSlots?.[0];
+          const firstTimeSlot = firstDateSlot?.timeSlots?.[0];
+
+          const summaryDateLabel = firstDateSlot?.date
+            ? firstDateSlot.date.replace(/-/g, ".")
+            : "";
+          const summaryTimeLabel = firstTimeSlot?.label || "";
+          const capacity = Number(
+            firstTimeSlot?.capacity || p.totalCapacity || 0
+          );
+          const reserved = Number(
+            firstTimeSlot?.reserved || p.totalReserved || 0
+          );
+          const remain =
+            capacity > 0 ? Math.max(capacity - (reserved || 0), 0) : null;
+
+          const metaParts= [];
+          if (summaryDateLabel) metaParts.push(summaryDateLabel);
+          if (summaryTimeLabel) metaParts.push(summaryTimeLabel);
+          if (remain != null) metaParts.push(`잔여 ${remain}석`);
+          const summaryMeta =
+            metaParts.join(" · ") ||
+            p.description ||
+            "상세 정보를 확인해 주세요.";
+
+          const priceLabel =
+            typeof p.priceKRW === "number" && p.priceKRW > 0
+              ? `${formatKRW(p.priceKRW)}`
+              : "가격 미정";
+
+          const isActive = p.id === selectedProgramId;
+
+          // 날짜/요일 표시용 META
+          const weekdayLabel = firstDateSlot?.weekdayLabel || ""; // 필요하면 나중에 확장
+          const metaBottom =
+            weekdayLabel || summaryTimeLabel
+              ? `${weekdayLabel || ""}${
+                  weekdayLabel && summaryTimeLabel ? " | " : ""
+                }${summaryTimeLabel || ""}`
+              : "";
+
+          return (
+            <ProgramListCard
+              key={p.id || index}
+              type="button"
+              onClick={() => {
+                setSelectedProgramId(p.id);
+                setInProgramDetailMode(true);
+                try {
+                  if (typeof window !== "undefined") {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                } catch {
+                  // ignore
+                }
+              }}
+              style={{
+                border: isActive ? `2px solid ${accent}` : "none",
+              }}
+            >
+              <ProgramListThumb>
+                {p.heroImageUrl ? (
+                  <img src={p.heroImageUrl} alt={p.title || "프로그램"} />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      background: "#e5e7eb",
+                    }}
+                  />
+                )}
+              </ProgramListThumb>
+
+              <ProgramListTopRow>
+                <ProgramListTitle>{p.title || "프로그램"}</ProgramListTitle>
+        
+              </ProgramListTopRow>
+              <ProgramListPrice>{priceLabel}</ProgramListPrice>
+              <ProgramListSubtitle>{summaryMeta}</ProgramListSubtitle>
+
+        
+            </ProgramListCard>
+          );
+        })}
+      </ProgramListGrid>
+
+      {/* FAQ 그대로 유지 */}
+      <FaqList>
+        {FAQ_ITEMS.map((item, idx) => (
+          <FaqItemWhite key={`other-${idx}`}>
+            <FaqQ>{item.q}</FaqQ>
+            <FaqA>{item.a}</FaqA>
+          </FaqItemWhite>
+        ))}
+      </FaqList>
+    </ProgramPageWrap>
+  );
+}
+
+
+function OthersSection() {
+  return (
+    <SectionGrayBg>
+      <Section id="section-others" $pt={24} $pb={96}>
+        <SectionTitle>기타 상품 이용하기</SectionTitle>
+        <SectionSubtitle>
+          특별 간식등 아지트가 준비한 <br /> 소소한 즐거움을 예약해보세요
+        </SectionSubtitle>
+
+
+
+        {/* ✅ 컴팩트 리스트형 카드 */}
+        <CardsRow>
+          {otherPageItems.map((p) => (
+            <ProgramCard
+              key={`${p.key}-other`}
+              onClick={handleOtherProductsClick}
+            >
+              <ProgramThumb
+                style={{
+                  backgroundImage: `url("${p.thumb}")`,
+                }}
+              />
+              <ProgramBody>
+                <ProgramTitleText>{p.title}</ProgramTitleText>
+                <ProgramMeta>
+                  <span>{p.place}</span>
+                  <span>·</span>
+                  <span>{p.time}</span>
+                </ProgramMeta>
+                <ProgramPriceRow>
+                  <span>{p.price}</span>
+                  <Muted>{p.remain}</Muted>
+                </ProgramPriceRow>
+              </ProgramBody>
+            </ProgramCard>
+          ))}
+        </CardsRow>
+
+        <CarouselPageIndicator>
+          {otherPageCount > 0 && (
+            <span>
+              {safeOtherPage + 1} / {otherPageCount}
+            </span>
+          )}
+        </CarouselPageIndicator>
+      </Section>
+    </SectionGrayBg>
+  );
+}
+
 
   /* ====== 디테일 모드 렌더 ====== */
   if (inProgramDetailMode && selectedProgram) {
