@@ -12,7 +12,6 @@ const accent = "var(--color-accent, #F07A2A)";
 
 /* 고정 카테고리 프리셋(+ 전체) */
 const CATS_PRESET = [
-    "전체",
     "이용 안내",
     "멤버십 안내",
     "픽업 신청",

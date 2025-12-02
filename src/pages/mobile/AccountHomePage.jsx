@@ -444,19 +444,19 @@ export default function AccountHomePage() {
                             </MenuText>
                             <MenuArrow>›</MenuArrow>
                         </MenuItem>
-
+{/* 
                         <MenuItem onClick={go("/m/faq")}>
                      
                             <MenuText>
                                 <MenuTitle>아지트 FAQ</MenuTitle>
                             </MenuText>
                             <MenuArrow>›</MenuArrow>
-                        </MenuItem>
+                        </MenuItem> */}
 
                         <MenuItem onClick={go("/m/account/news")}>
                         
                             <MenuText>
-                                <MenuTitle>아지트 소식</MenuTitle>
+                                <MenuTitle>아지트 소식 문의</MenuTitle>
                             </MenuText>
                             <MenuArrow>›</MenuArrow>
                         </MenuItem>

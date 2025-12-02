@@ -1,130 +1,481 @@
 /* eslint-disable */
-// /src/components/help/NoticeSection.jsx
-import React, { useEffect, useMemo, useState } from "react";
+// src/components/help/NoticeSection.jsx
+// Withagit — 소식/문의 FAQ 섹션
+// - 상단 카테고리 콤보 + 바텀시트 팝업
+// - 카드형 Q/A 아코디언
+// - 하단 페이지네이션(목업)
+
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import styled from "styled-components";
-import { listNotices } from "../../services/noticesService";   // posted only
+import { getFaqData } from "../../services/faqsService";
 
 const text = "var(--color-text, #111827)";
 const sub = "#6b7280";
-const accent = "var(--color-accent, #F07A2A)";
-const line = "rgba(17,24,39,.12)";
+const accent = "#F35B05"; // 피그마 기준 오렌지
 
-const List = styled.div` border-top: 1px solid ${line}; `;
+/* 고정 카테고리 프리셋 */
+const CATS_PRESET = [
+  "이용 안내",
+  "멤버십 안내",
+  "픽업 신청",
+  "예약 방법",
+  "변경 및 취소",
+  "결제 및 정액권",
+  "이용 당일",
+  "기타 문의",
+];
+
+/* '전체' 대신 '공지' 대표 카테고리 사용 */
+const CATS_WITH_ALL = ["공지", ...CATS_PRESET];
+
+/* ===== 레이아웃 ===== */
+
+const Wrap = styled.section`
+  margin-top: 4px;
+`;
+
+/* 상단 카테고리 콤보 버튼 */
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+`;
+
+const CategoryBox = styled.div`
+  position: relative;
+`;
+
+const CategoryButton = styled.button`
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: ${text};
+  font-weight: 600;
+  cursor: pointer;
+`;
+
+const CategoryLabel = styled.span``;
+
+const CategoryCaret = styled.span`
+  font-size: 14px;
+  color: #9ca3af;
+  line-height: 1;
+  position: relative;
+  top: 1px;
+`;
+
+/* ===== 카테고리 바텀시트 팝업 ===== */
+
+const CategoryPanel = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+
+  background: rgba(0, 0, 0, 0.25);
+`;
+
+const CategoryCard = styled.div`
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto 16px;
+
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 22px 22px;
+
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
+`;
+
+/* 리스트 전체는 왼쪽 정렬 */
+const CategoryList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+`;
+
+const CategoryItem = styled.li`
+  width: 100%;
+`;
+
+/* 🔥 팝업 내 버튼 스타일
+   - box-shadow 제거
+   - 왼쪽 정렬
+   - 전체 폭의 1/3 사용 */
+const CategoryPill = styled.button`
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 33.333%;
+  min-width: 110px;
+  border-radius: 999px;
+  border: none;
+  padding: 10px 0;
+
+  font-size: 14px;
+  font-weight: ${({ active }) => (active ? 800 : 600)};
+  cursor: pointer;
+  text-align: center;
+
+  background: ${({ active }) => (active ? accent : "#ffffff")};
+  color: ${({ active }) => (active ? "#ffffff" : "#666")};
+
+  box-shadow: none;
+
+  transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
+
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
+/* ===== 콘텐츠 영역 (FAQ 리스트 + min-height) ===== */
+
+const ContentArea = styled.div`
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const List = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+/* 질문 카드 */
+
+const QCard = styled.article`
+  background: #f7f7f7;
+  border-radius: 18px;
+  padding: 18px 20px;
+`;
+
+/* 질문 헤더 */
+
 const Row = styled.div`
-  display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;
-  padding: 22px 6px; border-bottom: 1px solid ${line}; cursor: pointer;
-  &:hover{ background: rgba(17,24,39,.03); }
-`;
-const Left = styled.div` display: grid; gap: 8px; `;
-const Title = styled.div` font-size: 17px; color: ${text}; font-weight: 700; letter-spacing: -.1px; `;
-const Meta = styled.div` font-size: 13px; color: ${sub}; display: flex; gap: 12px; align-items:center; `;
-const Dot = styled.span` width:9px; height:9px; border-radius:999px; background:${accent}; display:inline-block; margin-right:8px; `;
-const Pin = styled.span` font-size:13px; color:${sub}; `;
-const Toggle = styled.span` color:#aeb6c3; font-size: 20px; `;
-
-const Body = styled.div`
-  padding: 12px 6px 20px 30px;
-  color: ${text}; font-size: 15px; line-height: 1.9;
-  border-bottom: 1px solid ${line};
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: center;
+  cursor: pointer;
 `;
 
-/* 본문 HTML 컨텐츠 기본 스타일 */
-const Html = styled.div`
-  /* 타이포 */
-  h1,h2,h3{ margin: 12px 0 6px; line-height:1.35; }
-  p{ margin: 8px 0; }
-  ul,ol{ margin: 6px 0 6px 18px; }
-  a{ color: ${accent}; text-decoration: underline; text-underline-offset: 2px; }
-
-  /* 미디어 */
-  img,video{ max-width: 100%; height: auto; border-radius: 8px; }
-  table{ width:100%; border-collapse: collapse; font-size: 14px; }
-  th,td{ border:1px solid ${line}; padding:6px 8px; }
+const QHead = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 `;
 
-/* 날짜 포맷: Timestamp/Date/string 모두 처리 */
-const fmtDate = (v) => {
-    try {
-        const d = v?.toDate ? v.toDate() : (v instanceof Date ? v : new Date(v));
-        if (Number.isNaN(d?.getTime?.())) return "";
-        return d.toISOString().slice(0, 10);
-    } catch { return ""; }
-};
+const Badge = styled.span`
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(243, 91, 5, 0.12);
+  color: ${accent};
+  font-size: 13.5px;
+  font-weight: 800;
+`;
 
-/* 아주 간단한 Sanitizer — 서버에서도 DOMPurify 권장 */
-function sanitizeHtml(html) {
-    if (!html) return "";
-    let s = String(html);
-    s = s.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, ""); // script 제거
-    s = s.replace(/\son\w+="[^"]*"/gi, ""); // onClick 류 제거 (")
-    s = s.replace(/\son\w+='[^']*'/gi, ""); // onClick 류 제거 (')
-    return s;
+const Q = styled.span`
+  font-size: 17px;
+  color: ${text};
+  letter-spacing: -0.1px;
+
+  @media (max-width: 860px) {
+    font-size: 15px;
+  }
+`;
+
+const More = styled.span`
+  color: #c3cad5;
+  font-size: 22px;
+`;
+
+/* 답변 텍스트 */
+
+const A = styled.div`
+  margin-top: 10px;
+  padding-left: 4px;
+  padding-right: 4px;
+  color: ${text};
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-line;
+`;
+
+/* 부드러운 아코디언 */
+
+function Collapsible({ open, children, duration = 220 }) {
+  const ref = useRef(null);
+  const [h, setH] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (open) {
+      requestAnimationFrame(() => setH(el.scrollHeight + 2));
+    } else {
+      setH(0);
+    }
+  }, [open, children]);
+
+  return (
+    <div
+      style={{
+        overflow: "hidden",
+        maxHeight: h,
+        opacity: open ? 1 : 0,
+        transition: `max-height ${duration}ms ease, opacity ${duration}ms ease`,
+      }}
+    >
+      <div ref={ref}>{children}</div>
+    </div>
+  );
 }
 
+/* ===== 페이지네이션 (min-height 바로 아래) ===== */
+
+const PaginationWrap = styled.nav`
+  margin: 20px 0 0;
+  display: flex;
+  justify-content: center;
+`;
+
+const PaginationInner = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: ${sub};
+`;
+
+const PageArrow = styled.button`
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  color: #9ca3af;
+`;
+
+const PageDot = styled.button`
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  background: ${({ active }) => (active ? "#ffe39b" : "transparent")};
+  color: ${({ active }) => (active ? text : sub)};
+`;
+
+/* ===== 컴포넌트 ===== */
+
 export default function NoticeSection() {
-    const [items, setItems] = useState([]);
-    const [openId, setOpenId] = useState(null);
-    const [readSet, setReadSet] = useState(() => {
-        try { return new Set(JSON.parse(localStorage.getItem("withagit.notice.readset") || "[]")); }
-        catch { return new Set(); }
-    });
+  const [items, setItems] = useState([]);
+  const [cat, setCat] = useState("공지"); // 기본값: 공지
+  const [openId, setOpenId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        let alive = true;
-        (async () => {
-            const list = await listNotices();   // { id, title, bodyHtml, summary, ... }
-            if (!alive) return;
-            setItems(list || []);
-        })();
-        return () => { alive = false; };
-    }, []);
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
-    const unreadCount = useMemo(() => items.filter(x => !readSet.has(x.id)).length, [items, readSet]);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      setLoading(true);
+      const { faqs } = await getFaqData();
+      if (!alive) return;
 
-    const toggle = (id) => {
-        setOpenId(prev => prev === id ? null : id);
-        if (!readSet.has(id)) {
-            const next = new Set(readSet); next.add(id);
-            setReadSet(next);
-            try { localStorage.setItem("withagit.notice.readset", JSON.stringify([...next])); } catch { }
-        }
+      const normalized = (faqs || []).map((it, idx) => ({
+        ...it,
+        id: it.id || `faq_${idx}`,
+        cat: it.cat || "기타 문의",
+        q: it.q || "",
+        a: it.a || "",
+      }));
+      setItems(normalized);
+      setLoading(false);
+    })();
+    return () => {
+      alive = false;
     };
+  }, []);
 
-    if (!items.length) return <div style={{ color: sub, fontSize: 14 }}>등록된 공지사항이 없습니다.</div>;
+  const filtered = useMemo(() => {
+    let list = items;
+    // '공지'는 전체 보여주고, 다른 값일 때만 카테고리 필터
+    if (cat && cat !== "공지") {
+      list = list.filter((x) => x.cat === cat);
+    }
+    return list;
+  }, [items, cat]);
 
+  const handleCategoryClick = () => {
+    setCategoryOpen((prev) => !prev);
+  };
+
+  const handleSelectCategory = (name) => {
+    setCat(name);
+    setCategoryOpen(false);
+    setOpenId(null);
+  };
+
+  const handleToggle = (id) => {
+    setOpenId((prev) => (prev === id ? null : id));
+  };
+
+  /* ===== 로딩 / 빈 상태 ===== */
+
+  if (loading) {
     return (
-        <div>
-            <div style={{ color: sub, fontSize: 14, margin: "0 0 12px" }}>
-                총 {items.length}건 · 미열람 {unreadCount}건
-            </div>
-            <List>
-                {items.map(it => {
-                    const on = openId === it.id;
-                    const read = readSet.has(it.id);
-                    const html = sanitizeHtml(it.bodyHtml || it.body || ""); // ✅ bodyHtml 우선
-                    return (
-                        <div key={it.id} id={it.id}>
-                            <Row onClick={() => toggle(it.id)} aria-expanded={on}>
-                                <Left>
-                                    <Title>{!read && <Dot />} {it.title}</Title>
-                                    <Meta>
-                                        <span>{fmtDate(it.publishedAt)}</span>
-                                        {it.isPinned ? <Pin>· 상단고정</Pin> : null}
-                                        {read ? <span>· 읽음</span> : <span>· 안읽음</span>}
-                                    </Meta>
-                                </Left>
-                                <Toggle>{on ? "−" : "+"}</Toggle>
-                            </Row>
+      <Wrap>
+        <HeaderRow>
+          <CategoryBox>
+            <CategoryButton type="button" onClick={handleCategoryClick}>
+              <CategoryLabel>{cat}</CategoryLabel>
+              <CategoryCaret>{categoryOpen ? "▴" : "▾"}</CategoryCaret>
+            </CategoryButton>
+          </CategoryBox>
+        </HeaderRow>
 
-                            {on && (
-                                <Body>
-                                    <Html dangerouslySetInnerHTML={{ __html: html }} />
-                                </Body>
-                            )}
-                        </div>
-                    );
-                })}
-            </List>
+        <div style={{ padding: 20, fontSize: 15, color: sub }}>
+          불러오는 중…
         </div>
+      </Wrap>
     );
+  }
+
+  if (!filtered.length) {
+    return (
+      <Wrap>
+        <HeaderRow>
+          <CategoryBox>
+            <CategoryButton type="button" onClick={handleCategoryClick}>
+              <CategoryLabel>{cat}</CategoryLabel>
+              <CategoryCaret>{categoryOpen ? "▴" : "▾"}</CategoryCaret>
+            </CategoryButton>
+
+            {categoryOpen && (
+              <CategoryPanel>
+                <CategoryCard>
+                  <CategoryList>
+                    {CATS_WITH_ALL.map((name) => (
+                      <CategoryItem key={name}>
+                        <CategoryPill
+                          type="button"
+                          active={cat === name}
+                          onClick={() => handleSelectCategory(name)}
+                        >
+                          {name}
+                        </CategoryPill>
+                      </CategoryItem>
+                    ))}
+                  </CategoryList>
+                </CategoryCard>
+              </CategoryPanel>
+            )}
+          </CategoryBox>
+        </HeaderRow>
+
+        <div style={{ padding: 20, fontSize: 15, color: sub }}>
+          이 카테고리에 등록된 항목이 없습니다.
+        </div>
+      </Wrap>
+    );
+  }
+
+  /* ===== 정상 렌더 ===== */
+
+  return (
+    <Wrap>
+      <HeaderRow>
+        <CategoryBox>
+          <CategoryButton type="button" onClick={handleCategoryClick}>
+            <CategoryLabel>{cat}</CategoryLabel>
+            <CategoryCaret>{categoryOpen ? "▴" : "▾"}</CategoryCaret>
+          </CategoryButton>
+
+          {categoryOpen && (
+            <CategoryPanel>
+              <CategoryCard>
+                <CategoryList>
+                  {CATS_WITH_ALL.map((name) => (
+                    <CategoryItem key={name}>
+                      <CategoryPill
+                        type="button"
+                        active={cat === name}
+                        onClick={() => handleSelectCategory(name)}
+                      >
+                        {name}
+                      </CategoryPill>
+                    </CategoryItem>
+                  ))}
+                </CategoryList>
+              </CategoryCard>
+            </CategoryPanel>
+          )}
+        </CategoryBox>
+      </HeaderRow>
+
+      {/* min-height 적용된 리스트 영역 */}
+      <ContentArea>
+        <List>
+          {filtered.map((it) => {
+            const on = openId === it.id;
+            return (
+              <QCard key={it.id}>
+                <Row
+                  role="button"
+                  aria-expanded={on}
+                  onClick={() => handleToggle(it.id)}
+                >
+                  <QHead>
+                    <Badge>{it.cat}</Badge>
+                    <Q>{it.q}</Q>
+                  </QHead>
+                  <More>{on ? "−" : "+"}</More>
+                </Row>
+                <Collapsible open={on}>
+                  <A>{it.a}</A>
+                </Collapsible>
+              </QCard>
+            );
+          })}
+        </List>
+      </ContentArea>
+
+      {/* min-height 바로 아래 페이징 (목업) */}
+      <PaginationWrap aria-label="FAQ 페이지 이동">
+        <PaginationInner>
+          <PageArrow type="button">{"<"}</PageArrow>
+          <PageDot type="button" active>
+            1
+          </PageDot>
+          <PageDot type="button">2</PageDot>
+          <PageDot type="button">3</PageDot>
+          <PageArrow type="button">{">"}</PageArrow>
+        </PaginationInner>
+      </PaginationWrap>
+    </Wrap>
+  );
 }
