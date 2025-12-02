@@ -153,40 +153,44 @@ const SummaryList = styled.ul`
 
 /* ===== 2시간권 / 4시간권 이미지 카드 ===== */
 
+/* 한 줄에 두 개, 적당한 크기 */
 const PassRow = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 140px);  /* ✅ 카드 폭 140px x 2 */
   justify-content: center;
-  gap: 20px;
+  gap: 18px;
   margin-bottom: 24px;
 
-  @media (max-width: 420px) {
-    flex-direction: column;
-    align-items: center;
+  @media (max-width: 360px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 `;
 
+/* 바깥 박스 느낌 제거 */
 const PassCard = styled.div`
-  width: 150px;
-  padding: 10px 10px 14px;
-  border-radius: 26px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  display: grid;
-  gap: 10px;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: none;
   box-shadow: none;
 `;
 
+/* 이미지 크기 줄이기 */
 const PassImage = styled.img`
-  width: 100%;
+  width: 70px;        /* ✅ 카드 폭(140px)의 절반 정도 */
   height: auto;
   border-radius: 20px;
   object-fit: contain;
 `;
 
+
+/* 2시간권 / 4시간권 — bold 제거 유지 */
 const PassLabel = styled.div`
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;   /* 일반 두께 */
   color: #111827;
   text-align: center;
 `;
@@ -198,24 +202,9 @@ const PassPrice = styled.div`
   text-align: center;
 `;
 
-const BenefitCard = styled.div`
-  margin-top: 4px;
-  padding: 14px 16px 12px;
-  border-radius: 22px;
-  background: #ffffff;
-  box-shadow: none;
-  display: grid;
-  gap: 6px;
-  font-size: 13px;
-  color: #374151;
-  border: 1px solid #f3f4f6;
-`;
 
-const BenefitItem = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-`;
+
+
 
 const BenefitEmoji = styled.span`
   font-size: 16px;
@@ -226,29 +215,7 @@ const BenefitText = styled.span`
   line-height: 1.7;
 `;
 
-const CheckTitle = styled.div`
-  margin: 22px 0 10px;
-  font-size: 14px;
-  font-weight: 900;
-  color: #111827;
-`;
 
-const CheckList = styled.ul`
-  margin: 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 6px;
-  font-size: 13px;
-  color: #4b5563;
-
-  li {
-    line-height: 1.7;
-  }
-
-  li strong {
-    font-weight: 900;
-  }
-`;
 
 /* ===== 구매하기 탭 스타일 ===== */
 const SectionLabel = styled.div`
@@ -387,6 +354,116 @@ const CTAButton = styled.button`
 const PurchaseWrap = styled.div`
   padding: 0 18px;
 `;
+
+
+
+/* ===== 혜택 포인트 / 확인하세요! 카드 ===== */
+
+/* 회색 박스 바깥 제목 */
+const SectionTitle = styled.h4`
+  margin: 24px 0 10px;
+  font-size: 15px;
+  font-weight: 900;
+  color: #111827;
+`;
+
+/* 회색 박스(혜택, 확인 공용) */
+const BenefitCard = styled.div`
+  margin: 0 0 4px;
+  padding: 16px 18px 14px;
+  border-radius: 24px;
+  background: #f3f4f6;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+`;
+
+/* 혜택 포인트용 체크 리스트 아이템 */
+const BenefitItem = styled.div`
+  position: relative;
+  padding-left: 18px;
+  line-height: 1.8;
+
+  &::before {
+    content: "✓";
+    position: absolute;
+    left: 3px;
+    top: 0.2em;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 700;
+  }
+`;
+
+/* 확인하세요!용 도트 리스트 */
+const CheckList = styled.ul`
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: #4b5563;
+
+  li {
+    position: relative;
+    padding-left: 14px;
+    line-height: 1.7;
+  }
+
+  li::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0.9em;
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: #9ca3af;
+  }
+
+  li strong {
+    font-weight: 900;
+  }
+`;
+/* 카드 안 제목 (혜택 포인트 / 확인하세요! 공용) */
+const CardTitle = styled.div`
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+`;
+
+
+
+
+const BenefitTitle = styled.div`
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+`;
+
+
+
+/* 확인하세요! 카드 (제목 포함) */
+const CheckCard = styled.div`
+  margin-top: 22px;
+  padding: 16px 18px 14px;
+  border-radius: 24px;
+  background: #f3f4f6;
+`;
+
+const CheckTitle = styled.div`
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+`;
+
+
 
 /* ===== 타임패스 옵션 ===== */
 const TIMEPASS_OPTIONS = [
@@ -913,48 +990,42 @@ export default function CheckoutTimepassDialog({
   };
 
   const renderDetail = () => (
-    <>
-      <div style={{ textAlign: "center", marginBottom: 16 }}>
-        <Pill>시간권</Pill>
-        <Title>타임패스 멤버십</Title>
-      </div>
+  <>
+    <div style={{ textAlign: "center", marginBottom: 16 }}>
+      <Pill>시간권</Pill>
+      <Title>타임패스 멤버십</Title>
+    </div>
 
-      <SummaryList>
-        <li>분 단위로 원하는 만큼 자유롭게</li>
-        <li>단기·체험 고객에게 딱 맞는 선택</li>
-        <li>예약없이 언제든지 이용하세요!</li>
-      </SummaryList>
+    <SummaryList>
+      <li>분 단위로 원하는 만큼 자유롭게</li>
+      <li>단기·체험 고객에게 딱 맞는 선택</li>
+      <li>예약없이 언제든지 이용하세요!</li>
+    </SummaryList>
 
-      <PassRow>
-        <PassCard>
-          <PassImage src={twohourimg} alt="2시간권" />
-          <PassLabel>2시간권</PassLabel>
-          <PassPrice>{KRW(25000)}원</PassPrice>
-        </PassCard>
+    <PassRow>
+      <PassCard>
+        <PassImage src={twohourimg} alt="2시간권" />
+        <PassLabel>2시간권</PassLabel>
+        <PassPrice>{KRW(25000)}원</PassPrice>
+      </PassCard>
 
-        <PassCard>
-          <PassImage src={fourhourimg} alt="4시간권" />
-          <PassLabel>4시간권</PassLabel>
-          <PassPrice>{KRW(45000)}원</PassPrice>
-        </PassCard>
-      </PassRow>
+      <PassCard>
+        <PassImage src={fourhourimg} alt="4시간권" />
+        <PassLabel>4시간권</PassLabel>
+        <PassPrice>{KRW(45000)}원</PassPrice>
+      </PassCard>
+    </PassRow>
 
-      <BenefitCard>
-        <BenefitItem>
-          <BenefitEmoji>📣</BenefitEmoji>
-          <BenefitText>체험용/단기 이용 최적</BenefitText>
-        </BenefitItem>
-        <BenefitItem>
-          <BenefitEmoji>⏰</BenefitEmoji>
-          <BenefitText>입장·퇴장, 간식 및 공간 이용 실시간 알림</BenefitText>
-        </BenefitItem>
-        <BenefitItem>
-          <BenefitEmoji>✅</BenefitEmoji>
-          <BenefitText>잔여 시간 확인 가능</BenefitText>
-        </BenefitItem>
-      </BenefitCard>
+    {/* ✅ 제목이 박스 ‘밖에’ */}
+    <SectionTitle>혜택 포인트</SectionTitle>
+    <BenefitCard>
+      <BenefitItem>체험용/단기 이용 최적</BenefitItem>
+      <BenefitItem>입장·퇴장, 간식 및 공간 이용 실시간 알림</BenefitItem>
+      <BenefitItem>잔여 시간 확인 가능</BenefitItem>
+    </BenefitCard>
 
-      <CheckTitle>확인하세요!</CheckTitle>
+    <SectionTitle>확인하세요!</SectionTitle>
+    <BenefitCard>
       <CheckList>
         <li>필요할 때만 가볍게 이용</li>
         <li>
@@ -969,8 +1040,11 @@ export default function CheckoutTimepassDialog({
         </li>
         <li>추가 결제 항목: 간식, 유료 교구 및 프로그램</li>
       </CheckList>
-    </>
-  );
+    </BenefitCard>
+  </>
+);
+
+
 
   const renderPurchase = () => (
     <PurchaseWrap>

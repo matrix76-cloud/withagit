@@ -979,9 +979,9 @@ const HowStepGrid = styled.div`
 
 const HowStepCard = styled.div`
   border-radius: 24px;
-  background: #fff7e2;
+
   padding: 12px 12px 14px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.04);
+
   display: flex;
   align-items: center;
   justify-content: center;

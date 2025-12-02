@@ -228,31 +228,32 @@ const IconCard = styled.div`
   margin: 0;
 
   background: #ffffff;
-  border-radius: 40px;
-  padding: 40px 32px;
-  box-shadow: 0 10px 26px rgba(15, 35, 75, 0.04);
+  border-radius: 32px;
+  padding: 28px 24px;                 /* ⬅️ 기존보다 패딩 줄임 */
+  box-shadow: 0 8px 18px rgba(15, 35, 75, 0.03);  /* ⬅️ 그림자도 살짝만 */
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 14px;                          /* ⬅️ 간격도 조금 줄임 */
 
   @media (max-width: 768px) {
-    border-radius: 28px;
-    padding: 28px 22px;
+    border-radius: 24px;
+    padding: 22px 18px;
   }
 `;
 
 const IconImage = styled.img`
-  width: 96px;
+  width: 72px;                        /* ⬅️ 96 → 72로 축소 */
   height: auto;
   display: block;
 
   @media (max-width: 768px) {
-    width: 84px;
+    width: 64px;
   }
 `;
+
 
 const IconTitle = styled.div`
   font-size: 18px;
@@ -293,26 +294,28 @@ const ChargeTitle = styled.h3`
 
   @media (max-width: 768px) {
     font-size: 28px;
+    text-align: center;
   }
 `;
 
 const ChargeTitleHighlight = styled.span`
   position: relative;
   display: inline-block;
-  padding: 4px 10px 10px;
+  padding: 0 6px;                     /* 텍스트 주변 살짝만 여유 */
 
   &::before {
     content: "";
     position: absolute;
-    left: 4px;
-    right: 4px;
-    bottom: 6px;
-    height: 22px;
-    background: #ffd87a;
+    left: 0;
+    right: 0;
+    bottom: 4px;                      /* 텍스트 바로 아래쪽 */
+    height: 40%;                      /* 글자의 40% 정도 높이 */
+    background: #ffd87a;              /* 형광펜 색 */
     border-radius: 999px;
     z-index: -1;
   }
 `;
+
 
 const ChargeSubtitle = styled.p`
   margin: 0 0 32px;

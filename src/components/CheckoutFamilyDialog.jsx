@@ -21,12 +21,7 @@ import { ORDER_TYPE } from "../constants/defs";
 import { useUser } from "../contexts/UserContext";
 import { createOrderDraft, markOrderPaid } from "../services/orderService";
 import { db } from "../services/api";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 /* 이미지 */
 import familyFirstImg from "../assets/membership/family-first.png";
@@ -194,43 +189,51 @@ const SummaryList = styled.ul`
   }
 `;
 
-/* ===== 이미지 카드 영역 ===== */
+/* ===== 이미지 카드 영역 (작게 + 한 줄 2개) ===== */
+
 const FamilyRow = styled.div`
   display: flex;
   justify-content: center;
-  gap: 26px;
+  gap: 32px;
+  margin-bottom: 24px;
 
   @media (max-width: 420px) {
-    flex-direction: column;
-    align-items: center;
+    gap: 24px;
   }
 `;
 
 const FamilyCard = styled.div`
-  width: 150px;
-  padding: 10px 10px 14px;
-  border-radius: 26px;
-  border: 1px solid #f0f0f0;
-  background: white;
-  display: grid;
-  gap: 10px;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 `;
 
+/* 사람 아이콘만 크게 보여주기 (박스 없이) */
 const FamilyImg = styled.img`
-  width: 100%;
+  width: 96px;        /* ✅ 이전보다 키워서 피그마 느낌 */
+  height: auto;
   object-fit: contain;
-  border-radius: 20px;
+  border-radius: 0;   /* PNG 자체 모양 그대로 사용 */
 `;
 
+/* 라벨/가격은 그대로 쓰면 됨 */
 const FamilyLabel = styled.div`
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
+  color: #111827;
+  text-align: center;
 `;
 
 const FamilyPrice = styled.div`
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 800;
+  color: #111827;
+  text-align: center;
 `;
 
 const DiscountTag = styled.div`
@@ -242,45 +245,79 @@ const DiscountTag = styled.div`
   font-weight: 700;
 `;
 
-/* ===== 혜택 ===== */
-const BenefitBlock = styled.div`
-  margin-top: 24px;
-  padding: 16px 18px;
-  border-radius: 20px;
-  border: 1px solid #f3f4f6;
-  background: #ffffff;
-  display: grid;
-  gap: 10px;
+/* ===== 혜택 / 확인 (회색 박스 공통) ===== */
+
+/* 제목 – 회색 박스 바깥 위 */
+const SectionTitle = styled.h4`
+  margin: 24px 0 10px;
+  font-size: 15px;
+  font-weight: 900;
+  color: #111827;
 `;
 
-const BenefitItem = styled.div`
-  display: flex;
-  gap: 10px;
-  font-size: 14px;
+/* 회색 카드 */
+const GreyCard = styled.div`
+  margin: 0 0 4px;
+  padding: 16px 18px 14px;
+  border-radius: 24px;
+  background: #f3f4f6;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
   color: #374151;
 `;
 
-const Emoji = styled.span`
-  font-size: 18px;
+/* 혜택 포인트용 체크 아이템 */
+const BenefitItem = styled.div`
+  position: relative;
+  padding-left: 18px;
+  line-height: 1.8;
+
+  &::before {
+    content: "✓";
+    position: absolute;
+    left: 3px;
+    top: 0.2em;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  strong {
+    font-weight: 400; /* 회색 박스 안에서는 굵기 제거 */
+  }
 `;
 
-/* ===== 확인 영역 ===== */
-const CheckTitle = styled.div`
-  margin: 24px 0 12px;
-  font-weight: 900;
-  font-size: 15px;
-`;
-
+/* 확인하세요!용 도트 리스트 */
 const CheckList = styled.ul`
   margin: 0;
-  padding-left: 18px;
+  padding: 0;
+  list-style: none;
+
   display: grid;
   gap: 6px;
+  font-size: 13px;
+  color: #4b5563;
 
   li {
-    font-size: 14px;
-    color: #4b5563;
+    position: relative;
+    padding-left: 14px;
     line-height: 1.7;
+  }
+
+  li::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0.9em;
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: #9ca3af;
+  }
+
+  li strong {
+    font-weight: 400;
   }
 `;
 
@@ -444,10 +481,8 @@ export default function CheckoutFamilyDialog({
   const navigate = useNavigate();
 
   const handleGoToBuy = () => {
-    // 상세 탭에서 CTA 누르면 결제 말고 "구매하기" 탭으로만 이동
     setActiveTab("buy");
   };
-
 
   const {
     phoneE164,
@@ -506,14 +541,8 @@ export default function CheckoutFamilyDialog({
       ]);
       setAgitzSet(agitz || new Set());
       setFamilySet(fam || new Set());
-      console.log(
-        "[FamilyCheckout] agitzSet",
-        Array.from(agitz || [])
-      );
-      console.log(
-        "[FamilyCheckout] familySet",
-        Array.from(fam || [])
-      );
+      console.log("[FamilyCheckout] agitzSet", Array.from(agitz || []));
+      console.log("[FamilyCheckout] familySet", Array.from(fam || []));
     } catch (e) {
       console.warn("[FamilyCheckout] membership set 조회 실패", e);
     } finally {
@@ -551,11 +580,8 @@ export default function CheckoutFamilyDialog({
     }
 
     const base = FAMILY_PRICE_BASE;
-    const firstCount = Math.min(1, n);
-    const addCount = Math.max(0, n - 1);
-
     const subUnit = base * n;
-    const discUnit = Math.round(base * FAMILY_ADD_DISCOUNT_RATE * addCount);
+    const discUnit = Math.round(base * FAMILY_ADD_DISCOUNT_RATE * Math.max(0, n - 1));
 
     const sub = Math.round(subUnit * months);
     const disc = Math.round(discUnit * months);
@@ -682,7 +708,7 @@ export default function CheckoutFamilyDialog({
     };
 
     const draft = sanitizeForFirestore({
-      type, // ORDER_TYPE.FAMILY
+      type,
       childId: selectedChildIds[0] || null,
       children: selectedChildIds,
       months: Number(months || 1),
@@ -732,7 +758,6 @@ export default function CheckoutFamilyDialog({
         return;
       }
 
-      // dev/test: Bootpay 생략
       if (devMode) {
         console.log("[FamilyCheckout] dev 모드, Bootpay 생략");
         await markOrderPaid({
@@ -892,10 +917,7 @@ export default function CheckoutFamilyDialog({
     if (e.target === e.currentTarget) onClose?.();
   };
 
-    // 🔥 여기 한 줄 추가
-  if (!open || !portalEl) return null;
-
-  /* 상세 */
+  /* 상세 탭 */
   const renderDetail = () => (
     <>
       <Pill>형제/자매 할인</Pill>
@@ -927,27 +949,21 @@ export default function CheckoutFamilyDialog({
         </FamilyCard>
       </FamilyRow>
 
-      <BenefitBlock>
-        <BenefitItem>
-          <Emoji>🚀</Emoji> 인기 클래스 우선 신청
-        </BenefitItem>
-        <BenefitItem>
-          <Emoji>🛡️</Emoji> 배상책임보험 & 실시간 알림
-        </BenefitItem>
-        <BenefitItem>
-          <Emoji>👨‍👩‍👧‍👦</Emoji> 형제·자매 모두 동일 혜택 제공
-        </BenefitItem>
-      </BenefitBlock>
 
-      <CheckTitle>확인하세요!</CheckTitle>
-      <CheckList>
-        <li>두 번째 자녀부터 15% 할인 적용 (정규 멤버십 기준)</li>
-        <li>자녀별 프로필·학교 정보 등록 필요</li>
-      </CheckList>
+
+      {/* 확인하세요! */}
+      <SectionTitle>확인하세요!</SectionTitle>
+      <GreyCard>
+        <CheckList>
+          <li>두 번째 자녀부터 15% 할인 적용 (정규 멤버십 기준)</li>
+          <li>자녀별 프로필·학교 정보 등록 필요</li>
+          <li>정규/패밀리 멤버십 중복 가입은 불가</li>
+        </CheckList>
+      </GreyCard>
     </>
   );
 
-  /* 구매 */
+  /* 구매 탭 */
   const renderPurchase = () => (
     <PurchaseWrap>
       <Block>
@@ -1071,6 +1087,8 @@ export default function CheckoutFamilyDialog({
     </PurchaseWrap>
   );
 
+  if (!open || !portalEl) return null;
+
   return createPortal(
     <Backdrop onClick={handleBackdrop}>
       <Dialog>
@@ -1110,8 +1128,9 @@ export default function CheckoutFamilyDialog({
             {activeTab === "detail"
               ? "패밀리 멤버십 이용하기"
               : loading
-                ? "결제 진행 중…"
-                : `패밀리 멤버십 결제하기${total > 0 ? ` (${KRW(total)}원)` : ""
+              ? "결제 진행 중…"
+              : `패밀리 멤버십 결제하기${
+                  total > 0 ? ` (${KRW(total)}원)` : ""
                 }`}
           </CTAButton>
         </Footer>

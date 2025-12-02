@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
@@ -21,12 +22,7 @@ import { ORDER_TYPE } from "../constants/defs";
 import { useUser } from "../contexts/UserContext";
 import { createOrderDraft, markOrderPaid } from "../services/orderService";
 import { db } from "../services/api";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 /* ===== Layout / Colors ===== */
 const Backdrop = styled.div`
@@ -177,7 +173,6 @@ const PillGhost = styled.span`
   padding: 6px 14px;
   border-radius: 999px;
   background: ${AGIT_ACCENT_LIGHT};
-  border-color: ${AGIT_ACCENT};
   color: #ffffff;
   font-size: 11px;
   font-weight: 800;
@@ -216,55 +211,86 @@ const SummaryList = styled.ul`
   }
 `;
 
-const BenefitCard = styled.div`
-  margin-top: 4px;
-  padding: 14px 16px 12px;
-  border-radius: 22px;
-  background: #ffffff;
-  box-shadow: none;
-  display: grid;
-  gap: 6px;
-  font-size: 13px;
-  color: #374151;
-  border: 1px solid #f3f4f6;
-`;
+/* ===== 혜택 포인트 / 확인하세요! 카드 ===== */
 
-const BenefitItem = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  line-height: 1.7;
-`;
-
-const BenefitEmoji = styled.span`
-  font-size: 16px;
-  line-height: 1.4;
-`;
-
-const CheckTitle = styled.div`
-  margin: 22px 0 10px;
-  font-size: 14px;
+/* 제목 – 회색 박스 '바깥' 위에 위치 */
+const SectionTitle = styled.h4`
+  margin: 24px 0 10px;
+  font-size: 15px;
   font-weight: 900;
   color: #111827;
 `;
 
-const CheckList = styled.ul`
-  margin: 0;
-  padding-left: 18px;
+/* 공용 회색 박스 */
+const BenefitCard = styled.div`
+  margin: 0 0 4px;
+  padding: 16px 18px 14px;
+  border-radius: 24px;
+  background: #f3f4f6;
   display: grid;
-  gap: 6px;
-  font-size: 13px;
-  color: #4b5563;
+  gap: 8px;
+  font-size: 12px;
+  color: #374151;
+`;
 
-  li {
-    line-height: 1.7;
+/* 혜택 포인트용 체크 아이템 */
+const BenefitItem = styled.div`
+  position: relative;
+  padding-left: 18px;
+  line-height: 1.8;
+
+  &::before {
+    content: "✓";
+    position: absolute;
+    left: 3px;
+    top: 0.2em;
+    color: #9ca3af;
+    font-size: 12px;
+    font-weight: 700;
   }
 
-  li strong {
-    font-weight: 900;
+  /* ✅ 회색 박스 안 strong 굵기 제거 */
+  strong {
+    font-weight: 400;
   }
 `;
 
+/* 확인하세요!용 도트 리스트 */
+const CheckList = styled.ul`
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+
+  li {
+    position: relative;
+    padding-left: 14px;
+    line-height: 1.7;
+  }
+
+  li::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0.9em;
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: #9ca3af;
+  }
+
+  /* ✅ 리스트 안 strong 굵기 제거 */
+  li strong {
+    font-weight: 400;
+  }
+`;
+
+
+/* ===== FAQ 섹션 ===== */
 const FAQSection = styled.div`
   margin-top: 28px;
 `;
@@ -277,28 +303,45 @@ const FAQTitle = styled.div`
 `;
 
 const FAQBox = styled.div`
-  padding: 18px 20px;
-  background: #ffffff;
-  border: 1px solid #f3f4f6;
-  border-radius: 20px;
+  padding: 16px 18px 14px;
+  border-radius: 24px;
+  background: #f3f4f6;        /* ✅ 회색 배경 */
   box-shadow: none;
+  border: none;               /* 테두리 제거 */
   display: grid;
-  gap: 18px;
+  gap: 12px;                  /* 살짝 더 촘촘하게 */
 `;
 
 const FAQItem = styled.div`
-  line-height: 1.6;
+  position: relative;
+  padding-left: 14px;     /* 도트 위치 */
+  line-height: 1.7;
   font-size: 13px;
   color: #374151;
 
+  /* 🔸 도트 추가 */
+  &::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0.75em;
+    width: 4px;
+    height: 4px;
+    background: #9ca3af;
+    border-radius: 999px;
+  }
+
+  /* 제목 역할 strong → 굵기 제거 + block 배치 */
   & > strong {
     display: block;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 13px;
+    font-weight: 400;   /* 굵기 제거 */
     color: #111827;
     margin-bottom: 4px;
   }
 `;
+
+
 
 /* ===== 구매하기 탭 ===== */
 const PurchaseWrap = styled.div`
@@ -451,7 +494,6 @@ export default function CheckoutAgitDialog({
   const navigate = useNavigate();
 
   const handleGoToBuy = () => {
-    // 상세 탭에서 CTA 누르면 결제 말고 "구매하기" 탭으로만 이동
     setActiveTab("buy");
   };
 
@@ -531,7 +573,6 @@ export default function CheckoutAgitDialog({
     }
 
     if (children.length > 0) {
-      // 이미 AGITZ 적용된 자녀는 스킵하고, 가능한 자녀 중 첫 번째 선택
       const firstAvailable =
         children.find((c) => !agitzAppliedSet.has(c.childId)) ||
         children[0];
@@ -616,11 +657,11 @@ export default function CheckoutAgitDialog({
       price: { total },
       months,
       childId: selectedChildId,
-      autoMode, // "auto" | "once"
+      autoMode,
     };
 
     const draft = sanitizeForFirestore({
-      type, // ORDER_TYPE.AGITZ
+      type,
       childId: selectedChildId,
       children: undefined,
       months: Number(months || 1),
@@ -640,8 +681,8 @@ export default function CheckoutAgitDialog({
       meta: {
         kind,
         months,
-        autoMode,                       // "auto" | "once"
-        autoRenew: autoMode === "auto", // 진짜 갱신 타입
+        autoMode,
+        autoRenew: autoMode === "auto",
         termType: autoMode === "auto" ? "AUTO" : "ONETIME",
       },
     });
@@ -668,7 +709,6 @@ export default function CheckoutAgitDialog({
         return;
       }
 
-      // dev/test: Bootpay 생략
       if (devMode) {
         console.log("[AgitzCheckout] dev 모드, Bootpay 생략");
         await markOrderPaid({
@@ -844,38 +884,33 @@ export default function CheckoutAgitDialog({
         <li>자동 결제 옵션으로 편리한 구독</li>
       </SummaryList>
 
+      {/* 혜택 포인트 */}
+      <SectionTitle>혜택 포인트</SectionTitle>
       <BenefitCard>
+        <BenefitItem>우선 예약권: 인기 클래스 선오픈 시 우선 신청</BenefitItem>
         <BenefitItem>
-          <BenefitEmoji>🏅</BenefitEmoji>
-          우선 예약권: 인기 클래스 선오픈 시 우선 신청
-        </BenefitItem>
-        <BenefitItem>
-          <BenefitEmoji>🛡️</BenefitEmoji>
           안전 보장: 배상책임보험, 안전 픽업 및 실시간 알림 제공
         </BenefitItem>
-        <BenefitItem>
-          <BenefitEmoji>🔄</BenefitEmoji>
-          자동 갱신 옵션: 결제 번거로움 최소화
-        </BenefitItem>
+        <BenefitItem>자동 갱신 옵션: 결제 번거로움 최소화</BenefitItem>
       </BenefitCard>
 
-      <CheckTitle>확인하세요!</CheckTitle>
-      <CheckList>
-        <li>
-          이용 요건: 평일 매일 이용<br />
-          1일 최대 2시간 무료{" "}
-          <strong>(1시간 추가 시 15,000원)</strong>
-        </li>
-        <li>입장·퇴장, 픽업 출발·도착, 간식 및 공간 이용 실시간 알림</li>
-        <li>
-          포함 서비스: 아지트 공간 & 교구 무제한 이용{" "}
-          <span style={{ color: "#6b7280" }}>
-            {" "}
-            (픽업 서비스는 제외)
-          </span>
-        </li>
-        <li>추가 결제 항목: 간식, 픽업, 유료 교구 및 프로그램</li>
-      </CheckList>
+      {/* 확인하세요! */}
+      <SectionTitle>확인하세요!</SectionTitle>
+      <BenefitCard>
+        <CheckList>
+          <li>
+            이용 요건: 평일 매일 이용<br />
+            1일 최대 2시간 무료{" "}
+            <strong>(1시간 추가 시 15,000원)</strong>
+          </li>
+          <li>입장·퇴장, 픽업 출발·도착, 간식 및 공간 이용 실시간 알림</li>
+          <li>
+            포함 서비스: 아지트 공간 & 교구 무제한 이용{" "}
+            <span style={{ color: "#6b7280" }}></span>
+          </li>
+          <li>추가 결제 항목: 간식, 픽업, 유료 교구 및 프로그램</li>
+        </CheckList>
+      </BenefitCard>
 
       <FAQSection>
         <FAQTitle>FAQ</FAQTitle>
@@ -888,8 +923,8 @@ export default function CheckoutAgitDialog({
 
           <FAQItem>
             <strong>당일 이용</strong>
-            가능한 경우 있음. 단, 픽업 신청은 전날 마감 원칙으로 당일 신청
-            불가
+            가능. 단, 픽업 신청은 전날 마감 원칙으로 상황에 따라
+            불가할수 있습니다
           </FAQItem>
 
           <FAQItem>
@@ -1021,11 +1056,7 @@ export default function CheckoutAgitDialog({
   /* ===== Render ===== */
   return createPortal(
     <Backdrop onClick={handleBackdrop}>
-      <Dialog
-        role="dialog"
-        aria-modal="true"
-        aria-label="아지트 멤버십 상세"
-      >
+      <Dialog role="dialog" aria-modal="true" aria-label="아지트 멤버십 상세">
         <Header>
           <HeaderTop>
             <CloseBtn onClick={onClose}>✕</CloseBtn>
@@ -1048,9 +1079,7 @@ export default function CheckoutAgitDialog({
           </TabsBar>
         </Header>
 
-        <Body>
-          {activeTab === "detail" ? renderDetail() : renderPurchase()}
-        </Body>
+        <Body>{activeTab === "detail" ? renderDetail() : renderPurchase()}</Body>
 
         <Footer>
           <CTAButton
@@ -1059,13 +1088,12 @@ export default function CheckoutAgitDialog({
             disabled={activeTab === "buy" && !canPay}
           >
             {activeTab === "detail"
-              ? "아지트 멤버십 이용하기" // 상세 탭: 그냥 구매 탭으로 이동만
+              ? "아지트 멤버십 이용하기"
               : loading
-                ? "결제 진행 중…"
-                : `아지트 멤버십 결제하기 (${KRW(total)}원)`}
+              ? "결제 진행 중…"
+              : `아지트 멤버십 결제하기 (${KRW(total)}원)`}
           </CTAButton>
         </Footer>
-
       </Dialog>
     </Backdrop>,
     portalEl

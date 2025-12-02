@@ -123,7 +123,7 @@ const CategoryPill = styled.button`
 
   width: 33.333%;
   min-width: 110px;
-  border-radius: 999px;
+  border-radius: 15px;
   border: none;
   padding: 10px 0;
 
