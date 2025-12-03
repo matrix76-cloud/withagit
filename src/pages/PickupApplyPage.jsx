@@ -104,23 +104,23 @@ const MainGrid = styled.div`
 `;
 
 /* ================== 왼쪽 컬럼 스타일 ================== */
-
 const LeftWrap = styled.aside`
   flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  border-radius: 24px;
-  background: #fff;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
-  height: 100%;
+
+  /* 🔸 바깥 카드 느낌 제거 */
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 
   @media (max-width: 960px) {
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-    padding: 18px 16px 20px;
+    padding: 0;
   }
 `;
+
 
 /* 🔸 모바일에서는 섹션 헤더(자녀/날짜·시간 설명) 숨김 */
 const SectionHeader = styled.div`
@@ -130,6 +130,48 @@ const SectionHeader = styled.div`
     display: none;
   }
 `;
+
+const PickupMainCard = styled.div`
+  border-radius: 20px;
+  border: 1px solid #f3f4f6;
+  background: #ffffff;
+  padding: 16px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const SectionDividerLine = styled.div`
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0 -16px;   /* 카드 padding(16px)을 상쇄해서 전체 폭으로 쭉 */
+`;
+
+const PickupSubSection = styled.div`
+  & + & {
+    margin-top: 16px;
+  }
+`;
+
+
+
+const ChildAddRowWrap = styled.div`
+  position: relative;
+  margin-top: 8px;
+  padding-bottom: 16px;
+
+  /* 🔸 자녀 추가 바로 밑에, 카드 전체 폭으로 라인 */
+  &::after {
+    content: "";
+    position: absolute;
+    left: -16px;    /* PickupMainCard 패딩만큼 밖으로 */
+    right: -16px;
+    bottom: 0;
+    height: 1px;
+    background: #e5e7eb;
+  }
+`;
+
 
 const SectionTitle = styled.h2`
   margin: 0;
@@ -228,18 +270,23 @@ const ChevronDown = () => (
   </svg>
 );
 
-const AddChildRow = styled.div`
-  margin-top: 6px;
-  border-radius: 16px;
+const AddChildRow = styled.button`
+  width: calc(100% - 24px);
+  margin: 0 12px;                 /* 위/아래 마진은 래퍼가 처리 */
+  padding: 8px 14px 9px;
+  border-radius: 999px;
   border: 1px dashed #f97316;
   background: #fff7ed;
-  padding: 12px 16px;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 700;
   color: #9a3412;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  cursor: pointer;
 `;
+
 
 /* --- 날짜/시간 선택 --- */
 
@@ -248,12 +295,35 @@ const DateTimeBlock = styled.div`
 `;
 
 const BlockLabelRow = styled.div`
-  margin-bottom: 8px;
+  position: relative;
+  margin: 0 0 8px;
+  padding: 10px 0;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
+
+  /* 🔸 위/아래 라인 – 카드 패딩(16px)을 넘어서 끝까지 */
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: -16px;
+    right: -16px;
+    height: 1px;
+    background: #e5e7eb;
+  }
+
+  &::before {
+    top: 0;      /* 라벨 위 라인 */
+  }
+
+  &::after {
+    bottom: 0;   /* 라벨 아래 라인 */
+  }
 `;
+
+
 
 const BlockHint = styled.div`
   font-size: 11px;
@@ -344,11 +414,33 @@ const DayCell = styled.button`
 /* 시간 선택 */
 
 const TimeHeaderRow = styled.div`
-  margin-bottom: 8px;
+  position: relative;
+  margin: 16px 0 8px;
+  padding: 10px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  /* 🔸 위/아래 라인 – 카드 패딩(16px) 밖까지 확장 */
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: -16px;
+    right: -16px;
+    height: 1px;
+    background: #e5e7eb;
+  }
+
+  &::before {
+    top: 0;      /* 시간 라벨 위 라인 */
+  }
+
+  &::after {
+    bottom: 0;   /* 시간 라벨 아래 라인 */
+  }
 `;
+
 
 const TimeHeaderTitle = styled.div`
   font-size: 13px;
@@ -357,19 +449,20 @@ const TimeHeaderTitle = styled.div`
 `;
 
 const TimeApplyButton = styled.button`
-  border-radius: 10px;
-  border: none;
-  background: #f3f4f6;
-  padding: 14px 14px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 700;
   color: #4b5563;
   cursor: pointer;
 
   &:hover {
-    background: #e5e7eb;
+    background: #f9fafb;
   }
 `;
+
 
 const TimePickerBox = styled.div`
   border-radius: 18px;
@@ -1293,168 +1386,191 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
         </SectionSub>
       </SectionHeader>
 
-      <Block>
-        <SectionLabel>자녀 연결</SectionLabel>
-        <SelectBox
-          type="button"
-          $placeholder={!activeChildId}
-          onClick={() => {
-            if (!childItems.length) {
-              alert("등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록해 주세요.");
-              return;
-            }
-            setDropdownOpen((prev) => !prev);
-          }}
-        >
-          <span>{childLabel}</span>
-          <ChevronDown />
-        </SelectBox>
+      <PickupMainCard>
+        {/* 1) 자녀 선택 섹션 */}
+        <PickupSubSection>
+          <SectionLabel>자녀 선택</SectionLabel>
 
-        {dropdownOpen && childItems.length > 0 && (
-          <ChildDropdown>
-            {childItems.map((c) => {
-              const isActive = c.id === activeChildId;
-              return (
-                <ChildItemButton
-                  key={c.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveChildId(c.id);
-                    setChildLabel(
-                      c.birth ? `${c.name} (${c.birth})` : c.name || "선택해주세요"
-                    );
-                    setDropdownOpen(false);
-                  }}
-                  style={{
-                    backgroundColor: isActive ? "rgba(240,122,42,0.06)" : "transparent",
-                  }}
-                >
-                  <span className="name">{c.name || "(이름 없음)"}</span>
-                  {c.birth && <span className="meta">{c.birth}</span>}
-                  {(c.hasAgitz || c.hasFamily) && (
-                    <div className="badge-row">
-                      {c.hasAgitz && <span className="badge">정규 멤버십</span>}
-                      {c.hasFamily && <span className="badge">패밀리 멤버십</span>}
-                    </div>
-                  )}
-                </ChildItemButton>
-              );
-            })}
-          </ChildDropdown>
-        )}
+          <SelectBox
+            type="button"
+            $placeholder={!activeChildId}
+            onClick={() => {
+              if (!childItems.length) {
+                alert(
+                  "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록해 주세요."
+                );
+                return;
+              }
+              setDropdownOpen((prev) => !prev);
+            }}
+          >
+            <span>{childLabel}</span>
+            <ChevronDown />
+          </SelectBox>
 
-        <AddChildRow
-          onClick={() => {
-            const isMobile =
-              typeof window !== "undefined" &&
-              window.matchMedia &&
-              window.matchMedia("(max-width: 768px)").matches;
+          {dropdownOpen && childItems.length > 0 && (
+            <ChildDropdown>
+              {childItems.map((c) => {
+                const isActive = c.id === activeChildId;
+                return (
+                  <ChildItemButton
+                    key={c.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveChildId(c.id);
+                      setChildLabel(
+                        c.birth
+                          ? `${c.name} (${c.birth})`
+                          : c.name || "선택해주세요"
+                      );
+                      setDropdownOpen(false);
+                    }}
+                    style={{
+                      backgroundColor: isActive
+                        ? "rgba(240,122,42,0.06)"
+                        : "transparent",
+                    }}
+                  >
+                    <span className="name">{c.name || "(이름 없음)"}</span>
+                    {c.birth && <span className="meta">{c.birth}</span>}
+                    {(c.hasAgitz || c.hasFamily) && (
+                      <div className="badge-row">
+                        {c.hasAgitz && (
+                          <span className="badge">정규 멤버십</span>
+                        )}
+                        {c.hasFamily && (
+                          <span className="badge">패밀리 멤버십</span>
+                        )}
+                      </div>
+                    )}
+                  </ChildItemButton>
+                );
+              })}
+            </ChildDropdown>
+          )}
 
-            if (isMobile) {
-              navigate("/m/account");
-            } else {
-              navigate("/mypage");
-            }
-          }}
-        >
-          <span>+ 자녀 추가</span>
-          <span style={{ fontSize: 12 }}>클릭하면 마이페이지로 이동</span>
-        </AddChildRow>
-      </Block>
+        <ChildAddRowWrap>
+          <AddChildRow
+            type="button"
+            onClick={() => {
+              const isMobile =
+                typeof window !== "undefined" &&
+                window.matchMedia &&
+                window.matchMedia("(max-width: 768px)").matches;
 
-      <DateTimeBlock>
-        <BlockLabelRow>
-          <SectionLabel>날짜를 선택해 주세요</SectionLabel>
-        </BlockLabelRow>
-        <CalendarShell>
-          <CalendarHeaderRow>
-            <MonthNavBtn type="button" onClick={() => moveMonth(-1)}>
-              ‹
-            </MonthNavBtn>
-            <MonthLabelText>{formattedMonth}</MonthLabelText>
-            <MonthNavBtn type="button" onClick={() => moveMonth(1)}>
-              ›
-            </MonthNavBtn>
-          </CalendarHeaderRow>
+              if (isMobile) {
+                navigate("/m/account");
+              } else {
+                navigate("/mypage");
+              }
+            }}
+          >
+            <span>+</span>
+            <span>자녀 추가</span>
+          </AddChildRow>
+        </ChildAddRowWrap>
 
-          <WeekRow>
-            {WEEK_LABELS.map((w) => (
-              <div key={w}>{w}</div>
-            ))}
-          </WeekRow>
-          <DayGrid>
-            {monthCells.map((d, idx) => {
-              if (!d) return <div key={"empty-" + idx} />;
+        </PickupSubSection>
 
-              const isSelected =
-                selectedDate &&
-                d.getFullYear() === selectedDate.getFullYear() &&
-                d.getMonth() === selectedDate.getMonth() &&
-                d.getDate() === selectedDate.getDate();
+        {/* 2) 날짜 선택 섹션 */}
+        <PickupSubSection>
+          <BlockLabelRow>
+            <SectionLabel>날짜를 선택해주세요</SectionLabel>
+          </BlockLabelRow>
 
-              const thisDate = new Date(d);
-              thisDate.setHours(0, 0, 0, 0);
-              const isPast = thisDate < today; // 🔹 오늘보다 이전이면 비활성
+          <CalendarShell>
+            <CalendarHeaderRow>
+              <MonthNavBtn type="button" onClick={() => moveMonth(-1)}>
+                ‹
+              </MonthNavBtn>
+              <MonthLabelText>{formattedMonth}</MonthLabelText>
+              <MonthNavBtn type="button" onClick={() => moveMonth(1)}>
+                ›
+              </MonthNavBtn>
+            </CalendarHeaderRow>
 
-              return (
-                <DayCell
-                  key={d.toISOString()}
-                  type="button"
-                  $selected={isSelected}
-                  disabled={isPast}
-                  onClick={() => {
-                    if (isPast) return;
-                    selectDate(d);
-                  }}
-                >
-                  {d.getDate()}
-                </DayCell>
-              );
-            })}
-          </DayGrid>
+            <WeekRow>
+              {WEEK_LABELS.map((w) => (
+                <div key={w}>{w}</div>
+              ))}
+            </WeekRow>
 
-        </CalendarShell>
+            <DayGrid>
+              {monthCells.map((d, idx) => {
+                if (!d) return <div key={"empty-" + idx} />;
 
-        <TimeHeaderRow>
-          <TimeHeaderTitle>시간을 선택해주세요</TimeHeaderTitle>
-          <TimeApplyButton type="button" onClick={addSlot}>
-            이대로 담기
-          </TimeApplyButton>
-        </TimeHeaderRow>
+                const isSelected =
+                  selectedDate &&
+                  d.getFullYear() === selectedDate.getFullYear() &&
+                  d.getMonth() === selectedDate.getMonth() &&
+                  d.getDate() === selectedDate.getDate();
 
-        <TimePickerBox>
-          <TimePickerLabels>
-            <TimePickerLabel>오전 / 오후</TimePickerLabel>
-            <TimePickerLabel>시간</TimePickerLabel>
-            <TimePickerLabel>분</TimePickerLabel>
-          </TimePickerLabels>
+                const thisDate = new Date(d);
+                thisDate.setHours(0, 0, 0, 0);
+                const isPast = thisDate < today;
 
-          <TimeColumns>
-            <ScrollWheelColumn
-              items={ampmItems}
-              value={ampm}
-              onChange={setAmPm}
-              renderItem={(v) => (v === "PM" ? "오후" : "오전")}
-            />
-            <ScrollWheelColumn
-              items={hourItems}
-              value={hour}
-              onChange={setHour}
-              renderItem={(v) => String(v).padStart(2, "0")}
-            />
-            <ScrollWheelColumn
-              items={minuteItems}
-              value={minute}
-              onChange={setMinute}
-              renderItem={(v) => String(v).padStart(2, "0")}
-            />
-          </TimeColumns>
-        </TimePickerBox>
+                return (
+                  <DayCell
+                    key={d.toISOString()}
+                    type="button"
+                    $selected={isSelected}
+                    disabled={isPast}
+                    onClick={() => {
+                      if (isPast) return;
+                      selectDate(d);
+                    }}
+                  >
+                    {d.getDate()}
+                  </DayCell>
+                );
+              })}
+            </DayGrid>
+          </CalendarShell>
+        </PickupSubSection>
 
-        <TimeResetLink type="button" onClick={clearSlots}>
-          선택한 시간 모두 지우기
-        </TimeResetLink>
-      </DateTimeBlock>
+        {/* 3) 시간 선택 섹션 */}
+        <PickupSubSection>
+          <TimeHeaderRow>
+            <TimeHeaderTitle>시간을 선택해주세요</TimeHeaderTitle>
+            <TimeApplyButton type="button" onClick={addSlot}>
+              이대로 담기
+            </TimeApplyButton>
+          </TimeHeaderRow>
+
+          <TimePickerBox>
+            <TimePickerLabels>
+              <TimePickerLabel>오전 / 오후</TimePickerLabel>
+              <TimePickerLabel>시간</TimePickerLabel>
+              <TimePickerLabel>분</TimePickerLabel>
+            </TimePickerLabels>
+
+            <TimeColumns>
+              <ScrollWheelColumn
+                items={ampmItems}
+                value={ampm}
+                onChange={setAmPm}
+                renderItem={(v) => (v === "PM" ? "오후" : "오전")}
+              />
+              <ScrollWheelColumn
+                items={hourItems}
+                value={hour}
+                onChange={setHour}
+                renderItem={(v) => String(v).padStart(2, "0")}
+              />
+              <ScrollWheelColumn
+                items={minuteItems}
+                value={minute}
+                onChange={setMinute}
+                renderItem={(v) => String(v).padStart(2, "0")}
+              />
+            </TimeColumns>
+          </TimePickerBox>
+
+          <TimeResetLink type="button" onClick={clearSlots}>
+            선택한 시간 모두 지우기
+          </TimeResetLink>
+        </PickupSubSection>
+      </PickupMainCard>
 
       <SelectedSlotsRow>
         {slots.map((s) => (
@@ -1473,6 +1589,7 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
       </SelectedSlotsRow>
     </LeftWrap>
   );
+
 }
 
 /* ================== 오른쪽 컬럼 (지도 + 정류장 모달 + 장바구니) ================== */

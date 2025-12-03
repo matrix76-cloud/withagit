@@ -186,6 +186,14 @@ const Title = styled.h3`
   color: #111827;
 `;
 
+const BuyTitle = styled.h3`
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 900;
+  color: #111827;
+`;
+
 const SummaryList = styled.ul`
   margin: 0 0 26px;
   padding: 0;
@@ -352,6 +360,52 @@ const Block = styled.div`
   margin-bottom: 18px;
 `;
 
+const ChildCard = styled.div`
+  margin-top: 8px;
+  border-radius: 24px;
+  border: 1.5px solid #111827;
+  background: #ffffff;
+  overflow: hidden;
+`;
+
+const ChildCardHeader = styled.button`
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  color: ${({ $placeholder }) => ($placeholder ? "#9ca3af" : "#111827")};
+`;
+
+const ChildDivider = styled.div`
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0 0 8px;
+`;
+
+const AddChildRow = styled.button`
+  width: calc(100% - 24px);
+  margin: 8px 12px 10px;
+  padding: 8px 14px 9px;
+  border-radius: 999px;
+  border: 1px dashed #facc15;
+  background: #fff9e6;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  cursor: pointer;
+`;
+
+
 const SectionLabel = styled.div`
   margin: 0 0 6px;
   font-size: 13px;
@@ -398,10 +452,7 @@ const RowBetween = styled.div`
 
 /* 자녀 드롭다운 */
 const ChildDropdown = styled.div`
-  margin-top: 8px;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
+  margin: 0 0 8px;
   max-height: 180px;
   overflow-y: auto;
 `;
@@ -414,12 +465,13 @@ const ChildItemButton = styled.button`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   font-size: 14px;
   text-align: left;
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
 
   &:hover {
-    background: #f9fafb;
+    background: ${({ disabled }) => (disabled ? "transparent" : "#f9fafb")};
   }
 
   .name {
@@ -437,6 +489,7 @@ const ChildItemButton = styled.button`
     color: #f97316;
   }
 `;
+
 
 /* ===== CTA ===== */
 const Footer = styled.div`
@@ -496,6 +549,9 @@ export default function CheckoutAgitDialog({
   const handleGoToBuy = () => {
     setActiveTab("buy");
   };
+
+
+  
 
   const {
     phoneE164,
@@ -561,36 +617,25 @@ export default function CheckoutAgitDialog({
   }, [phoneE164, readAgitzSet]);
 
   /* ===== 모달 오픈 시 초기화 ===== */
-  useEffect(() => {
-    if (!open) return;
-    setActiveTab("detail");
-    setChildDropdownOpen(false);
-    setLoading(false);
-    setAutoMode("auto");
+useEffect(() => {
+  if (!open) return;
+  setActiveTab("detail");
+  setChildDropdownOpen(false);
+  setLoading(false);
+  setAutoMode("auto");
 
-    if (phoneE164) {
-      refreshMemberships();
-    }
+  if (phoneE164) {
+    refreshMemberships();
+  }
 
-    if (children.length > 0) {
-      const firstAvailable =
-        children.find((c) => !agitzAppliedSet.has(c.childId)) ||
-        children[0];
+  setSelectedChildId(null);
+  setChildLabel("선택해주세요");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [open, phoneE164]);
 
-      setSelectedChildId(firstAvailable.childId || null);
-      setChildLabel(
-        firstAvailable.name
-          ? firstAvailable.birth
-            ? `${firstAvailable.name} (${firstAvailable.birth})`
-            : firstAvailable.name
-          : "선택해주세요"
-      );
-    } else {
-      setSelectedChildId(null);
-      setChildLabel("선택해주세요");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, children.length, phoneE164]);
+
+
+
 
   if (!open || !portalEl) return null;
 
@@ -937,12 +982,19 @@ export default function CheckoutAgitDialog({
   );
 
   /* ===== 구매하기 탭 ===== */
-  const renderPurchase = () => (
-    <PurchaseWrap>
-      <Block>
-        <SectionLabel>자녀 연결</SectionLabel>
-        <SelectBox
-          $placeholder={childLabel === "선택해주세요"}
+const renderPurchase = () => (
+  <PurchaseWrap>
+
+     <BuyTitle>아지트 멤버십</BuyTitle>  
+
+    <Block>
+      <SectionLabel>자녀 연결</SectionLabel>
+
+      <ChildCard>
+        {/* 상단 헤더: 선택해주세요 / 선택된 자녀 */}
+        <ChildCardHeader
+          type="button"
+          $placeholder={!selectedChildId}
           onClick={() => {
             if (!children.length) {
               if (
@@ -951,107 +1003,136 @@ export default function CheckoutAgitDialog({
                 )
               ) {
                 onClose?.();
-                navigate("/mypage");
+
+                const isMobile =
+                  typeof window !== "undefined" &&
+                  window.matchMedia &&
+                  window.matchMedia("(max-width: 768px)").matches;
+
+                navigate(isMobile ? "/m/account" : "/mypage");
               }
               return;
             }
             setChildDropdownOpen((prev) => !prev);
           }}
         >
-          <span>{childLabel}</span>
+          <span>{selectedChildId ? childLabel : "선택해주세요"}</span>
           <ChevronDown />
-        </SelectBox>
+        </ChildCardHeader>
 
         {childDropdownOpen && children.length > 0 && (
-          <ChildDropdown>
-            {children.map((c) => {
-              const applied = agitzAppliedSet.has(c.childId);
-              return (
-                <ChildItemButton
-                  key={c.childId}
-                  type="button"
-                  disabled={applied}
-                  onClick={() => {
-                    if (applied) {
-                      alert(
-                        "이미 정규 멤버십이 적용된 자녀입니다. 다른 자녀를 선택해 주세요."
+          <>
+            <ChildDivider />
+            <ChildDropdown>
+              {children.map((c) => {
+                const applied = agitzAppliedSet.has(c.childId);
+                return (
+                  <ChildItemButton
+                    key={c.childId}
+                    type="button"
+                    disabled={applied}
+                    onClick={() => {
+                      if (applied) {
+                        alert(
+                          "이미 정규 멤버십이 적용된 자녀입니다. 다른 자녀를 선택해 주세요."
+                        );
+                        return;
+                      }
+                      setSelectedChildId(c.childId);
+                      setChildLabel(
+                        c.name
+                          ? c.birth
+                            ? `${c.name} (${c.birth})`
+                            : c.name
+                          : "선택해주세요"
                       );
-                      return;
-                    }
-                    setSelectedChildId(c.childId);
-                    setChildLabel(
-                      c.name
-                        ? c.birth
-                          ? `${c.name} (${c.birth})`
-                          : c.name
-                        : "선택해주세요"
-                    );
-                    setChildDropdownOpen(false);
-                  }}
-                >
-                  <span className="name">
-                    {c.name || "(이름 없음)"}
-                  </span>
-                  {c.birth ? (
-                    <span className="meta">{c.birth}</span>
-                  ) : null}
-                  {applied ? (
-                    <span className="badge">정규 멤버십 가입됨</span>
-                  ) : null}
-                </ChildItemButton>
-              );
-            })}
-          </ChildDropdown>
+                      setChildDropdownOpen(false);
+                    }}
+                  >
+                    <span className="name">
+                      {c.name || "(이름 없음)"}
+                    </span>
+                    {c.birth ? (
+                      <span className="meta">{c.birth}</span>
+                    ) : null}
+                    {applied ? (
+                      <span className="badge">정규 멤버십 가입됨</span>
+                    ) : null}
+                  </ChildItemButton>
+                );
+              })}
+            </ChildDropdown>
+          </>
         )}
-      </Block>
 
-      <Block>
-        <SectionLabel>가격</SectionLabel>
-        <SelectBox $placeholder={false}>
-          <span>월 {KRW(AGITZ_PRICE_BASE)}원</span>
-        </SelectBox>
-      </Block>
+        {/* + 자녀 추가 – 타임패스와 동일 구조 */}
+        <AddChildRow
+          type="button"
+          onClick={() => {
+            onClose?.();
 
-      <Block>
-        <SectionLabel>자동 갱신 여부</SectionLabel>
-        <SelectBox
-          $placeholder={false}
-          onClick={() =>
-            setAutoMode((prev) => (prev === "auto" ? "once" : "auto"))
-          }
+            const isMobile =
+              typeof window !== "undefined" &&
+              window.matchMedia &&
+              window.matchMedia("(max-width: 768px)").matches;
+
+            navigate(isMobile ? "/m/account" : "/mypage");
+          }}
         >
-          <span>{autoLabel}</span>
-          <ChevronDown />
-        </SelectBox>
-      </Block>
+          <span>+</span>
+          <span>자녀 추가</span>
+        </AddChildRow>
+      </ChildCard>
+    </Block>
 
-      <Block>
-        <RowBetween>
-          <SectionLabel>확인하세요!</SectionLabel>
-          <button
-            type="button"
-            style={{
-              border: "0",
-              background: "transparent",
-              fontSize: 12,
-              color: "#6b7280",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            이용약관/환불정책 보기 →
-          </button>
-        </RowBetween>
+    {/* 아래 블록들은 기존 그대로 유지 */}
+    <Block>
+      <SectionLabel>가격</SectionLabel>
+      <SelectBox $placeholder={false}>
+        <span>월 {KRW(AGITZ_PRICE_BASE)}원</span>
+      </SelectBox>
+    </Block>
 
-        <BottomNoteWrap>
-          자동 갱신 선택 시, 해지 전까지 매월 동일 금액이 결제됩니다.
-          유효기간 내 미사용 잔여분 환불/연장 불가 (약관 기준)
-        </BottomNoteWrap>
-      </Block>
-    </PurchaseWrap>
-  );
+    <Block>
+      <SectionLabel>자동 갱신 여부</SectionLabel>
+      <SelectBox
+        $placeholder={false}
+        onClick={() =>
+          setAutoMode((prev) => (prev === "auto" ? "once" : "auto"))
+        }
+      >
+        <span>{autoLabel}</span>
+        <ChevronDown />
+      </SelectBox>
+    </Block>
+
+    <Block>
+      <RowBetween>
+        <SectionLabel>확인하세요!</SectionLabel>
+        <button
+          type="button"
+          style={{
+            border: "0",
+            background: "transparent",
+            fontSize: 12,
+            color: "#6b7280",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          이용약관/환불정책 보기 →
+        </button>
+      </RowBetween>
+
+      <BottomNoteWrap>
+        자동 갱신 선택 시, 해지 전까지 매월 동일 금액이 결제됩니다.
+        유효기간 내 미사용 잔여분 환불/연장 불가 (약관 기준)
+      </BottomNoteWrap>
+    </Block>
+  </PurchaseWrap>
+);
 
   /* ===== Render ===== */
   return createPortal(
@@ -1088,10 +1169,10 @@ export default function CheckoutAgitDialog({
             disabled={activeTab === "buy" && !canPay}
           >
             {activeTab === "detail"
-              ? "아지트 멤버십 이용하기"
+              ? "아지트 이용하기"
               : loading
               ? "결제 진행 중…"
-              : `아지트 멤버십 결제하기 (${KRW(total)}원)`}
+               : `결제 하기`}
           </CTAButton>
         </Footer>
       </Dialog>

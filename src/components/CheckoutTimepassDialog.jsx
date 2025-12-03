@@ -130,6 +130,13 @@ const Title = styled.h3`
   letter-spacing: -0.03em;
 `;
 
+const BuyTitle = styled.h3`
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 900;
+  color: #111827;
+`;
 const SummaryList = styled.ul`
   margin: 0 0 26px;
   padding: 0;
@@ -229,6 +236,52 @@ const Block = styled.div`
   margin-bottom: 18px;
 `;
 
+const ChildCard = styled.div`
+  margin-top: 8px;
+  border-radius: 24px;
+  border: 1.5px solid #111827;
+  background: #ffffff;
+  overflow: hidden;      /* 🔸 안쪽 요소가 바깥 라운드에 딱 붙게 */
+`;
+
+const ChildCardHeader = styled.button`
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  color: ${({ $placeholder }) => ($placeholder ? "#9ca3af" : "#111827")};
+`;
+
+const ChildDivider = styled.div`
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0 0 8px;   /* 양 옆 꽉 채우게 */
+`;
+
+const AddChildRow = styled.button`
+  width: calc(100% - 24px);             /* 카드 안에서 살짝 안으로 들어오게 */
+  margin: 8px 12px 10px;
+  padding: 8px 14px 9px;                /* 🔸 높이 살짝 줄임 */
+  border-radius: 999px;                 /* 알약 라운드 */
+  border: 1px dashed #facc15;
+  background: #fff9e6;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;                       /* 피그마 느낌 진한 주황 */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;          /* 왼쪽 정렬 */
+  gap: 6px;                             /* + 와 글자 사이 간격 → 글씨를 오른쪽으로 */
+  cursor: pointer;
+`;
+
+
 const SelectBox = styled.button`
   width: 100%;
   min-height: 52px;
@@ -244,24 +297,15 @@ const SelectBox = styled.button`
   cursor: pointer;
 `;
 
+
+
 const ChevronDown = () => (
   <svg width="18" height="18" viewBox="0 0 24 24">
     <path fill="#9ca3af" d="M7 9l5 5 5-5H7z" />
   </svg>
 );
 
-const AddChildRow = styled.div`
-  margin-top: 6px;
-  border-radius: 16px;
-  border: 1px dashed #facc15;
-  background: #fff9e6;
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #92400e;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
+
 
 const BottomNoteWrap = styled.div`
   margin-top: 10px;
@@ -691,33 +735,19 @@ export default function CheckoutTimepassDialog({
     setPortalEl(el);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    setSelectedKey("2h");
-    setActiveTab("detail");
-    setChildDropdownOpen(false);
-    setLoading(false);
+ useEffect(() => {
+  if (!open) return;
+  setSelectedKey("2h");
+  setActiveTab("detail");
+  setChildDropdownOpen(false);
+  setLoading(false);
 
-    // 자녀 기본 선택
-    if (children.length > 0) {
-      const first = children[0];
-      setSelectedChildId(first.childId || null);
-      setSelectedChildLabel(
-        first.name
-          ? first.birth
-            ? `${first.name} (${first.birth})`
-            : first.name
-          : "선택해주세요"
-      );
-    } else {
-      setSelectedChildId(null);
-      setSelectedChildLabel("선택해주세요");
-    }
+  setSelectedChildId(null);
+  setSelectedChildLabel("선택해주세요");
 
-    // ✅ 옵션 콤보에 금액을 처음부터 노출
-    const base = TIMEPASS_OPTIONS.find((o) => o.key === "2h");
-    setSelectedOptionLabel(base ? base.label : "선택해주세요");
-  }, [open, children]);
+  const base = TIMEPASS_OPTIONS.find((o) => o.key === "2h");
+  setSelectedOptionLabel(base ? base.label : "선택해주세요");
+}, [open, children]);
 
   if (!open || !portalEl) return null;
 
@@ -1048,11 +1078,13 @@ export default function CheckoutTimepassDialog({
 
   const renderPurchase = () => (
     <PurchaseWrap>
+      <BuyTitle>타임패스 멤버십 </BuyTitle>
       <Block>
-        <SectionLabel>자녀 연결</SectionLabel>
-        <SelectBox
+      <SectionLabel>자녀 연결</SectionLabel>
+      <ChildCard>
+        <ChildCardHeader
           type="button"
-          $placeholder={selectedChildLabel === "선택해주세요"}
+          $placeholder={!selectedChildId}
           onClick={() => {
             if (!children.length) {
               if (
@@ -1068,46 +1100,59 @@ export default function CheckoutTimepassDialog({
             setChildDropdownOpen((prev) => !prev);
           }}
         >
-          <span>{selectedChildLabel}</span>
+          <span>{selectedChildId ? selectedChildLabel : "선택해주세요"}</span>
           <ChevronDown />
-        </SelectBox>
-        <AddChildRow
-          onClick={() => {
-            onClose?.();
-            navigate("/mypage");
-          }}
-        >
-          <span>+ 자녀 추가</span>
-          <span style={{ fontSize: 12, color: "#b45309" }}>
-            클릭하면 마이페이지로 이동
-          </span>
-        </AddChildRow>
+        </ChildCardHeader>
+
 
         {childDropdownOpen && children.length > 0 && (
-          <ChildDropdown>
-            {children.map((c) => (
-              <ChildItemButton
-                key={c.childId}
-                type="button"
-                onClick={() => {
-                  setSelectedChildId(c.childId);
-                  setSelectedChildLabel(
-                    c.name
-                      ? c.birth
-                        ? `${c.name} (${c.birth})`
-                        : c.name
-                      : "선택해주세요"
-                  );
-                  setChildDropdownOpen(false);
-                }}
-              >
-                <span className="name">{c.name || "(이름 없음)"}</span>
-                {c.birth ? <span className="meta">{c.birth}</span> : null}
-              </ChildItemButton>
-            ))}
-          </ChildDropdown>
+          <>
+            <ChildDivider />
+            <ChildDropdown>
+              {children.map((c) => (
+                <ChildItemButton
+                  key={c.childId}
+                  type="button"
+                  onClick={() => {
+                    setSelectedChildId(c.childId);
+                    setSelectedChildLabel(
+                      c.name
+                        ? c.birth
+                          ? `${c.name} (${c.birth})`
+                          : c.name
+                        : "선택해주세요"
+                    );
+                    setChildDropdownOpen(false);
+                  }}
+                >
+                  <span className="name">{c.name || "(이름 없음)"}</span>
+                  {c.birth ? (
+                    <span className="meta">{c.birth}</span>
+                  ) : null}
+                </ChildItemButton>
+              ))}
+            </ChildDropdown>
+          </>
         )}
+
+        <AddChildRow
+            onClick={() => {
+            onClose?.();
+
+            // 화면 폭 기준으로 간단하게 모바일 판별
+            const isMobile =
+            typeof window !== "undefined" &&
+            window.matchMedia &&
+            window.matchMedia("(max-width: 768px)").matches;
+
+            navigate(isMobile ? "/m/account" : "/mypage");
+            }}
+        >
+          + 자녀 추가
+        </AddChildRow>
+      </ChildCard>
       </Block>
+
 
       <Block>
         <SectionLabel>옵션</SectionLabel>
@@ -1154,9 +1199,6 @@ export default function CheckoutTimepassDialog({
           </button>
         </RowBetween>
 
-        <BottomNoteWrap>
-          유효기간 내 미사용 잔여분 환불/연장 불가 (약관 기준)
-        </BottomNoteWrap>
       </Block>
     </PurchaseWrap>
   );
@@ -1202,7 +1244,7 @@ export default function CheckoutTimepassDialog({
                 ? "타임패스 이용하기" // ✅ 상세 탭: 결제 안 하고 탭만 전환
                 : loading
                   ? "결제 진행 중…"
-                  : `타임패스 결제하기 (${KRW(total)}원)`}
+                  : `결제 하기`}
             </CTAButton>
           </Footer>
 
