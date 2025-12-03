@@ -95,7 +95,6 @@ const PageSub = styled.p`
 const MainGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr);
-  gap: 28px;
   align-items: stretch;
 
   @media (max-width: 960px) {
@@ -343,6 +342,7 @@ const SelectedDateText = styled.div`
   font-size: 13px;
   font-weight: 700;
   color: ${accent};
+  letter-spacing: -0.03em;   /* 🔸 자간 살짝 좁게 */
 `;
 
 const ChildCard = styled.div`
@@ -650,29 +650,52 @@ const TimeResetLink = styled.button`
 `;
 
 const SelectedSlotsRow = styled.div`
-  margin: 6px 0 14px;
+  margin: 10px 0 18px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 10px;
 `;
 
 const SlotChip = styled.button`
-  border: none;
-  border-radius: 10px;
-  padding: 10px 10px 10px 8px;
-  font-size: 12px;
-  background: #fee2e2;
-  color: #b91c1c;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  flex: 0 0 calc(50% - 5px);   /* 🔸 한 줄에 두 개 */
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 24px;
+  border: 1px solid ${accent};
+  padding: 10px 28px 10px 14px;
+  background: #fff3e6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   cursor: pointer;
-  
+
+  .date-line {
+    font-size: 12px;
+    font-weight: 600;
+    color: ${accent};
+    letter-spacing: -0.03em;   /* 🔸 숫자 자간 줄이기 */
+  }
+
+  .time-line {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: ${accent};
+    letter-spacing: -0.03em;   /* 🔸 숫자 자간 줄이기 */
+  }
 `;
 
 const ChipRemove = styled.span`
-  font-size: 11px;
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 24px;
+  color: ${accent};
 `;
+
+
+
+
 
 /* 캘린더 유틸 */
 
@@ -703,6 +726,21 @@ function formatSelectedDateLabel(date) {
     2,
     "0"
   )} (${weekday})`;
+}
+function formatChipDateLabel(iso) {
+  if (!iso) return "";
+  const [yStr, mStr, dStr] = iso.split("-");
+  const y = Number(yStr);
+  const m = Number(mStr);
+  const d = Number(dStr);
+  if (!y || !m || !d) return iso;
+
+  const dt = new Date(y, m - 1, d);
+  const weekday = WEEK_LABELS[dt.getDay()];
+  return `${y}. ${String(m).padStart(2, "0")}. ${String(d).padStart(
+    2,
+    "0"
+  )}(${weekday})`;
 }
 
 
@@ -741,28 +779,26 @@ const SearchFieldsWrap = styled.div`
   gap: 8px;
   margin-bottom: 8px;
 `;
-const SwapButton = styled.button`
+const SwapButton = styled.div`
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 45%;
   transform: translate(-50%, -50%);
   width: 40px;
   height: 40px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
+
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  border:none;
   padding: 0;
   z-index: 2;
 `;
 
 const SwapIconImg = styled.img`
-  width: 18px;
-  height: 18px;
+  width: 30px;
+  height: 30px;
   display: block;
 `;
 
@@ -1627,18 +1663,17 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
       <SelectedSlotsRow>
         {slots.map((s) => (
           <SlotChip key={s.id} type="button" onClick={() => removeSlot(s.id)}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div>{s.date}</div>
-              <div>
-                {s.ampm === "PM" ? "오후" : "오전"}{" "}
-                {String((s.hour % 12) || 12).padStart(2, "0")}:
-                {String(s.minute).padStart(2, "0")}
-              </div>
+            <div className="date-line">{formatChipDateLabel(s.date)}</div>
+            <div className="time-line">
+              {s.ampm === "PM" ? "오후" : "오전"}{" "}
+              {String((s.hour % 12) || 12).padStart(2, "0")}:
+              {String(s.minute).padStart(2, "0")}
             </div>
             <ChipRemove>×</ChipRemove>
           </SlotChip>
         ))}
       </SelectedSlotsRow>
+
     </LeftWrap>
   );
 
@@ -1698,7 +1733,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
   useEffect(() => {
     let cancelled = false;
     let tries = 0;
-    const MAX_TRIES = 40; // 40번 × 250ms ≒ 10초
+    const MAX_TRIES = 40;
 
     const tryInitMap = () => {
       if (cancelled) return;
@@ -1709,14 +1744,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
 
       if (!hasRef || !hasKakao) {
         tries += 1;
-        console.log(
-          "[PickupRightColumn] mapRef / kakao 미준비, retry:",
-          tries,
-          "hasRef:",
-          hasRef,
-          "hasKakao:",
-          hasKakao
-        );
         if (tries < MAX_TRIES) {
           setTimeout(tryInitMap, 250);
         }
@@ -1724,18 +1751,16 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       }
 
       if (mapInstanceRef.current) {
-        console.log("[PickupRightColumn] 지도 이미 초기화됨");
         return;
       }
 
-      const center = new kakao.maps.LatLng(37.314760, 127.085600);
+      const center = new kakao.maps.LatLng(37.31476, 127.0856);
       const map = new kakao.maps.Map(mapRef.current, {
         center,
         level: 5,
       });
 
       mapInstanceRef.current = map;
-      console.log("[PickupRightColumn] kakao 지도 초기화 완료");
     };
 
     tryInitMap();
@@ -1745,14 +1770,12 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     };
   }, []);
 
-
-  // 출발/도착 변경 시 마커/라인 + 거리/요금 + 라벨 뱃지
+  // 출발/도착 변경 시 마커/라인 + 거리/요금
   useEffect(() => {
     const kakao = window.kakao;
     const map = mapInstanceRef.current;
     if (!kakao || !kakao.maps || !map) return;
 
-    // 기존 라인/마커 제거
     if (polylineRef.current) {
       polylineRef.current.setMap(null);
       polylineRef.current = null;
@@ -1766,7 +1789,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       endMarkerRef.current = null;
     }
 
-    // 아무것도 없으면 초기화
     if (!startPlace && !endPlace) {
       setDistanceKm(0);
       setEstimatedFare(0);
@@ -1776,7 +1798,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     const bounds = new kakao.maps.LatLngBounds();
     const path = [];
 
-    // 공용: 라벨 오버레이 만드는 헬퍼
     const makeLabelOverlay = (position, text, bgColor, zIndex) => {
       const el = document.createElement("div");
       el.innerText = text;
@@ -1788,7 +1809,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       el.style.fontWeight = "700";
       el.style.boxShadow = "0 3px 6px rgba(0,0,0,0.25)";
       el.style.whiteSpace = "nowrap";
-      el.style.transform = "translateY(-8px)"; // 살짝 위로 띄우기
+      el.style.transform = "translateY(-8px)";
 
       const overlay = new kakao.maps.CustomOverlay({
         position,
@@ -1801,27 +1822,22 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       return overlay;
     };
 
-    // 출발지
     if (startPlace && startPlace.lat && startPlace.lng) {
       const pos = new kakao.maps.LatLng(startPlace.lat, startPlace.lng);
       const overlay = makeLabelOverlay(pos, "출발", "#f97316", 20);
       startMarkerRef.current = overlay;
-
       bounds.extend(pos);
       path.push(pos);
     }
 
-    // 도착지
     if (endPlace && endPlace.lat && endPlace.lng) {
       const pos = new kakao.maps.LatLng(endPlace.lat, endPlace.lng);
       const overlay = makeLabelOverlay(pos, "도착", "#2563eb", 20);
       endMarkerRef.current = overlay;
-
       bounds.extend(pos);
       path.push(pos);
     }
 
-    // 선 긋기 + 거리/요금 계산
     if (path.length >= 2) {
       const polyline = new kakao.maps.Polyline({
         path,
@@ -1837,7 +1853,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       const km = lengthM / 1000;
       setDistanceKm(km);
 
-      // 정류장 price 우선, 없으면 거리 기반 요금
       const priceFromStart =
         startPlace && typeof startPlace.price === "number"
           ? startPlace.price
@@ -1866,7 +1881,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     }
   }, [startPlace, endPlace]);
 
-
   const openPlacesModal = async (target, initialKeyword = "") => {
     setPlacesTarget(target);
     setShowPlacesModal(true);
@@ -1886,38 +1900,26 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     }
   };
 
-  const handleSearchClick = (target) => {
-    const keyword = target === "start" ? startQuery : endQuery;
-    openPlacesModal(target, keyword);
-  };
-
-
-  const handleSwapStartEnd = () => {
-    // 인풋 값 스왑
-    const newStartQuery = endQuery;
-    const newEndQuery = startQuery;
-    setStartQuery(newStartQuery);
-    setEndQuery(newEndQuery);
-
-    // 선택된 장소 정보도 같이 스왑
-    setStartPlace(endPlace);
-    setEndPlace(startPlace);
-  };
-
   const handleSearchOrList = (target) => {
     const keywordRaw = target === "start" ? startQuery : endQuery;
     const keyword = (keywordRaw || "").trim();
 
     if (!keyword) {
-      // 입력이 없으면 전체 목록 모달
       openPlacesModal(target);
     } else {
-      // 입력이 있으면 해당 키워드로 검색 모달
       openPlacesModal(target, keyword);
     }
   };
 
+  const handleSwapStartEnd = () => {
+    const newStartQuery = endQuery;
+    const newEndQuery = startQuery;
+    setStartQuery(newStartQuery);
+    setEndQuery(newEndQuery);
 
+    setStartPlace(endPlace);
+    setEndPlace(startPlace);
+  };
 
   const filteredPlaces = useMemo(() => {
     const keyword = (placesSearch || "").trim();
@@ -1929,8 +1931,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       return name.includes(lower) || addr.includes(lower);
     });
   }, [places, placesSearch]);
-
-
 
   const groupedPlaces = useMemo(() => {
     if (!filteredPlaces || !filteredPlaces.length) return [];
@@ -1945,7 +1945,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       map.get(label).push(p);
     });
 
-    // 섹션 순서: ㄱ~ㅎ 정렬, 기타 정류소는 맨 뒤
     return Array.from(map.entries())
       .sort(([a], [b]) => {
         if (a === "기타 정류소") return 1;
@@ -1955,19 +1954,17 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       .map(([label, items]) => ({ label, items }));
   }, [filteredPlaces]);
 
-
   const handleSelectPlace = (place) => {
     const label = place.placeName || place.address || "";
     const lat = place.lat != null ? Number(place.lat) : null;
     const lng = place.lng != null ? Number(place.lng) : null;
-    const price = place.price != null ? Number(place.price) : null; // 정류장 가격
+    const price = place.price != null ? Number(place.price) : null;
 
     if (!lat || !lng) {
       alert("위치 정보가 올바르지 않습니다.");
       return;
     }
 
-    // 선택한 정류장 정보
     const selectedPlace = {
       name: label,
       address: place.address || "",
@@ -1976,20 +1973,18 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       price,
     };
 
-    // 항상 위드아지트(수지초점)를 반대편으로 세팅
     const agit = sujichoPlace
       ? {
-        name: sujichoPlace.placeName || sujichoPlace.address || "",
-        address: sujichoPlace.address || "",
-        lat: Number(sujichoPlace.lat),
-        lng: Number(sujichoPlace.lng),
-        price:
-          sujichoPlace.price != null ? Number(sujichoPlace.price) : null,
-      }
+          name: sujichoPlace.placeName || sujichoPlace.address || "",
+          address: sujichoPlace.address || "",
+          lat: Number(sujichoPlace.lat),
+          lng: Number(sujichoPlace.lng),
+          price:
+            sujichoPlace.price != null ? Number(sujichoPlace.price) : null,
+        }
       : null;
 
     if (placesTarget === "start") {
-      // 출발지를 사용자가 선택 → 도착지는 항상 위드아지트
       setStartQuery(label);
       setStartPlace(selectedPlace);
 
@@ -1998,7 +1993,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
         setEndPlace(agit);
       }
     } else {
-      // 도착지를 사용자가 선택 → 출발지는 항상 위드아지트
       setEndQuery(label);
       setEndPlace(selectedPlace);
 
@@ -2010,7 +2004,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
 
     setShowPlacesModal(false);
   };
-
 
   const slotChips = useMemo(
     () =>
@@ -2058,7 +2051,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
         startLabel: startQuery,
         endLabel: endQuery,
         memo,
-        priceKRW: estimatedFare || 0, // 🔥 정류장 price 기준
+        priceKRW: estimatedFare || 0,
       });
     });
 
@@ -2069,7 +2062,6 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     <>
       <RightWrap>
         <SearchBlock>
-          <SectionLabel>출발지 / 도착지</SectionLabel>
           <SearchFieldsWrap>
             <SearchRow>
               <SearchInputWrap>
@@ -2113,15 +2105,22 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
               </SearchInputWrap>
             </SearchRow>
 
-            {/* 🔁 가운데 스왑 버튼 + 세로 라인 */}
-
             <SwapButton type="button" onClick={handleSwapStartEnd}>
               <SwapIconImg src={pickupSwapIcon} alt="출발/도착 전환" />
             </SwapButton>
           </SearchFieldsWrap>
-
-
         </SearchBlock>
+
+        {/* ✅ 지도 박스: 여기서 항상 렌더 */}
+        <MapBox>
+          <MapContainer ref={mapRef} />
+          {distanceKm > 0 && (
+            <DistanceRow>
+              예상 거리 약 {distanceKm.toFixed(1)}km · 예상 요금{" "}
+              {KRW(estimatedFare)}원
+            </DistanceRow>
+          )}
+        </MapBox>
 
         <MemoLabel>메모 (선택)</MemoLabel>
         <MemoArea
@@ -2146,10 +2145,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
               <CartLineBottom>
                 출발: {item.startLabel} / 도착: {item.endLabel}
               </CartLineBottom>
-
-              <CartPriceLine>
-                요금 {KRW(item.priceKRW)}원
-              </CartPriceLine>
+              <CartPriceLine>요금 {KRW(item.priceKRW)}원</CartPriceLine>
             </CartCard>
           ))}
         </CartList>
@@ -2204,18 +2200,16 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
                       ))}
                     </ModalSection>
                   ))}
-
-          
                 </>
               )}
             </ModalList>
-
           </ModalCard>
         </ModalBackdrop>
       )}
     </>
   );
 }
+
 
 
 /* ================== 하단 안내/CTA ================== */
