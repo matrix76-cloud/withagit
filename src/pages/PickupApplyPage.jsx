@@ -166,7 +166,7 @@ const ChildAddRowWrap = styled.div`
     position: absolute;
     left: -16px;    /* PickupMainCard 패딩만큼 밖으로 */
     right: -16px;
-    bottom: 0;
+    top: -60px;
     height: 1px;
     background: #e5e7eb;
   }
@@ -333,40 +333,47 @@ const BlockHint = styled.div`
 /* 캘린더 */
 
 const CalendarShell = styled.div`
-  border-radius: 18px;
+  border-radius: 24px;
   border: 1px solid #f3f4f6;
   background: #fdfdfd;
-  padding: 12px 14px 10px;
-  margin-bottom: 16px;
+  padding: 20px 22px 18px;   /* 전체 여백 ↑ */
+  margin-bottom: 20px;
 `;
+
+const SelectedDateText = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: ${accent};
+`;
+
 
 const CalendarHeaderRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;                 /* 좌우 버튼 간격 ↑ */
+  margin-bottom: 20px;       /* 헤더와 요일 라인 사이 여백 ↑ */
 `;
 
 const MonthLabelText = styled.div`
-  font-size: 14px;
+  font-size: 16px;           /* "2026년 1월" 글씨 크게 */
   font-weight: 700;
   color: ${primaryText};
 `;
 
 const MonthNav = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 6px;
 `;
 
 const MonthNavBtn = styled.button`
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 999px;
   border: none;
-  background: #f3f4f6;
-  font-size: 13px;
-  color: #4b5563;
+  background: #fff;
+  font-size: 18px;
+  color: #111;
   cursor: pointer;
 
   &:disabled {
@@ -378,15 +385,16 @@ const MonthNavBtn = styled.button`
 const WeekRow = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  font-size: 11px;
+  font-size: 13px;           /* 요일 글씨 ↑ */
   color: #9ca3af;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   text-align: center;
 `;
 
 const DayGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  row-gap: 6px;              /* 날짜 사이 간격 ↑ */
 `;
 
 const DayCell = styled.button`
@@ -394,14 +402,14 @@ const DayCell = styled.button`
   background: ${({ $selected }) => ($selected ? accent : "transparent")};
   color: ${({ $selected }) => ($selected ? "#ffffff" : "#111827")};
   border-radius: 999px;
-  font-size: 12px;
-  padding: 6px 0;
+  font-size: 14px;           /* 날짜 숫자 크게 */
+  padding: 10px 0;           /* 세로 크기 ↑ */
+  margin: 2px 0;
   cursor: pointer;
-  margin: 1px 0;
 
   &:hover {
     background: ${({ $selected }) =>
-    $selected ? accent : "rgba(249, 115, 22, 0.06)"};
+      $selected ? accent : "rgba(249, 115, 22, 0.06)"};
   }
 
   &:disabled {
@@ -410,6 +418,8 @@ const DayCell = styled.button`
     background: transparent;
   }
 `;
+
+
 
 /* 시간 선택 */
 
@@ -449,28 +459,24 @@ const TimeHeaderTitle = styled.div`
 `;
 
 const TimeApplyButton = styled.button`
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid #f0eded;
+  background: #f0eded;
+  padding: 10px 12px;
   font-size: 12px;
   font-weight: 700;
   color: #4b5563;
   cursor: pointer;
 
-  &:hover {
-    background: #f9fafb;
-  }
+
 `;
 
 
 const TimePickerBox = styled.div`
   border-radius: 18px;
-  border: 1px solid #eee2cf;
   background: #fff;
-  padding: 12px 16px 14px;
+  padding: 2px 16px 4px;
   box-sizing: border-box;
-  margin-bottom: 12px;
 `;
 
 const TimePickerLabels = styled.div`
@@ -497,7 +503,6 @@ const TimeColumns = styled.div`
 const TimeWheelWrapper = styled.div`
   position: relative;
   border-radius: 14px;
-  border: 1px solid ${borderSoft};
   background: #ffffff;
   overflow: hidden;
 `;
@@ -517,7 +522,7 @@ const TimeWheelItem = styled.div`
   justify-content: center;
   scroll-snap-align: center;
   font-size: 17px;
-  font-weight: ${({ $active }) => ($active ? 800 : 500)};
+  font-weight: ${({ $active }) => ($active ? 600 : 500)};
   color: ${({ $active }) => ($active ? primaryText : "#9ca3af")};
 `;
 
@@ -659,6 +664,19 @@ function getMonthMatrix(baseDate) {
   }
   return cells;
 }
+
+function formatSelectedDateLabel(date) {
+  if (!date) return "";
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const weekday = WEEK_LABELS[date.getDay()];
+  return `${y}. ${String(m).padStart(2, "0")}. ${String(d).padStart(
+    2,
+    "0"
+  )} (${weekday})`;
+}
+
 
 /* ================== 오른쪽 컬럼 스타일 ================== */
 
@@ -1475,8 +1493,16 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
         {/* 2) 날짜 선택 섹션 */}
         <PickupSubSection>
           <BlockLabelRow>
-            <SectionLabel>날짜를 선택해주세요</SectionLabel>
-          </BlockLabelRow>
+              {selectedDate ? (
+              // ✅ 날짜 선택된 경우: 안내 문구 대신 날짜만 보여주기
+              <SelectedDateText>
+              {formatSelectedDateLabel(selectedDate)}
+              </SelectedDateText>
+              ) : (
+              // ✅ 아직 선택 안 했을 때만 안내 문구 노출
+              <SectionLabel>날짜를 선택해주세요</SectionLabel>
+              )}
+            </BlockLabelRow>
 
           <CalendarShell>
             <CalendarHeaderRow>
@@ -1538,11 +1564,7 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
           </TimeHeaderRow>
 
           <TimePickerBox>
-            <TimePickerLabels>
-              <TimePickerLabel>오전 / 오후</TimePickerLabel>
-              <TimePickerLabel>시간</TimePickerLabel>
-              <TimePickerLabel>분</TimePickerLabel>
-            </TimePickerLabels>
+ 
 
             <TimeColumns>
               <ScrollWheelColumn
@@ -1566,9 +1588,7 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
             </TimeColumns>
           </TimePickerBox>
 
-          <TimeResetLink type="button" onClick={clearSlots}>
-            선택한 시간 모두 지우기
-          </TimeResetLink>
+
         </PickupSubSection>
       </PickupMainCard>
 
