@@ -272,20 +272,21 @@ const ChevronDown = () => (
 
 const AddChildRow = styled.button`
   width: calc(100% - 24px);
-  margin: 0 12px;                 /* 위/아래 마진은 래퍼가 처리 */
+  margin: 8px 12px 10px;
   padding: 8px 14px 9px;
   border-radius: 999px;
-  border: 1px dashed #f97316;
-  background: #fff7ed;
+  border: 1px dashed #facc15;
+  background: #fff9e6;
   font-size: 13px;
   font-weight: 700;
-  color: #9a3412;
+  color: #b45309;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 6px;
   cursor: pointer;
 `;
+
 
 
 /* --- 날짜/시간 선택 --- */
@@ -333,11 +334,9 @@ const BlockHint = styled.div`
 /* 캘린더 */
 
 const CalendarShell = styled.div`
-  border-radius: 24px;
-  border: 1px solid #f3f4f6;
-  background: #fdfdfd;
-  padding: 20px 22px 18px;   /* 전체 여백 ↑ */
-  margin-bottom: 20px;
+ 
+  padding: 20px 0px 0px;   /* 전체 여백 ↑ */
+
 `;
 
 const SelectedDateText = styled.div`
@@ -345,6 +344,35 @@ const SelectedDateText = styled.div`
   font-weight: 700;
   color: ${accent};
 `;
+
+const ChildCard = styled.div`
+  margin-top: 8px;
+  border-radius: 24px;
+  border: 1.5px solid #111827;
+  background: #ffffff;
+  overflow: hidden;
+`;
+
+const ChildCardHeader = styled.button`
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  color: ${({ $placeholder }) => ($placeholder ? "#9ca3af" : "#111827")};
+`;
+
+const ChildDivider = styled.div`
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0 0 8px;
+`;
+
 
 
 const CalendarHeaderRow = styled.div`
@@ -1237,7 +1265,7 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
       ctxMemberships.forEach((m) => {
         if (
           m &&
-          m.kind === MEMBERSSHIP_KIND.AGITZ &&
+          m.kind === MEMBERSHIP_STATUS.AGITZ &&
           (m.status === MEMBERSHIP_STATUS.ACTIVE ||
             m.status === MEMBERSHIP_STATUS.FUTURE) &&
           m.childId
@@ -1409,86 +1437,90 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
         <PickupSubSection>
           <SectionLabel>자녀 선택</SectionLabel>
 
-          <SelectBox
-            type="button"
-            $placeholder={!activeChildId}
-            onClick={() => {
-              if (!childItems.length) {
-                alert(
-                  "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록해 주세요."
-                );
-                return;
-              }
-              setDropdownOpen((prev) => !prev);
-            }}
-          >
-            <span>{childLabel}</span>
-            <ChevronDown />
-          </SelectBox>
+          <ChildAddRowWrap>
+            <ChildCard>
+              {/* 상단: 선택 박스 */}
+              <ChildCardHeader
+                type="button"
+                $placeholder={!activeChildId}
+                onClick={() => {
+                  if (!childItems.length) {
+                    alert(
+                      "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록해 주세요."
+                    );
+                    return;
+                  }
+                  setDropdownOpen((prev) => !prev);
+                }}
+              >
+                <span>{childLabel}</span>
+                <ChevronDown />
+              </ChildCardHeader>
 
-          {dropdownOpen && childItems.length > 0 && (
-            <ChildDropdown>
-              {childItems.map((c) => {
-                const isActive = c.id === activeChildId;
-                return (
-                  <ChildItemButton
-                    key={c.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveChildId(c.id);
-                      setChildLabel(
-                        c.birth
-                          ? `${c.name} (${c.birth})`
-                          : c.name || "선택해주세요"
+              {/* 드롭다운 목록 */}
+              {dropdownOpen && childItems.length > 0 && (
+                <>
+                  <ChildDivider />
+                  <ChildDropdown>
+                    {childItems.map((c) => {
+                      const isActive = c.id === activeChildId;
+                      return (
+                        <ChildItemButton
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveChildId(c.id);
+                            setChildLabel(
+                              c.birth
+                                ? `${c.name} (${c.birth})`
+                                : c.name || "선택해주세요"
+                            );
+                            setDropdownOpen(false);
+                          }}
+                          style={{
+                            backgroundColor: isActive
+                              ? "rgba(240,122,42,0.06)"
+                              : "transparent",
+                          }}
+                        >
+                          <span className="name">{c.name || "(이름 없음)"}</span>
+                          {c.birth && <span className="meta">{c.birth}</span>}
+                          {(c.hasAgitz || c.hasFamily) && (
+                            <div className="badge-row">
+                              {c.hasAgitz && (
+                                <span className="badge">정규 멤버십</span>
+                              )}
+                              {c.hasFamily && (
+                                <span className="badge">패밀리 멤버십</span>
+                              )}
+                            </div>
+                          )}
+                        </ChildItemButton>
                       );
-                      setDropdownOpen(false);
-                    }}
-                    style={{
-                      backgroundColor: isActive
-                        ? "rgba(240,122,42,0.06)"
-                        : "transparent",
-                    }}
-                  >
-                    <span className="name">{c.name || "(이름 없음)"}</span>
-                    {c.birth && <span className="meta">{c.birth}</span>}
-                    {(c.hasAgitz || c.hasFamily) && (
-                      <div className="badge-row">
-                        {c.hasAgitz && (
-                          <span className="badge">정규 멤버십</span>
-                        )}
-                        {c.hasFamily && (
-                          <span className="badge">패밀리 멤버십</span>
-                        )}
-                      </div>
-                    )}
-                  </ChildItemButton>
-                );
-              })}
-            </ChildDropdown>
-          )}
+                    })}
+                  </ChildDropdown>
+                </>
+              )}
 
-        <ChildAddRowWrap>
-          <AddChildRow
-            type="button"
-            onClick={() => {
-              const isMobile =
-                typeof window !== "undefined" &&
-                window.matchMedia &&
-                window.matchMedia("(max-width: 768px)").matches;
+              {/* + 자녀 추가 버튼 */}
+              <AddChildRow
+                type="button"
+                onClick={() => {
+                  const isMobile =
+                    typeof window !== "undefined" &&
+                    window.matchMedia &&
+                    window.matchMedia("(max-width: 768px)").matches;
 
-              if (isMobile) {
-                navigate("/m/account");
-              } else {
-                navigate("/mypage");
-              }
-            }}
-          >
-            <span>+</span>
-            <span>자녀 추가</span>
-          </AddChildRow>
-        </ChildAddRowWrap>
-
+                  navigate(isMobile ? "/m/account" : "/mypage");
+                }}
+              >
+                <span>+</span>
+                <span>자녀 추가</span>
+              </AddChildRow>
+            </ChildCard>
+          </ChildAddRowWrap>
         </PickupSubSection>
+
 
         {/* 2) 날짜 선택 섹션 */}
         <PickupSubSection>
