@@ -309,8 +309,7 @@ export default function AccountProgramsPage() {
                 </HeaderBar>
 
                 <SectionCard>
-                    <SectionTitle>예약한 프로그램</SectionTitle>
-                    <SectionDesc>예약한 프로그램과 진행 상태를 확인할 수 있어요.</SectionDesc>
+     
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 

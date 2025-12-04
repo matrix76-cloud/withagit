@@ -1015,8 +1015,6 @@ export default function AccountChildrenPage() {
                 </HeaderBar>
 
                 <SectionCard>
-                    <SectionTitle>등록된 자녀</SectionTitle>
-                    <SectionDesc>등록된 자녀 정보를 확인하고 필요 시 수정·삭제할 수 있어요.</SectionDesc>
                     <SavedChildrenList
                         items={savedChildren}
                         onSelect={setEditingChild}

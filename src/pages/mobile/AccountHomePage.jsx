@@ -388,7 +388,7 @@ export default function AccountHomePage() {
                         <MenuItem onClick={go("/m/account/memberships")}>
                        
                             <MenuText>
-                                <MenuTitle>내 멤버십 / 시간권 / 정액권</MenuTitle>
+                                <MenuTitle>내 멤버십</MenuTitle>
                             </MenuText>
                             <MenuArrow>›</MenuArrow>
                         </MenuItem>

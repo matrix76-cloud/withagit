@@ -244,8 +244,7 @@ export default function AccountUsagePage() {
                 </HeaderBar>
 
                 <SectionCard>
-                    <SectionTitle>시간권 / 정액권 사용 기록</SectionTitle>
-                    <SectionDesc>언제, 어떤 자녀에게 사용했는지 확인할 수 있어요.</SectionDesc>
+  
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 

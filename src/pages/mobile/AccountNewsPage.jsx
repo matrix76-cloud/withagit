@@ -172,9 +172,7 @@ export default function AccountNewsPage() {
   return (
     <Page>
       <Content>
-        <HeaderBar>
-          <BackButton onClick={() => nav(-1)}>‹ 뒤로가기</BackButton>
-        </HeaderBar>
+ 
 
         <HeroSection>
           <HeroTitle>

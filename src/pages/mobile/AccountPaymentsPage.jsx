@@ -276,10 +276,7 @@ export default function AccountPaymentsPage() {
                 </HeaderBar>
 
                 <SectionCard>
-                    <SectionTitle>멤버십 / 시간권 / 정액권 결제 기록</SectionTitle>
-                    <SectionDesc>
-                        최근 결제하신 멤버십, 시간권, 정액권 내역을 확인할 수 있어요.
-                    </SectionDesc>
+            
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 
