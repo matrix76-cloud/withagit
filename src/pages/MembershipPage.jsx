@@ -872,7 +872,7 @@ const FamilyCard = styled.div`
 
   @media (max-width: 960px) {
     height : 140px;
-    padding: 18px 60px;
+    padding: 18px 55px;
   }
 `;
 
@@ -1403,7 +1403,12 @@ export default function MembershipPage() {
               <FamilyCardLeft>
                 <FamilyBadge $variant="orange">일요일에는</FamilyBadge>
                 <FamilyCardTitle>
-                  {"생일파티, 가족행사,\n원데이 클래스"}
+                
+
+                  생일파티, 가족행사,
+                  <br />
+                  원데이 클래스
+
                 </FamilyCardTitle>
               </FamilyCardLeft>
               <FamilyCardRight>

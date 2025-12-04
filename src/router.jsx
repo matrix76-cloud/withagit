@@ -67,12 +67,37 @@ import AccountMobileFAQPage from './pages/mobile/AccountMobileFAQPage.jsx';
 import AccountNewsPage from './pages/mobile/AccountNewsPage.jsx';
 
 import SplashPage from "./pages/SplashPage.jsx";
+import { hardScrollReset } from './utils/hardScrollReset.js';
 
+function ScrollToTop() {
+    const { pathname } = useLocation();
+
+    React.useLayoutEffect(() => {
+        // 브라우저 자동 스크롤 복원 끄고
+        try {
+            if ("scrollRestoration" in window.history) {
+                window.history.scrollRestoration = "manual";
+            }
+        } catch {
+            // ignore
+        }
+
+        // 라우트 바뀔 때마다 우리 하드 리셋
+        hardScrollReset();
+    }, [pathname]);
+
+    return null;
+}
 export default function Router() {
     /* ===== 유틸: 세션/가드 ===== */
     function getSession() {
-        try { return JSON.parse(localStorage.getItem("auth_dev_session")) || null; } catch { return null; }
+        try {
+            return JSON.parse(localStorage.getItem("auth_dev_session")) || null;
+        } catch {
+            return null;
+        }
     }
+
     function RequireAuth({ children }) {
         const loc = useLocation();
         const session = getSession();
@@ -83,21 +108,16 @@ export default function Router() {
         return children;
     }
 
-    function ScrollToTop() {
-        const { pathname } = useLocation();
-        React.useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-        return null;
-    }
-
     return (
         <>
             <GlobalFonts />
+            {/* 🔸 전역 스크롤 리셋 */}
             <ScrollToTop />
 
             <Routes>
                 {/* 🔶 일반 페이지: 헤더/푸터 포함 */}
                 <Route element={<MainLayout />}>
-                    {/* 🔺 홈은 이제 /home */}
+                    {/* 홈은 /home */}
                     <Route path="/home" element={<HomePage />} />
 
                     <Route path="/about" element={<AboutPage />} />
@@ -161,7 +181,14 @@ export default function Router() {
                     <Route path="/suggest" element={<SuggestPage />} />
 
                     {/* 보호 라우트 */}
-                    <Route path="/mypage" element={<RequireAuth><MyPage /></RequireAuth>} />
+                    <Route
+                        path="/mypage"
+                        element={
+                            <RequireAuth>
+                                <MyPage />
+                            </RequireAuth>
+                        }
+                    />
                 </Route>
 
                 {/* 🔷 헤더/푸터 없는 전용 페이지들 */}

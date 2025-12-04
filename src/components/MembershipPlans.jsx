@@ -5,25 +5,22 @@
 import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import CheckoutConfirmDialog from "./CheckoutConfirmDialog";
 import { useUser } from "../contexts/UserContext";
 import { MEMBERSHIP_KIND } from "../constants/membershipDefine";
 
 import { db } from "../services/api";
 import { collection, getDocs, query, where, limit as qlimit } from "firebase/firestore";
 
-import { createOrderDraft } from "../services/orderService";
 import CheckoutTimepassDialog from "./CheckoutTimepassDialog";
 import CheckoutAgitDialog from "./CheckoutAgitDialog";
 import CheckoutFamilyDialog from "./CheckoutFamilyDialog";
 
 /* ===== Tokens ===== */
 const accent = "var(--color-accent, #F07A2A)";
-const bgSoft = "#F7F4EE";
 
 /* ===== Section Layout ===== */
 const Section = styled.section`
-  background: ${bgSoft};
+  background: #fff;
   padding: 72px 16px 88px;
 
   @media (max-width: 720px) {
@@ -118,7 +115,7 @@ const CardBase = styled.div`
   background: #ffffff;
   border-radius: 32px;
   padding: 28px 26px 76px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -128,33 +125,24 @@ const CardBase = styled.div`
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.08);
   }
 
   @media (max-width: 720px) {
-    width: calc(100% - 32px);
+    width: calc(100% - 10px);
     margin: 0 auto;
     border-radius: 28px;
     padding: 24px 20px 68px;
     min-height: 0;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
 
     &:hover {
       transform: none;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
     }
   }
 `;
 
 const Card = styled(CardBase)``;
 
-const Featured = styled(CardBase)`
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.09);
-
-  @media (max-width: 720px) {
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.1);
-  }
-`;
+const Featured = styled(CardBase)``;
 
 /* ===== Card Header ===== */
 const CardHeader = styled.div`
@@ -169,7 +157,7 @@ const PillRow = styled.div`
   gap: 8px;
 
   @media (max-width: 720px) {
-    justify-content: center;
+    padding-left: 20px;
   }
 `;
 
@@ -217,11 +205,11 @@ const CardTitle = styled.h3`
   font-size: 25px;
   font-family: NanumSquareRound;
   color: #111111;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   text-align: center;
 
   @media (max-width: 720px) {
-    font-size: 20px;
+    font-size: 24px;
     margin-top: 8px;
   }
 `;
@@ -238,13 +226,13 @@ const List = styled.ul`
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 6px;
 
   li {
     font-size: 14px;
     color: #333333;
     line-height: 1.7;
     letter-spacing: 0.01em;
+    padding-left: 25px;
   }
 
   li.hasCheck::before {
@@ -258,7 +246,7 @@ const List = styled.ul`
     gap: 4px;
 
     li {
-      font-size: 13px;
+      font-size: 14px;
       line-height: 1.6;
     }
   }
@@ -266,7 +254,7 @@ const List = styled.ul`
 
 const DetailButtonWrap = styled.div`
   position: absolute;
-  bottom: 24px;
+  bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
@@ -274,12 +262,12 @@ const DetailButtonWrap = styled.div`
   justify-content: center;
 
   @media (max-width: 720px) {
-    bottom: 20px;
+    bottom: -20px;
   }
 `;
 
 const ToggleBtn = styled.button`
-  min-width: 140px;
+  min-width: 200px;
   padding: 11px 22px;
   border-radius: 999px;
   border: 1.5px solid
@@ -477,8 +465,6 @@ function useAgitzActiveDb(phoneE164) {
 
 /* ===== Main Component ===== */
 export default function MembershipPlans() {
-  const [dlgOpen, setDlgOpen] = useState(false);
-  const [dlgPayload, setDlgPayload] = useState(null);
   const nav = useNavigate();
   const { phoneE164, profile } = useUser() || {};
 
@@ -508,46 +494,6 @@ export default function MembershipPlans() {
   const handleNext = () => {
     if (!canNext) return;
     setIndex((v) => Math.min(totalPlans - 1, v + 1));
-  };
-
-  const toE164 = (v) => {
-    if (!v) return "";
-    let d = String(v).replace(/\D+/g, "");
-    if (d.startsWith("82")) return `+${d}`;
-    if (d.startsWith("0")) return `+82${d.slice(1)}`;
-    return `+${d}`;
-  };
-
-  const handleCreateOrder = async (draft) => {
-    try {
-      const phoneE = toE164(draft?.buyer?.phoneE164);
-      if (!phoneE)
-        return { ok: false, error: new Error("buyer.phoneE164 missing") };
-
-      const res = await createOrderDraft(phoneE, draft);
-      if (!res?.orderId)
-        return { ok: false, error: new Error("no orderId returned") };
-
-      return { ok: true, orderId: res.orderId };
-    } catch (e) {
-      return { ok: false, error: e };
-    }
-  };
-
-  const handlePrepared = async () => ({ ok: true });
-
-  const openConfirmDialog = (payload) => {
-    const buyerDefault = {
-      name: (profile?.displayName || "").trim(),
-      phoneE164: (phoneE164 || "").trim(),
-      email: (profile?.email || "").trim(),
-    };
-
-    setDlgPayload({
-      ...payload,
-      buyer: { ...buyerDefault, ...(payload?.buyer || {}) },
-    });
-    setDlgOpen(true);
   };
 
   return (
@@ -820,71 +766,20 @@ export default function MembershipPlans() {
         </MobileSliderShell>
       </Wrap>
 
-      {/* ==== 모달들 ==== */}
+      {/* ==== 모달들 (각자 내부에서 결제까지 처리) ==== */}
       <CheckoutTimepassDialog
         open={timepassDialogOpen}
         onClose={() => setTimepassDialogOpen(false)}
-        onProceed={(payload) => {
-          const buyerDefault = {
-            name: (profile?.displayName || "").trim(),
-            phoneE164: (phoneE164 || "").trim(),
-            email: (profile?.email || "").trim(),
-          };
-          setDlgPayload({
-            ...payload,
-            buyer: { ...buyerDefault, ...(payload?.buyer || {}) },
-          });
-          setTimepassDialogOpen(false);
-          setDlgOpen(true);
-        }}
       />
 
       <CheckoutAgitDialog
         open={agitDialogOpen}
         onClose={() => setAgitDialogOpen(false)}
-        onProceed={(payload) => {
-          const buyerDefault = {
-            name: (profile?.displayName || "").trim(),
-            phoneE164: (phoneE164 || "").trim(),
-            email: (profile?.email || "").trim()
-          };
-
-          setDlgPayload({
-            ...payload,
-            buyer: { ...buyerDefault, ...(payload?.buyer || {}) },
-          });
-
-          setAgitDialogOpen(false);
-          setDlgOpen(true);
-        }}
       />
 
       <CheckoutFamilyDialog
         open={familyDialogOpen}
         onClose={() => setFamilyDialogOpen(false)}
-        onProceed={(payload) => {
-          const buyerDefault = {
-            name: (profile?.displayName || "").trim(),
-            phoneE164: (phoneE164 || "").trim(),
-            email: (profile?.email || "").trim()
-          };
-
-          setDlgPayload({
-            ...payload,
-            buyer: { ...buyerDefault, ...(payload?.buyer || {}) },
-          });
-
-          setFamilyDialogOpen(false);
-          setDlgOpen(true);
-        }}
-      />
-
-      <CheckoutConfirmDialog
-        open={dlgOpen}
-        payload={dlgPayload}
-        onClose={() => setDlgOpen(false)}
-        onCreateOrder={handleCreateOrder}
-        onPrepared={handlePrepared}
       />
     </Section>
   );

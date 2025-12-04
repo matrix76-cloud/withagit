@@ -7,7 +7,6 @@ import React, {
   useEffect,
   useMemo,
   useState,
-  useRef,
 } from "react";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
@@ -132,7 +131,7 @@ const Tab = styled.button`
     height: 2px;
     border-radius: 999px;
     background: ${({ $active }) =>
-      $active ? AGIT_ACCENT : "transparent"};
+    $active ? AGIT_ACCENT : "transparent"};
   }
 `;
 
@@ -220,8 +219,6 @@ const SummaryList = styled.ul`
 `;
 
 /* ===== 혜택 포인트 / 확인하세요! 카드 ===== */
-
-/* 제목 – 회색 박스 '바깥' 위에 위치 */
 const SectionTitle = styled.h4`
   margin: 24px 0 10px;
   font-size: 15px;
@@ -229,7 +226,6 @@ const SectionTitle = styled.h4`
   color: #111827;
 `;
 
-/* 공용 회색 박스 */
 const BenefitCard = styled.div`
   margin: 0 0 4px;
   padding: 16px 18px 14px;
@@ -241,7 +237,6 @@ const BenefitCard = styled.div`
   color: #374151;
 `;
 
-/* 혜택 포인트용 체크 아이템 */
 const BenefitItem = styled.div`
   position: relative;
   padding-left: 18px;
@@ -257,13 +252,11 @@ const BenefitItem = styled.div`
     font-weight: 700;
   }
 
-  /* ✅ 회색 박스 안 strong 굵기 제거 */
   strong {
     font-weight: 400;
   }
 `;
 
-/* 확인하세요!용 도트 리스트 */
 const CheckList = styled.ul`
   margin: 0;
   padding: 0;
@@ -291,12 +284,10 @@ const CheckList = styled.ul`
     background: #9ca3af;
   }
 
-  /* ✅ 리스트 안 strong 굵기 제거 */
   li strong {
     font-weight: 400;
   }
 `;
-
 
 /* ===== FAQ 섹션 ===== */
 const FAQSection = styled.div`
@@ -313,21 +304,20 @@ const FAQTitle = styled.div`
 const FAQBox = styled.div`
   padding: 16px 18px 14px;
   border-radius: 24px;
-  background: #f3f4f6;        /* ✅ 회색 배경 */
+  background: #f3f4f6;
   box-shadow: none;
-  border: none;               /* 테두리 제거 */
+  border: none;
   display: grid;
-  gap: 12px;                  /* 살짝 더 촘촘하게 */
+  gap: 12px;
 `;
 
 const FAQItem = styled.div`
   position: relative;
-  padding-left: 14px;     /* 도트 위치 */
+  padding-left: 14px;
   line-height: 1.7;
   font-size: 13px;
   color: #374151;
 
-  /* 🔸 도트 추가 */
   &::before {
     content: "";
     position: absolute;
@@ -339,17 +329,14 @@ const FAQItem = styled.div`
     border-radius: 999px;
   }
 
-  /* 제목 역할 strong → 굵기 제거 + block 배치 */
   & > strong {
     display: block;
     font-size: 13px;
-    font-weight: 400;   /* 굵기 제거 */
+    font-weight: 400;
     color: #111827;
     margin-bottom: 4px;
   }
 `;
-
-
 
 /* ===== 구매하기 탭 ===== */
 const PurchaseWrap = styled.div`
@@ -388,16 +375,17 @@ const ChildDivider = styled.div`
   margin: 0 0 8px;
 `;
 
+/* 🔸 아지트 색감으로 조정된 자녀 추가 버튼 */
 const AddChildRow = styled.button`
   width: calc(100% - 24px);
   margin: 8px 12px 10px;
   padding: 8px 14px 9px;
   border-radius: 999px;
-  border: 1px dashed #facc15;
-  background: #fff9e6;
+  border: 1px dashed rgba(249, 115, 22, 0.7);
+  background: #fff3e8;
   font-size: 13px;
   font-weight: 700;
-  color: #b45309;
+  color: #c2410c;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -405,7 +393,51 @@ const AddChildRow = styled.button`
   cursor: pointer;
 `;
 
+/* 자녀 드롭다운 & 배지 */
+const ChildDropdown = styled.div`
+  margin: 0 0 8px;
+  max-height: 180px;
+  overflow-y: auto;
+`;
 
+const ChildItemButton = styled.button`
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+  font-size: 14px;
+  text-align: left;
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
+
+  &:hover {
+    background: ${({ disabled }) => (disabled ? "transparent" : "#f9fafb")};
+  }
+
+  .name {
+    color: #111827;
+    font-weight: 700;
+  }
+  .meta {
+    margin-top: 2px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+`;
+
+const MembershipTag = styled.span`
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-weight: 700;
+`;
+
+/* 기타 */
 const SectionLabel = styled.div`
   margin: 0 0 6px;
   font-size: 13px;
@@ -450,47 +482,6 @@ const RowBetween = styled.div`
   align-items: center;
 `;
 
-/* 자녀 드롭다운 */
-const ChildDropdown = styled.div`
-  margin: 0 0 8px;
-  max-height: 180px;
-  overflow-y: auto;
-`;
-
-const ChildItemButton = styled.button`
-  width: 100%;
-  padding: 10px 14px;
-  border: 0;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-  font-size: 14px;
-  text-align: left;
-  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
-
-  &:hover {
-    background: ${({ disabled }) => (disabled ? "transparent" : "#f9fafb")};
-  }
-
-  .name {
-    color: #111827;
-    font-weight: 700;
-  }
-  .meta {
-    margin-top: 2px;
-    font-size: 12px;
-    color: #6b7280;
-  }
-  .badge {
-    margin-top: 2px;
-    font-size: 11px;
-    color: #f97316;
-  }
-`;
-
-
 /* ===== CTA ===== */
 const Footer = styled.div`
   padding: 12px 22px 18px;
@@ -532,7 +523,6 @@ export default function CheckoutAgitDialog({
   const [portalEl, setPortalEl] = useState(null);
   const [activeTab, setActiveTab] = useState("detail");
 
-  // 구매하기 탭 state
   const [childLabel, setChildLabel] = useState("선택해주세요");
   const [autoMode, setAutoMode] = useState("auto"); // "auto" | "once"
   const [selectedChildId, setSelectedChildId] = useState(null);
@@ -549,9 +539,6 @@ export default function CheckoutAgitDialog({
   const handleGoToBuy = () => {
     setActiveTab("buy");
   };
-
-
-  
 
   const {
     phoneE164,
@@ -605,10 +592,7 @@ export default function CheckoutAgitDialog({
     try {
       const set = await readAgitzSet(phoneE164);
       setAgitzAppliedSet(set || new Set());
-      console.log(
-        "[AgitzCheckout] agitzAppliedSet",
-        Array.from(set || [])
-      );
+      console.log("[AgitzCheckout] agitzAppliedSet", Array.from(set || []));
     } catch (e) {
       console.warn("[AgitzCheckout] agitzAppliedSet 조회 실패", e);
     } finally {
@@ -617,25 +601,21 @@ export default function CheckoutAgitDialog({
   }, [phoneE164, readAgitzSet]);
 
   /* ===== 모달 오픈 시 초기화 ===== */
-useEffect(() => {
-  if (!open) return;
-  setActiveTab("detail");
-  setChildDropdownOpen(false);
-  setLoading(false);
-  setAutoMode("auto");
+  useEffect(() => {
+    if (!open) return;
+    setActiveTab("detail");
+    setChildDropdownOpen(false);
+    setLoading(false);
+    setAutoMode("auto");
 
-  if (phoneE164) {
-    refreshMemberships();
-  }
+    if (phoneE164) {
+      refreshMemberships();
+    }
 
-  setSelectedChildId(null);
-  setChildLabel("선택해주세요");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [open, phoneE164]);
-
-
-
-
+    setSelectedChildId(null);
+    setChildLabel("선택해주세요");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, phoneE164]);
 
   if (!open || !portalEl) return null;
 
@@ -929,7 +909,6 @@ useEffect(() => {
         <li>자동 결제 옵션으로 편리한 구독</li>
       </SummaryList>
 
-      {/* 혜택 포인트 */}
       <SectionTitle>혜택 포인트</SectionTitle>
       <BenefitCard>
         <BenefitItem>우선 예약권: 인기 클래스 선오픈 시 우선 신청</BenefitItem>
@@ -939,7 +918,6 @@ useEffect(() => {
         <BenefitItem>자동 갱신 옵션: 결제 번거로움 최소화</BenefitItem>
       </BenefitCard>
 
-      {/* 확인하세요! */}
       <SectionTitle>확인하세요!</SectionTitle>
       <BenefitCard>
         <CheckList>
@@ -949,10 +927,7 @@ useEffect(() => {
             <strong>(1시간 추가 시 15,000원)</strong>
           </li>
           <li>입장·퇴장, 픽업 출발·도착, 간식 및 공간 이용 실시간 알림</li>
-          <li>
-            포함 서비스: 아지트 공간 & 교구 무제한 이용{" "}
-            <span style={{ color: "#6b7280" }}></span>
-          </li>
+          <li>포함 서비스: 아지트 공간 & 교구 무제한 이용</li>
           <li>추가 결제 항목: 간식, 픽업, 유료 교구 및 프로그램</li>
         </CheckList>
       </BenefitCard>
@@ -982,157 +957,173 @@ useEffect(() => {
   );
 
   /* ===== 구매하기 탭 ===== */
-const renderPurchase = () => (
-  <PurchaseWrap>
+  const renderPurchase = () => (
+    <PurchaseWrap>
+      <BuyTitle>아지트 멤버십</BuyTitle>
 
-     <BuyTitle>아지트 멤버십</BuyTitle>  
+      <Block>
+        <SectionLabel>자녀 연결</SectionLabel>
 
-    <Block>
-      <SectionLabel>자녀 연결</SectionLabel>
-
-      <ChildCard>
-        {/* 상단 헤더: 선택해주세요 / 선택된 자녀 */}
-        <ChildCardHeader
-          type="button"
-          $placeholder={!selectedChildId}
-          onClick={() => {
-            if (!children.length) {
-              if (
-                window.confirm(
-                  "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록하시겠어요?"
-                )
-              ) {
-                onClose?.();
-
-                const isMobile =
-                  typeof window !== "undefined" &&
-                  window.matchMedia &&
-                  window.matchMedia("(max-width: 768px)").matches;
-
-                navigate(isMobile ? "/m/account" : "/mypage");
+        <ChildCard>
+          <ChildCardHeader
+            type="button"
+            $placeholder={!selectedChildId}
+            onClick={() => {
+              if (!children.length) {
+                if (
+                  window.confirm(
+                    "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록하시겠어요?"
+                  )
+                ) {
+                  onClose?.();
+                  const isMobile =
+                    typeof window !== "undefined" &&
+                    window.matchMedia &&
+                    window.matchMedia("(max-width: 768px)").matches;
+                  navigate(isMobile ? "/m/account" : "/mypage");
+                }
+                return;
               }
-              return;
-            }
-            setChildDropdownOpen((prev) => !prev);
-          }}
-        >
-          <span>{selectedChildId ? childLabel : "선택해주세요"}</span>
-          <ChevronDown />
-        </ChildCardHeader>
+              setChildDropdownOpen((prev) => !prev);
+            }}
+          >
+            <span>{selectedChildId ? childLabel : "선택해주세요"}</span>
+            <ChevronDown />
+          </ChildCardHeader>
 
-        {childDropdownOpen && children.length > 0 && (
-          <>
-            <ChildDivider />
-            <ChildDropdown>
-              {children.map((c) => {
-                const applied = agitzAppliedSet.has(c.childId);
-                return (
-                  <ChildItemButton
-                    key={c.childId}
-                    type="button"
-                    disabled={applied}
-                    onClick={() => {
-                      if (applied) {
-                        alert(
-                          "이미 정규 멤버십이 적용된 자녀입니다. 다른 자녀를 선택해 주세요."
+          {childDropdownOpen && children.length > 0 && (
+            <>
+              <ChildDivider />
+              <ChildDropdown>
+                {children.map((c) => {
+                  const applied = agitzAppliedSet.has(c.childId);
+
+                  return (
+                    <ChildItemButton
+                      key={c.childId}
+                      type="button"
+                      disabled={applied}
+                      onClick={() => {
+                        if (applied) {
+                          alert(
+                            "이미 정규 멤버십이 적용된 자녀입니다. 다른 자녀를 선택해 주세요."
+                          );
+                          return;
+                        }
+                        setSelectedChildId(c.childId);
+                        setChildLabel(
+                          c.name
+                            ? c.birth
+                              ? `${c.name} (${c.birth})`
+                              : c.name
+                            : "선택해주세요"
                         );
-                        return;
-                      }
-                      setSelectedChildId(c.childId);
-                      setChildLabel(
-                        c.name
-                          ? c.birth
-                            ? `${c.name} (${c.birth})`
-                            : c.name
-                          : "선택해주세요"
-                      );
-                      setChildDropdownOpen(false);
-                    }}
-                  >
-                    <span className="name">
-                      {c.name || "(이름 없음)"}
-                    </span>
-                    {c.birth ? (
-                      <span className="meta">{c.birth}</span>
-                    ) : null}
-                    {applied ? (
-                      <span className="badge">정규 멤버십 가입됨</span>
-                    ) : null}
-                  </ChildItemButton>
-                );
-              })}
-            </ChildDropdown>
-          </>
-        )}
+                        setChildDropdownOpen(false);
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          width: "100%",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <span className="name">
+                            {c.name || "(이름 없음)"}
+                          </span>
+                          {c.birth && (
+                            <span className="meta" style={{ marginTop: 0 }}>
+                              {c.birth}
+                            </span>
+                          )}
+                        </div>
 
-        {/* + 자녀 추가 – 타임패스와 동일 구조 */}
-        <AddChildRow
-          type="button"
-          onClick={() => {
-            onClose?.();
+                        {applied && (
+                          <MembershipTag>정규 가입됨</MembershipTag>
+                        )}
+                      </div>
+                    </ChildItemButton>
+                  );
+                })}
+              </ChildDropdown>
+            </>
+          )}
 
-            const isMobile =
-              typeof window !== "undefined" &&
-              window.matchMedia &&
-              window.matchMedia("(max-width: 768px)").matches;
+          <AddChildRow
+            type="button"
+            onClick={() => {
+              onClose?.();
+              const isMobile =
+                typeof window !== "undefined" &&
+                window.matchMedia &&
+                window.matchMedia("(max-width: 768px)").matches;
+              navigate(isMobile ? "/m/account" : "/mypage");
+            }}
+          >
+            <span>+</span>
+            <span>자녀 추가</span>
+          </AddChildRow>
+        </ChildCard>
+      </Block>
 
-            navigate(isMobile ? "/m/account" : "/mypage");
-          }}
+      <Block>
+        <SectionLabel>가격</SectionLabel>
+        <SelectBox $placeholder={false}>
+          <span>월 {KRW(AGITZ_PRICE_BASE)}원</span>
+        </SelectBox>
+      </Block>
+
+      <Block>
+        <SectionLabel>자동 갱신 여부</SectionLabel>
+        <SelectBox
+          $placeholder={false}
+          onClick={() =>
+            setAutoMode((prev) => (prev === "auto" ? "once" : "auto"))
+          }
         >
-          <span>+</span>
-          <span>자녀 추가</span>
-        </AddChildRow>
-      </ChildCard>
-    </Block>
+          <span>{autoLabel}</span>
+          <ChevronDown />
+        </SelectBox>
+      </Block>
 
-    {/* 아래 블록들은 기존 그대로 유지 */}
-    <Block>
-      <SectionLabel>가격</SectionLabel>
-      <SelectBox $placeholder={false}>
-        <span>월 {KRW(AGITZ_PRICE_BASE)}원</span>
-      </SelectBox>
-    </Block>
+      <Block>
+        <RowBetween>
+          <SectionLabel>확인하세요!</SectionLabel>
+          <button
+            type="button"
+            style={{
+              border: "0",
+              background: "transparent",
+              fontSize: 12,
+              color: "#6b7280",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            이용약관/환불정책 보기 →
+          </button>
+        </RowBetween>
 
-    <Block>
-      <SectionLabel>자동 갱신 여부</SectionLabel>
-      <SelectBox
-        $placeholder={false}
-        onClick={() =>
-          setAutoMode((prev) => (prev === "auto" ? "once" : "auto"))
-        }
-      >
-        <span>{autoLabel}</span>
-        <ChevronDown />
-      </SelectBox>
-    </Block>
-
-    <Block>
-      <RowBetween>
-        <SectionLabel>확인하세요!</SectionLabel>
-        <button
-          type="button"
-          style={{
-            border: "0",
-            background: "transparent",
-            fontSize: 12,
-            color: "#6b7280",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          이용약관/환불정책 보기 →
-        </button>
-      </RowBetween>
-
-      <BottomNoteWrap>
-        자동 갱신 선택 시, 해지 전까지 매월 동일 금액이 결제됩니다.
-        유효기간 내 미사용 잔여분 환불/연장 불가 (약관 기준)
-      </BottomNoteWrap>
-    </Block>
-  </PurchaseWrap>
-);
+        <BottomNoteWrap>
+          자동 갱신 선택 시, 해지 전까지 매월 동일 금액이 결제됩니다.
+          유효기간 내 미사용 잔여분 환불/연장 불가 (약관 기준)
+        </BottomNoteWrap>
+      </Block>
+    </PurchaseWrap>
+  );
 
   /* ===== Render ===== */
   return createPortal(
@@ -1160,7 +1151,9 @@ const renderPurchase = () => (
           </TabsBar>
         </Header>
 
-        <Body>{activeTab === "detail" ? renderDetail() : renderPurchase()}</Body>
+        <Body>
+          {activeTab === "detail" ? renderDetail() : renderPurchase()}
+        </Body>
 
         <Footer>
           <CTAButton
@@ -1171,8 +1164,8 @@ const renderPurchase = () => (
             {activeTab === "detail"
               ? "아지트 이용하기"
               : loading
-              ? "결제 진행 중…"
-               : `결제 하기`}
+                ? "결제 진행 중…"
+                : "결제 하기"}
           </CTAButton>
         </Footer>
       </Dialog>

@@ -1,8 +1,7 @@
 // src/pages/HomePage.jsx
 /* eslint-disable */
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import styled from "styled-components";
-
 
 import ConsultStrip from "../components/common/ConsultStrip";
 import ServiceIntro from "../components/ServiceIntro";
@@ -31,57 +30,75 @@ import HomeQuickMenu from "../components/HomeQuickMenu";
 import CoreValue from "../components/CoreValue";
 import { useNavigate } from "react-router-dom";
 
-
 const Wrap = styled.main`
-  position: relative;      /* 섹션 자체는 그대로 */
-  background: transparent; /* 상단 패턴 유지 */
+  position: relative;
+  background: transparent;
 `;
 
 export default function HomePage() {
-
     const navigate = useNavigate();
+
+    // 🔹 홈 진입할 때 무조건 화면 최상단으로
+    useLayoutEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const el =
+            document.scrollingElement ||
+            document.documentElement ||
+            document.body;
+
+        try {
+            el.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        } catch {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        }
+
+        // 일부 브라우저 대비해서 window도 한 번 더
+        window.scrollTo(0, 0);
+    }, []);
 
     const onClickViewAll = () => {
         navigate("/Space");
-    }
+    };
 
-    const onClickSignup = () =>{
+    const onClickSignup = () => {
         navigate("/signup");
-    }
+    };
 
     const onClickContact = () => {
         navigate("/m/faq");
-    }
+    };
 
     const onClickSuggest = () => {
         navigate("/suggest");
-    }
+    };
 
     return (
         <Wrap>
             <Banner />
-       
-            <HomeQuickMenu />           {/* ⬅️ 여기! */}
-
-            <CoreValue/>
+            <HomeQuickMenu />
+            <CoreValue />
 
             <CoreValuesSplit
                 label="CORE VALUES"
                 mainTitle="안전한 픽업과 따뜻한 돌봄"
                 desc="아이가 성장하는 매 순간을 특별하게, 안전하게 지켜드립니다"
             />
-            <MembershipPlans /> 
-          
-            
+
+            <MembershipPlans />
+
             <HeroDownloadSection />
 
+            <SpotsSection
+                onClickViewAll={onClickViewAll}
+                onClickSuggest={onClickSuggest}
+            />
 
-            <SpotsSection onClickViewAll={onClickViewAll} onClickSuggest={onClickSuggest} />
-
-            <CallToActionSection onClickContact={onClickContact} onClickSignup={onClickSignup} />
-    
-    
-
+            <CallToActionSection
+                onClickContact={onClickContact}
+                onClickSignup={onClickSignup}
+            />
         </Wrap>
     );
 }

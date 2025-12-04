@@ -125,12 +125,12 @@ const Eyebrow = styled.p`
 
 const Title = styled.h2`
   margin: 0 0 12px;
-  font-family: "NanumSquareRound";
+  font-family: NanumSquareRound;
   font-size: clamp(28px, 3.1vw, 34px);
-  line-height: 1.5;
+  line-height: 1.3;
   font-weight: 800;
   color: #1a1a1a;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.025em;
 
   .highlight {
     position: relative;
@@ -154,7 +154,7 @@ const Title = styled.h2`
 
   @media (max-width: 960px) {
     text-align: center;
-    font-size: 22px;
+    font-size: 24px;
   }
 `;
 

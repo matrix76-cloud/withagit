@@ -18,7 +18,7 @@ const HERO_H = "clamp(320px, 36vw, 440px)";
 const Section = styled.section`
   position: relative;
   width: 100%;
-  background: #FFFCF4;
+  background: #FFF;
   padding: 40px 0 56px;
 
   @media (max-width: 960px) {
@@ -65,10 +65,7 @@ const SlideCard = styled.div`
   border-radius: 32px;
   overflow: hidden;
   background: #ffffff;
-  box-shadow: ${({ $active }) =>
-    $active
-      ? "0 20px 46px rgba(0, 0, 0, 0.12)"
-      : "0 10px 26px rgba(0, 0, 0, 0.06)"};
+
   transform: ${({ $active }) =>
     $active ? "translateY(0) scale(1)" : "translateY(10px) scale(0.94)"};
   opacity: ${({ $active }) => ($active ? 1 : 0.38)};

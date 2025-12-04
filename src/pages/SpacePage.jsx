@@ -12,11 +12,11 @@ import { listIntroSpots } from "../services/introSpotsService";
 const Section = styled.section`
   min-height: 100vh;
   padding: 56px 16px 80px;
-  background: radial-gradient(circle at top, #fffaf0 0%, #f5f7fb 42%, #f3f4f6 100%);
+  background: linear-gradient(180deg, #fff7e8 0%, #fff7e8 60%, #f3f4f6 100%);
   box-sizing: border-box;
 
   @media (max-width: 720px) {
-    padding: 36px 16px 64px;
+    padding: 32px 16px 64px;
   }
 `;
 
@@ -27,50 +27,12 @@ const Wrap = styled.div`
   gap: 24px;
 `;
 
-/* ===== 모바일 전용 상단 헤더 (뒤로가기) ===== */
-
-const MobileHeaderBar = styled.div`
-  display: none;
-
-  @media (max-width: 720px) {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-`;
-
-const BackButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(255, 255, 255, 0.7);
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  cursor: pointer;
-  color: #4b5563;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
-
-  &:active {
-    background: #e5e7eb;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
-  }
-`;
-
-const MobileHeaderTitle = styled.h2`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 800;
-  color: #111827;
-`;
-
 /* 헤더 (공통) */
 
 const Head = styled.div`
   display: grid;
-  gap: 6px;
+  gap: 8px;
+  text-align: center;
 `;
 
 const Title = styled.h1`
@@ -79,6 +41,25 @@ const Title = styled.h1`
   font-weight: 900;
   font-size: clamp(24px, 3vw, 30px);
   letter-spacing: -0.04em;
+`;
+
+const Highlight = styled.span`
+  position: relative;
+  display: inline-block;
+  padding: 0 4px;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    bottom: 3px;
+    height: 46%;
+    background: #ffe39b;
+    border-radius: 999px;
+    z-index: -1;
+  }
 `;
 
 const Sub = styled.p`
@@ -97,29 +78,32 @@ const BranchList = styled.div`
 
 // 공통 카드 베이스
 const CardBase = styled.article`
-  border-radius: 32px;
+  border-radius: 24px;
   overflow: hidden;
-
   display: flex;
   flex-direction: column;
   max-width: 640px;
   margin: 0 auto;
 
   @media (max-width: 720px) {
-    border-radius: 26px;
-    width: 90%;
+    border-radius: 24px;
+    width: 94%;
   }
 `;
 
 /* 지점 카드 */
 
-const BranchCard = styled(CardBase)``;
+const BranchCard = styled(CardBase)`
+  background: #faedcf;
+  box-shadow: none;
+`;
 
 const BranchHero = styled.div`
   position: relative;
   height: 210px;
   background: #e5e7eb;
   overflow: hidden;
+  border-radius: 24px 24px 0 0;
 
   img {
     width: 100%;
@@ -135,20 +119,19 @@ const BranchHero = styled.div`
 
 const StatusPill = styled.span`
   position: absolute;
-  top: 14px;
-  left: 14px;
-  padding: 6px 11px;
+  top: 10px;
+  left: 10px;       /* 왼쪽 상단 */
+  padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.96);
-  color: #b45309;
+  background: #ff7a2a;
+  color: #ffffff;
   font-size: 11px;
   font-weight: 800;
 `;
 
 const BranchInfo = styled.div`
-  background: #ffe9a7;
   padding: 14px 18px 18px;
-  border-radius: 0 0 32px 32px;
+  border-radius: 0 0 24px 24px;
   color: #4b3a2a;
 `;
 
@@ -156,13 +139,15 @@ const BranchName = styled.div`
   font-size: 15px;
   font-weight: 800;
   margin-bottom: 6px;
+  letter-spacing: -0.02em;
 `;
 
 const BranchLocRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
 `;
 
 const LocIcon = () => (
@@ -217,7 +202,7 @@ const ComingFooter = styled.div`
   margin-top: 24px;
   background: #ffe5aa;
   padding: 14px 24px 18px;
-  border-radius: 0 0 32px 32px;
+  border-radius: 0 0 24px 24px;
   color: #4b3a2a;
   font-size: 13px;
 `;
@@ -339,23 +324,14 @@ export default function SpacePage() {
     nav("/suggest");
   };
 
-  const handleBack = () => {
-    // 기본은 바로 이전 화면으로
-    nav(-1);
-  };
-
   return (
     <Section>
       <Wrap>
-        {/* 모바일 전용 뒤로가기 헤더 */}
-        <MobileHeaderBar>
-          <BackButton onClick={handleBack}>‹</BackButton>
-          <MobileHeaderTitle>아지트 지점 소개</MobileHeaderTitle>
-        </MobileHeaderBar>
-
-        {/* 헤더 (PC/모바일 공통) */}
+        {/* 헤더 */}
         <Head>
-          <Title>아지트 지점 소개</Title>
+          <Title>
+            <Highlight>아지트 지점 소개</Highlight>
+          </Title>
           <Sub>우리 공간의 다양한 스팟을 미리 만나보세요.</Sub>
         </Head>
 
@@ -372,24 +348,37 @@ export default function SpacePage() {
 
         {!loading && branches.length > 0 && (
           <BranchList>
-            {branches.map((b) => (
-              <BranchCard key={b.id}>
-                <BranchHero>
-                  {b.heroImage && <img src={b.heroImage} alt={b.name} />}
-                  {b.status === "open" && <StatusPill>운영 중</StatusPill>}
-                  {b.status === "coming" && <StatusPill>Open 예정</StatusPill>}
-                </BranchHero>
-                <BranchInfo>
-                  <BranchName>{b.name}</BranchName>
-                  <BranchLocRow>
-                    <LocIcon />
-                    <span>
-                      {b.city} {b.district}
-                    </span>
-                  </BranchLocRow>
-                </BranchInfo>
-              </BranchCard>
-            ))}
+            {branches.map((b) => {
+              // 🔹 운영 중인 지점은 모두 동일 텍스트로 노출
+              const isOpen = b.status === "open";
+
+              const displayName = isOpen
+                ? "첫 번째 아지트 (수지초)"
+                : b.name;
+
+              const displayLoc = isOpen
+                ? "경기 용인시 수지구"
+                : `${b.city} ${b.district}`;
+
+              return (
+                <BranchCard key={b.id}>
+                  <BranchHero>
+                    {b.heroImage && <img src={b.heroImage} alt={b.name} />}
+                    {isOpen && <StatusPill>운영 중</StatusPill>}
+                    {!isOpen && b.status === "coming" && (
+                      <StatusPill>Open 예정</StatusPill>
+                    )}
+                  </BranchHero>
+                  <BranchInfo>
+                    <BranchName>{displayName}</BranchName>
+                    <BranchLocRow>
+                      <LocIcon />
+                      <span>{displayLoc}</span>
+                    </BranchLocRow>
+                  </BranchInfo>
+                </BranchCard>
+              );
+            })}
           </BranchList>
         )}
 

@@ -952,21 +952,29 @@ const MemoLabel = styled.div`
 
 const MemoArea = styled.textarea`
   width: 100%;
-  min-height: 120px;
-  border-radius: 18px;
-  border: 1px solid ${borderSoft};
-  padding: 10px 12px;
+  height: 180px;              /* 🔹 고정 높이 (피그마 느낌으로 적당히) */
+  border-radius: 8px;
+  border: none;              /* 외곽선 제거 */
+  background: #f3f4f6;       /* 🔹 피그마처럼 연한 회색 배경 */
+  padding: 12px 14px;
   font-size: 13px;
-  resize: vertical;
-  margin-top: 10px;
   font-family: inherit;
   color: ${primaryText};
   box-sizing: border-box;
+  resize: none;              /* 🔹 크기 조정 아이콘 제거 */
+  margin-top: 10px;
+  outline: none;
 
   &::placeholder {
-    color: #c4c4c4;
+    color: #666;
+  }
+
+  &:focus {
+    background: #f3f4f6;     /* 포커스 시 살짝만 밝게 */
+    box-shadow: 0 0 0 1px #e5e7eb;
   }
 `;
+
 
 const RightSlotChip = styled.button`
   position: relative;
@@ -1011,9 +1019,9 @@ const CartActionsRow = styled.div`
 `;
 
 const CartButton = styled.button`
-  height: 34px;
-  padding: 0 18px;
-  border-radius: 999px;
+  height: 40px;
+  padding: 12px 18px;
+  border-radius: 10px;
   border: none;
   background: #e6e6e6;
   color: #666666;
@@ -2122,6 +2130,12 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
           )}
         </MapBox>
 
+        <CartActionsRow>
+          <CartButton type="button" onClick={handleAddToCart}>
+            예약 담기
+          </CartButton>
+        </CartActionsRow>
+
         <MemoLabel>메모 (선택)</MemoLabel>
         <MemoArea
           placeholder="픽업시 필요한 내용을 자유롭게 남겨주세요."
@@ -2129,11 +2143,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
           onChange={(e) => setMemo(e.target.value)}
         />
 
-        <CartActionsRow>
-          <CartButton type="button" onClick={handleAddToCart}>
-            장바구니에 담기
-          </CartButton>
-        </CartActionsRow>
+    
 
         <CartList>
           {(cartItems || []).map((item) => (
@@ -2281,30 +2291,33 @@ const BottomBar = styled.div`
 `;
 
 const ApplyButton = styled.button`
-  width: 90%;
-  max-width: 480px;
-  height: 50px;
+  width: 80%;               /* 🔹 너비 살짝 줄이기 */
+  max-width: 380px;         /* 데스크탑에서도 너무 넓지 않게 */
+  height: 46px;             /* 살짝 낮게 */
   border-radius: 999px;
   border: none;
-  background: #e5e5e5;
+  background: #e4e4e4;      /* 🔹 피그마처럼 밝은 회색 톤 */
   color: #4b5563;
-  font-size: 14px;
+  font-size: 13px;          /* 🔹 글자 조금 작게 */
   font-weight: 700;
+  letter-spacing: -0.01em;
   cursor: pointer;
   padding: 0 24px;
-  pointer-events: auto;     /* 버튼은 클릭 가능하게 */
+  pointer-events: auto;
 
   &:hover {
-    filter: brightness(0.98);
+    filter: brightness(0.99);  /* 미세한 변화만 */
   }
+
   &:active {
     transform: translateY(1px);
   }
 
   @media (min-width: 960px) {
-    max-width: 420px;
+    max-width: 360px;        /* PC에선 더 컴팩트하게 */
   }
 `;
+
 
 
 /* ================== 페이지 컴포넌트 ================== */

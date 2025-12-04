@@ -131,7 +131,7 @@ const Desc = styled.p`
   font-size: 14px;
   line-height: 1.55;
   color: #111;
-  font-weight :600;
+  font-weight :800;
   font-family:Pretendard;
 
   @media (max-width: 960px) {
@@ -270,10 +270,14 @@ const Tile = styled.div`
 
   @media (max-width: 960px) {
     border-radius: 22px;
-    min-height: 150px;
+    min-height: 170px;
     padding: 18px 18px 18px 18px;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
   }
+  display: flex;
+  justify-content: center;
+  flex-direction: column; 
+
 `;
 
 const TTitle = styled.div`
@@ -385,7 +389,7 @@ const IconBox = styled.div`
 const CARD_ITEMS = [
   {
     key: "teacher",
-    bg: "#FFF5EB",
+    bg: "#FFF",
     icon: layer2,
   },
   {
@@ -537,7 +541,8 @@ export default function CoreValue({ label = "CORE VALUE" }) {
               <TitleHighlight>따뜻한 돌봄</TitleHighlight>
             </MainTitle>
             <Desc>
-              아이들의 일상 돌봄 부터 배움, 놀이까지
+              아이들의 일상 돌봄 부터 배움,
+             
               <br />
              놀이까지 한 공간에서 
             </Desc>

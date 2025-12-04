@@ -112,10 +112,11 @@ const ViewAllText = styled.button`
   background: transparent;
   padding: 0;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: #111;
   cursor: pointer;
   font-family:Pretendard;
+  letter-spacing: -0.025em;
 `;
 
 const ViewAllCircle = styled.button`

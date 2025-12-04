@@ -73,7 +73,7 @@ const RightText = styled.div`
 const Eyebrow = styled.p`
   margin: 0 0 10px;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 800;
   color: #f07a2a;
 
   @media (max-width: 960px) {
@@ -86,7 +86,11 @@ const Heading = styled.h2`
   font-size: clamp(28px, 3.8vw, 40px);
   line-height: 1.35;
   color: #1b130c;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
+  font-weight: 800;
+  font-family: NanumSquareRound;
+
+
 
   @media (max-width: 960px) {
     font-size: 22px;
@@ -160,6 +164,8 @@ const StoreButton = styled.a`
   cursor: pointer;
   white-space: nowrap;
   min-width: 150px;
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
 
   &:hover {
     filter: brightness(1.03);
