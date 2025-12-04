@@ -286,6 +286,8 @@ const SectionDesc = styled.p`
 
 /* 등록된 자녀 목록 카드 */
 
+/* 등록된 자녀 목록 카드 */
+
 const Cards = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -297,8 +299,13 @@ const ChildCard = styled.button`
   border-radius: 18px;
   padding: 12px 12px 10px;
   display: grid;
-  grid-template-columns: 72px 1fr auto;
-  gap: 12px;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "photo action"
+    "meta  action";
+  column-gap: 12px;
+  row-gap: 8px;
   align-items: flex-start;
   background: #ffffff;
   border: 1px solid #f1f3f7;
@@ -311,10 +318,51 @@ const ChildCard = styled.button`
   }
 `;
 
-const CardMeta = styled.div`
-  display: grid;
-  gap: 4px;
+const CardPhotoBox = styled.div`
+  grid-area: photo;
 `;
+
+const CardMeta = styled.div`
+  grid-area: meta;
+  width: 100%;
+`;
+
+const InfoTable = styled.div`
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 4px;
+  column-gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+`;
+
+const InfoLabelPrimary = styled.div`
+  font-weight: 800;
+  color: #111827;
+`;
+
+const InfoValuePrimary = styled.div`
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #111827;
+`;
+
+const InfoLabel = styled.div`
+  color: #9ca3af;
+`;
+
+const InfoValue = styled.div`
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #111827;
+`;
+
+
+
 
 const CardName = styled.div`
   font-weight: 800;
@@ -326,6 +374,48 @@ const CardSub = styled.div`
   font-size: 12px;
   color: #6b7280;
 `;
+
+const InfoLines = styled.div`
+  display: grid;
+  row-gap: 2px;
+  font-size: 12px;
+  color: #6b7280;
+`;
+
+const InfoLine = styled.div`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+
+const InfoStrong = styled.span`
+  color: #111827;
+  font-weight: 700;
+`;
+
+const CardAct = styled.div`
+  grid-area: action;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+`;
+
+const CardDeleteBtn = styled.button`
+  border: 1px solid #ef4444;
+  border-radius: 999px;
+  background: #fff;
+  color: #b91c1c;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: #fee2e2;
+  }
+`;
+
 
 const InfoGrid = styled.div`
   display: grid;
@@ -347,26 +437,6 @@ const InfoVal = styled.span`
   text-overflow: ellipsis;
 `;
 
-const CardAct = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-`;
-
-const CardDeleteBtn = styled.button`
-  border: 1px solid #ef4444;
-  border-radius: 999px;
-  background: #fff;
-  color: #b91c1c;
-  font-size: 11px;
-  padding: 4px 10px;
-  cursor: pointer;
-
-  &:hover {
-    background: #fee2e2;
-  }
-`;
 
 const EmptyBox = styled.div`
   padding: 12px 10px;
@@ -563,34 +633,53 @@ function SavedChildrenList({ items = [], onSelect, onDelete }) {
                             (c.gender === "male" && "남자") ||
                             (c.gender === "female" && "여자") ||
                             "";
+                        const ageLabel = ageFromBirth(c.birth);
 
                         return (
-                            <ChildCard key={c.childId} onClick={() => onSelect && onSelect(c)}>
-                                <ChildPhoto path={c.avatarUrl || c.photo} size={64} alt={c.name} />
+                            <ChildCard
+                                key={c.childId}
+                                onClick={() => onSelect && onSelect(c)}
+                            >
+                                {/* 사진: 위쪽 */}
+                                <CardPhotoBox>
+                                    <ChildPhoto
+                                        path={c.avatarUrl || c.photo}
+                                        size={64}
+                                        alt={c.name}
+                                    />
+                                </CardPhotoBox>
+
+                                {/* 텍스트: 사진 아래에서 시작 */}
                                 <CardMeta>
-                                    <CardName>{c.name || "-"}</CardName>
-                                    <CardSub>
-                                        {gender ? `${gender} · ` : ""}
-                                        {c.birth || "-"}
-                                        {ageFromBirth(c.birth) ? ` · ${ageFromBirth(c.birth)}` : ""}
-                                    </CardSub>
+                                    <InfoTable>
+                                        {/* 1행: 이름 | 성별 · 생일 · 나이 */}
+                                        <InfoLabelPrimary>{c.name || "-"}</InfoLabelPrimary>
+                                        <InfoValuePrimary>
+                                            {gender && `${gender} · `}
+                                            {c.birth || "-"}
+                                            {ageLabel && ` · ${ageLabel}`}
+                                        </InfoValuePrimary>
 
-                                    <InfoGrid>
-                                        <InfoKey>학교</InfoKey>
-                                        <InfoVal>{c.school || "-"}</InfoVal>
+                                        {/* 2행: 학교 | 수지초 · 4학년 1반 */}
+                                        <InfoLabel>학교</InfoLabel>
+                                        <InfoValue>
+                                            {c.school || "-"}
+                                            {(c.grade || c.classroom) && (
+                                                <>
+                                                    {" · "}
+                                                    {(c.grade || "").trim()}{" "}
+                                                    {(c.classroom || "").trim()}
+                                                </>
+                                            )}
+                                        </InfoValue>
 
-                                        <InfoKey>학년/반</InfoKey>
-                                        <InfoVal>
-                                            {(c.grade || "") && (c.classroom || "")
-                                                ? `${c.grade} / ${c.classroom}`
-                                                : "-"}
-                                        </InfoVal>
-
-                                        <InfoKey>연락처</InfoKey>
-                                        <InfoVal>{contact || "-"}</InfoVal>
-                                    </InfoGrid>
+                                        {/* 3행: 연락처 | 010-1234-5678 */}
+                                        <InfoLabel>연락처</InfoLabel>
+                                        <InfoValue>{contact || "-"}</InfoValue>
+                                    </InfoTable>
                                 </CardMeta>
 
+                                {/* 삭제 버튼: 항상 카드 오른쪽 */}
                                 <CardAct
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -617,6 +706,7 @@ function SavedChildrenList({ items = [], onSelect, onDelete }) {
                     })}
                 </Cards>
             )}
+
         </>
     );
 }
@@ -1015,8 +1105,7 @@ export default function AccountChildrenPage() {
                 </HeaderBar>
 
                 <SectionCard>
-                    <SectionTitle>등록된 자녀</SectionTitle>
-                    <SectionDesc>등록된 자녀 정보를 확인하고 필요 시 수정·삭제할 수 있어요.</SectionDesc>
+        
                     <SavedChildrenList
                         items={savedChildren}
                         onSelect={setEditingChild}

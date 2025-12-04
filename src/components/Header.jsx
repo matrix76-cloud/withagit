@@ -103,16 +103,26 @@ function useStorageUrl(path, bustKey) {
 /* ===== Styles ===== */
 
 const Bar = styled.header`
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 20;
+  left: 0;
+  right: 0;
+  z-index: 50;
   background: ${HEADER_BG};
   border-bottom: 1px solid ${BORDER_COLOR};
   font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont, system-ui,
     "Segoe UI", "Noto Sans KR", sans-serif;
 
-  /* 🔹 헤더 높이 밖으로 튀어 나간 로고/요소는 잘라서 클릭 안 되게 */
+  /* 헤더 높이 밖으로 튀어 나간 로고/요소는 잘라서 클릭 안 되게 */
   overflow: hidden;
+`;
+
+const Spacer = styled.div`
+  height: ${HEADER_HEIGHT};
+
+  @media (max-width: 960px) {
+    height: 56px;
+  }
 `;
 
 const Inner = styled.div`
@@ -374,42 +384,45 @@ export default function Header() {
   }, [location.pathname, initialized, phoneE164, refresh]);
 
   return (
-    <Bar>
-      <Inner>
-        {/* 좌측 로고 영역 */}
-        <BrandArea>
-          <Brand to="/">
-            <Logo src={logo} alt="withagit" />
-        
-          </Brand>
-        </BrandArea>
+    <>
+      <Bar>
+        <Inner>
+          {/* 좌측 로고 영역 */}
+          <BrandArea>
+            <Brand to="/">
+              <Logo src={logo} alt="withagit" />
+            </Brand>
+          </BrandArea>
 
-        {/* 가운데 네비게이션 — PC 전용 */}
-        <NavArea>
-          <NavItem to="/membership">멤버십/서비스</NavItem>
-          <NavItem to="/price">구독/결제</NavItem>
-          <NavItem to="/pickup/apply">픽업 신청</NavItem>
-          <NavItem to="/space">아지트 지점</NavItem>
-          <NavItem to="/help">소식/문의</NavItem>
-        </NavArea>
+          {/* 가운데 네비게이션 — PC 전용 */}
+          <NavArea>
+            <NavItem to="/membership">멤버십/서비스</NavItem>
+            <NavItem to="/price">구독/결제</NavItem>
+            <NavItem to="/pickup/apply">픽업 신청</NavItem>
+            <NavItem to="/space">아지트 지점</NavItem>
+            <NavItem to="/help">소식/문의</NavItem>
+          </NavArea>
 
-        {/* 우측 액션 영역 */}
-        <Actions>
-          {isLoggedIn ? (
-            <ProfileIconButton onClick={goMyPage} aria-label={userLabel}>
-              <Avatar>
-                <img src={avatarUrl || fallbackAvatar} alt="avatar" />
-              </Avatar>
-            </ProfileIconButton>
-          ) : (
-            <ProfileIconButton onClick={handleLogin} aria-label="로그인">
-              <Avatar>
-                <img src={fallbackAvatar} alt="login avatar" />
-              </Avatar>
-            </ProfileIconButton>
-          )}
-        </Actions>
-      </Inner>
-    </Bar>
+          {/* 우측 액션 영역 */}
+          <Actions>
+            {isLoggedIn ? (
+              <ProfileIconButton onClick={goMyPage} aria-label={userLabel}>
+                <Avatar>
+                  <img src={avatarUrl || fallbackAvatar} alt="avatar" />
+                </Avatar>
+              </ProfileIconButton>
+            ) : (
+              <ProfileIconButton onClick={handleLogin} aria-label="로그인">
+                <Avatar>
+                  <img src={fallbackAvatar} alt="login avatar" />
+                </Avatar>
+              </ProfileIconButton>
+            )}
+          </Actions>
+        </Inner>
+      </Bar>
+      {/* 컨텐츠가 헤더 밑에서 시작하도록 여유 공간 */}
+      <Spacer />
+    </>
   );
 }

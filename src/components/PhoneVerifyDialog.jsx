@@ -7,56 +7,133 @@
 // - 테스트 번호 구간(010-6214-1000 ~ 010-6214-2000)에서는 서버 호출 생략 + devCode 노출
 // - props: open, onClose, onVerified(phoneE164), title?, description?, variant?, containerId?
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
 
 /* ===== Backdrop & Position ===== */
 const Backdrop = styled.div`
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.45);
-  display: flex; align-items: flex-start; justify-content: center;
-  padding-top: 80px;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
   z-index: 2147483647; /* 어떤 헤더/오버레이보다 위로 */
+  overflow-y: auto;
 `;
+
 const Sheet = styled.div`
-  width: min(440px, 92vw);
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
   background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 24px 64px rgba(0,0,0,.25);
-  padding: 24px;
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+  padding: 24px 22px 26px;
+  box-sizing: border-box;
 `;
 
 /* ============ Styles ============ */
-const Title = styled.h3`margin:0 0 16px;font-size:22px;font-weight:800;color:#0f172a;`;
-const Field = styled.div`display:grid;gap:8px;margin-bottom:16px;`;
-const Label = styled.label`font-weight:800;color:#0f172a;letter-spacing:.2px;`;
+const Title = styled.h3`
+  margin: 0 0 16px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+`;
+const Field = styled.div`
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+`;
+const Label = styled.label`
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+`;
 const InputWrap = styled.div`
-  position: relative; background:#f7f8fb; border:1px solid #e5e7eb; border-radius:14px;
-  padding:12px 16px; display:flex; align-items:center;
-  &:focus-within{ background:#fff; border-color:#cbd5e1; }
-  input{ flex:1; border:0; outline:none; background:transparent; font-size:18px; color:#111; }
+  position: relative;
+  background: #f7f8fb;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+
+  &:focus-within {
+    background: #fff;
+    border-color: #cbd5e1;
+  }
+
+  input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: 18px;
+    color: #111;
+  }
 `;
-const Hint = styled.div`font-size:12px;color:#6b7280;`;
-const Error = styled.div`font-size:13px;color:#b91c1c;`;
-const Buttons = styled.div`display:grid;gap:12px;margin-top:8px;`;
+const Hint = styled.div`
+  font-size: 12px;
+  color: #6b7280;
+`;
+const Error = styled.div`
+  font-size: 13px;
+  color: #b91c1c;
+`;
+const Buttons = styled.div`
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+`;
 const BaseBtn = styled.button`
-  height:56px;border-radius:16px;border:0;font-size:16px;font-weight:900;
-  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:filter .12s, transform .05s, background-color .15s, opacity .15s;
-  box-shadow:0 10px 24px rgba(0,0,0,.06);
-  &:hover{ filter:brightness(.98); }
-  &:active{ transform:translateY(1px); }
-  &:disabled{ opacity:.5; cursor:not-allowed; }
+  height: 56px;
+  border-radius: 16px;
+  border: 0;
+  font-size: 16px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: filter 0.12s, transform 0.05s, background-color 0.15s,
+    opacity 0.15s;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+
+  &:hover {
+    filter: brightness(0.98);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 `;
-const SendBtn = styled(BaseBtn)`background:#f6ddcc;color:#1f2937;`;
-const VerifyBtn = styled(BaseBtn)`background:linear-gradient(180deg,#111827 0%,#0b1222 100%);color:#fff;`;
+const SendBtn = styled(BaseBtn)`
+  background: #f6ddcc;
+  color: #1f2937;
+`;
+const VerifyBtn = styled(BaseBtn)`
+  background: linear-gradient(180deg, #111827 0%, #0b1222 100%);
+  color: #fff;
+`;
 
 /* ===== Config ===== */
 const SMS_API_URL = "https://sendsms-v6bdtk44vq-du.a.run.app"; // Cloud Run 엔드포인트(실서버로 교체 가능)
 const TEST_RANGE_START = "01062141000";
 const TEST_RANGE_END = "01062142000";
-const TEST_EXTRA = "01039239669";   // ✅ 추가: 단일 허용 번호
+const TEST_EXTRA = "01039239669"; // ✅ 추가: 단일 허용 번호
 
 /* ===== Utils ===== */
 const onlyDigits = (s = "") => (s || "").replace(/\D+/g, "");
@@ -68,10 +145,12 @@ const inTestRange = (rawDigits = "") => {
 const formatKRPhone = (raw) => {
     let d = onlyDigits(raw);
     if (d.startsWith("82")) d = "0" + d.slice(2);
-    if (d.length >= 11) return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7, 11)}`;
-    if (d.length >= 10) return d.startsWith("02")
-        ? `${d.slice(0, 2)}-${d.slice(2, 6)}-${d.slice(6, 10)}`
-        : `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 10)}`;
+    if (d.length >= 11)
+        return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7, 11)}`;
+    if (d.length >= 10)
+        return d.startsWith("02")
+            ? `${d.slice(0, 2)}-${d.slice(2, 6)}-${d.slice(6, 10)}`
+            : `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 10)}`;
     if (d.length > 7) return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
     if (d.length > 3) return `${d.slice(0, 3)}-${d.slice(3)}`;
     return d;
@@ -139,14 +218,17 @@ export default function PhoneVerifyDialog({
 
     const digits = useMemo(() => onlyDigits(phone), [phone]);
     const canSend = digits.length === 10 || digits.length === 11;
-    const canVerify = code.length === 6 && sentTo && (toE164KR(phone) === sentTo);
+    const canVerify =
+        code.length === 6 && sentTo && toE164KR(phone) === sentTo;
 
     /* ===== Body scroll lock ===== */
     useEffect(() => {
         if (!open) return;
         const prev = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-        return () => { document.body.style.overflow = prev; };
+        return () => {
+            document.body.style.overflow = prev;
+        };
     }, [open]);
 
     /* ===== Resend countdown ===== */
@@ -171,7 +253,8 @@ export default function PhoneVerifyDialog({
     const sendCode = async () => {
         if (!canSend || sending) return;
         try {
-            setSending(true); setError("");
+            setSending(true);
+            setError("");
             const otp = genOtp();
             const e164 = toE164KR(phone);
             const isDev = inTestRange(digits);
@@ -186,16 +269,29 @@ export default function PhoneVerifyDialog({
             const resp = await fetch(SMS_API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ to: digits, templateId: "VERIFY_CODE", variables: { code: otp } }),
+                body: JSON.stringify({
+                    to: digits,
+                    templateId: "VERIFY_CODE",
+                    variables: { code: otp },
+                }),
             });
 
-            let data = null; try { data = await resp.json(); } catch {/**/ }
+            let data = null;
+            try {
+                data = await resp.json();
+            } catch {
+                /**/
+            }
             if (!resp.ok || data?.ok === false) {
-                const msg = (data && (data.error || data.result?.message)) || `발송 실패(${resp.status})`;
+                const msg =
+                    (data && (data.error || data.result?.message)) ||
+                    `발송 실패(${resp.status})`;
                 setError(`인증 코드를 전송하지 못했습니다. ${msg}`);
             }
         } catch {
-            setError("코드 전송 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            setError(
+                "코드 전송 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요."
+            );
         } finally {
             setSending(false);
         }
@@ -204,8 +300,12 @@ export default function PhoneVerifyDialog({
     const verifyAndLogin = async () => {
         if (!canVerify || verifying) return;
         try {
-            setVerifying(true); setError("");
-            if (code !== devCode) { setError("인증 코드가 올바르지 않습니다."); return; }
+            setVerifying(true);
+            setError("");
+            if (code !== devCode) {
+                setError("인증 코드가 올바르지 않습니다.");
+                return;
+            }
             const e164 = sentTo;
             onVerified?.(e164); // SSOT 전달
         } catch {
@@ -220,13 +320,17 @@ export default function PhoneVerifyDialog({
 
     const content = (
         <Backdrop
-            onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose?.();
+            }}
             role="dialog"
             aria-modal="true"
         >
             <Sheet onClick={(e) => e.stopPropagation()} aria-labelledby="pv-title">
                 <Title id="pv-title">{title}</Title>
-                {description && <Hint style={{ margin: "-4px 0 16px" }}>{description}</Hint>}
+                {description && (
+                    <Hint style={{ margin: "-4px 0 16px" }}>{description}</Hint>
+                )}
 
                 <Field>
                     <Label htmlFor="pv-phone">전화번호</Label>
@@ -247,11 +351,16 @@ export default function PhoneVerifyDialog({
                 </Field>
 
                 <Buttons>
-                    <SendBtn onClick={sendCode} disabled={!canSend || sending || secondsLeft > 0}>
+                    <SendBtn
+                        onClick={sendCode}
+                        disabled={!canSend || sending || secondsLeft > 0}
+                    >
                         {secondsLeft > 0 ? `재전송 (${secondsLeft}s)` : "인증 코드 받기"}
                     </SendBtn>
                     {inTestRange(digits) && !!devCode && (
-                        <Hint><strong>개발모드 코드:</strong> {devCode} ({toE164KR(phone)})</Hint>
+                        <Hint>
+                            <strong>개발모드 코드:</strong> {devCode} ({toE164KR(phone)})
+                        </Hint>
                     )}
                 </Buttons>
 
@@ -275,7 +384,10 @@ export default function PhoneVerifyDialog({
                 {error ? <Error>{error}</Error> : null}
 
                 <Buttons>
-                    <VerifyBtn onClick={verifyAndLogin} disabled={!canVerify || verifying}>
+                    <VerifyBtn
+                        onClick={verifyAndLogin}
+                        disabled={!canVerify || verifying}
+                    >
                         확인하고 로그인
                     </VerifyBtn>
                 </Buttons>

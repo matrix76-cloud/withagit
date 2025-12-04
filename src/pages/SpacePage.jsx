@@ -74,6 +74,20 @@ const BranchList = styled.div`
   margin-top: 16px;
   display: grid;
   gap: 18px;
+
+  /* PC: auto-fit 4~5열 */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  justify-content: center;
+
+  /* 태블릿: 2열 */
+  @media (max-width: 960px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* 모바일: 1열 */
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 // 공통 카드 베이스
@@ -82,13 +96,7 @@ const CardBase = styled.article`
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-width: 640px;
-  margin: 0 auto;
-
-  @media (max-width: 720px) {
-    border-radius: 24px;
-    width: 94%;
-  }
+  width: 100%;
 `;
 
 /* 지점 카드 */
@@ -103,7 +111,6 @@ const BranchHero = styled.div`
   height: 210px;
   background: #e5e7eb;
   overflow: hidden;
-  border-radius: 24px 24px 0 0;
 
   img {
     width: 100%;
@@ -120,7 +127,7 @@ const BranchHero = styled.div`
 const StatusPill = styled.span`
   position: absolute;
   top: 10px;
-  left: 10px;       /* 왼쪽 상단 */
+  left: 10px;
   padding: 5px 11px;
   border-radius: 999px;
   background: #ff7a2a;
@@ -159,7 +166,7 @@ const LocIcon = () => (
   </svg>
 );
 
-/* ===== Coming Soon 카드 ===== */
+/* ===== Coming Soon 카드 (지점 카드랑 동일 그리드/폭) ===== */
 
 const ComingCard = styled(CardBase)`
   background: radial-gradient(circle at 0% 0%, #544032 0%, #2b211c 60%);
@@ -167,41 +174,38 @@ const ComingCard = styled(CardBase)`
   box-shadow: 0 22px 52px rgba(0, 0, 0, 0.32);
 `;
 
-const ComingUpper = styled.div`
-  flex: 1;
-  padding: 22px 24px 0 24px;
+const ComingHero = styled.div`
+  height: 210px;
+  padding: 20px 20px 0;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
 `;
 
-const ComingStatus = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
+const ComingStatus = styled.div`
+  width: 100%;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-  color: #f9fafb;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.16);
   font-size: 11px;
   font-weight: 700;
+  text-align: center;
+  margin-bottom: 22px;
 `;
 
 const ComingTitleText = styled.div`
-  margin-top: 40px;
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 900;
-  line-height: 1.3;
+  line-height: 1.2;
 
   @media (max-width: 720px) {
-    margin-top: 30px;
-    font-size: 26px;
+    font-size: 24px;
   }
 `;
 
-const ComingFooter = styled.div`
-  margin-top: 24px;
+const ComingInfo = styled.div`
   background: #ffe5aa;
-  padding: 14px 24px 18px;
+  padding: 14px 18px 18px;
   border-radius: 0 0 24px 24px;
   color: #4b3a2a;
   font-size: 13px;
@@ -216,7 +220,7 @@ const ComingBottomLoc = styled(BranchLocRow)`
   color: #4b3a2a;
 `;
 
-/* ===== 제안 카드 ===== */
+/* ===== 제안 카드 (지점 카드랑 동일 그리드/폭) ===== */
 
 const SuggestCard = styled(CardBase)`
   background: radial-gradient(circle at 0% 0%, #5b4332 0%, #2b211c 60%);
@@ -225,6 +229,7 @@ const SuggestCard = styled(CardBase)`
 `;
 
 const SuggestInner = styled.div`
+  height: 210px;
   padding: 22px 24px 24px;
   display: flex;
   flex-direction: column;
@@ -253,13 +258,13 @@ const SuggestButtonWrap = styled.div`
 `;
 
 const SuggestButton = styled.button`
-  min-width: 260px;
-  padding: 13px 26px;
+  min-width: 160px;
+  padding: 11px 22px;
   border-radius: 999px;
   border: none;
   background: #ff7e32;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
@@ -335,7 +340,7 @@ export default function SpacePage() {
           <Sub>우리 공간의 다양한 스팟을 미리 만나보세요.</Sub>
         </Head>
 
-        {/* 지점 카드 리스트 */}
+        {/* 지점 카드 + Coming + 제안 카드 (한 그리드에 같이) */}
         {loading && (
           <div style={{ color: "#6b7280", paddingTop: 12 }}>로딩 중…</div>
         )}
@@ -346,10 +351,9 @@ export default function SpacePage() {
           </div>
         )}
 
-        {!loading && branches.length > 0 && (
+        {!loading && (
           <BranchList>
             {branches.map((b) => {
-              // 🔹 운영 중인 지점은 모두 동일 텍스트로 노출
               const isOpen = b.status === "open";
 
               const displayName = isOpen
@@ -379,48 +383,46 @@ export default function SpacePage() {
                 </BranchCard>
               );
             })}
+
+            {/* Coming Soon 카드 */}
+            <ComingCard>
+              <ComingHero>
+                <ComingStatus>Open 예정</ComingStatus>
+                <ComingTitleText>
+                  Coming
+                  <br />
+                  Soon!
+                </ComingTitleText>
+              </ComingHero>
+              <ComingInfo>
+                <ComingBottomName>두 번째 아지트</ComingBottomName>
+                <ComingBottomLoc>
+                  <LocIcon />
+                  <span>위치 공개 전</span>
+                </ComingBottomLoc>
+              </ComingInfo>
+            </ComingCard>
+
+            {/* 제안 카드 */}
+            <SuggestCard>
+              <SuggestInner>
+                <div>
+                  <SuggestTopLabel>우리 동네에 아지트가 필요하세요?</SuggestTopLabel>
+                  <SuggestMain>
+                    <span>다음 아지트를</span>
+                    <br />
+                    제안해주세요!
+                  </SuggestMain>
+                </div>
+                <SuggestButtonWrap>
+                  <SuggestButton type="button" onClick={handleSuggest}>
+                    제안 남기기
+                  </SuggestButton>
+                </SuggestButtonWrap>
+              </SuggestInner>
+            </SuggestCard>
           </BranchList>
         )}
-
-        {/* Coming Soon + 제안 카드 */}
-        <BranchList>
-          <ComingCard>
-            <ComingUpper>
-              <ComingStatus>Open 예정</ComingStatus>
-              <ComingTitleText>
-                Coming
-                <br />
-                Soon!
-              </ComingTitleText>
-            </ComingUpper>
-
-            <ComingFooter>
-              <ComingBottomName>두 번째 아지트</ComingBottomName>
-              <ComingBottomLoc>
-                <LocIcon />
-                <span>위치 공개 전</span>
-              </ComingBottomLoc>
-            </ComingFooter>
-          </ComingCard>
-
-          <SuggestCard>
-            <SuggestInner>
-              <div>
-                <SuggestTopLabel>우리 동네에 아지트가 필요하세요?</SuggestTopLabel>
-                <SuggestMain>
-                  <span>다음 아지트를</span>
-                  <br />
-                  제안해주세요!
-                </SuggestMain>
-              </div>
-              <SuggestButtonWrap>
-                <SuggestButton type="button" onClick={handleSuggest}>
-                  제안 남기기
-                </SuggestButton>
-              </SuggestButtonWrap>
-            </SuggestInner>
-          </SuggestCard>
-        </BranchList>
       </Wrap>
     </Section>
   );

@@ -78,6 +78,9 @@ export default function HomePage() {
         <Wrap>
             <Banner />
             <HomeQuickMenu />
+
+            <HeroDownloadSection />
+            
             <CoreValue />
 
             <CoreValuesSplit
@@ -87,8 +90,7 @@ export default function HomePage() {
             />
 
             <MembershipPlans />
-
-            <HeroDownloadSection />
+       
 
             <SpotsSection
                 onClickViewAll={onClickViewAll}
