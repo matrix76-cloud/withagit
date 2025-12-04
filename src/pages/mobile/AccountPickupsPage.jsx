@@ -295,8 +295,7 @@ export default function AccountPickupsPage() {
                 </HeaderBar>
 
                 <SectionCard>
-                    <SectionTitle>신청한 픽업 내역</SectionTitle>
-                    <SectionDesc>예약한 픽업 일정과 요금을 확인할 수 있어요.</SectionDesc>
+              
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 

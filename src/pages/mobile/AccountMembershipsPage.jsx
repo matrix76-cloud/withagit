@@ -81,22 +81,16 @@ const HeaderTitle = styled.h1`
 /* 섹션 카드 */
 
 const SectionCard = styled.section`
-  margin-top: 12px;
-  padding: 16px 16px 18px;
-  border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+  margin-top: 20px;
   display: grid;
-  gap: 12px;
+  gap: 10px;
 `;
-
 const SectionTitle = styled.h2`
-  margin: 0;
-  font-size: 15px;
-  font-weight: 800;
-  color: #111827;
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
 `;
-
 const SectionDesc = styled.p`
   margin: 0;
   font-size: 12px;
@@ -128,15 +122,14 @@ const kindBorder = {
 };
 
 const MCard = styled.div`
-  border-radius: 16px;
-  padding: 10px 12px 10px;
+  border-radius: 14px;
+  padding: 10px 12px;
   display: grid;
   gap: 6px;
-  background: ${({ $kind }) => kindBg[$kind] || "#ffffff"};
-  border: 1px solid ${({ $kind }) => kindBorder[$kind] || "#eef0f4"};
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
 `;
-
 const MTop = styled.div`
   display: flex;
   justify-content: space-between;
@@ -285,7 +278,7 @@ export default function AccountMembershipsPage() {
                 <Container>
                     <HeaderBar>
                         <BackButton onClick={onBack}>‹</BackButton>
-                        <HeaderTitle>내 멤버십 / 시간권 / 정액권</HeaderTitle>
+                        <HeaderTitle>내 멤버십</HeaderTitle>
                     </HeaderBar>
                     <div
                         style={{
@@ -307,13 +300,13 @@ export default function AccountMembershipsPage() {
             <Container>
                 <HeaderBar>
                     <BackButton onClick={onBack}>‹</BackButton>
-                    <HeaderTitle>내 멤버십 / 시간권 / 정액권</HeaderTitle>
+                    <HeaderTitle>내 멤버십</HeaderTitle>
                 </HeaderBar>
 
                 {/* 정규 멤버십 */}
                 <SectionCard>
                     <SectionTitle>정규 멤버십</SectionTitle>
-                    <SectionDesc>아지트 멤버십 구독 정보를 확인할 수 있어요.</SectionDesc>
+               
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 
@@ -353,7 +346,7 @@ export default function AccountMembershipsPage() {
                 {/* 패밀리 멤버십 */}
                 <SectionCard>
                     <SectionTitle>패밀리 멤버십</SectionTitle>
-                    <SectionDesc>형제·자매 함께 이용하는 패밀리 멤버십이에요.</SectionDesc>
+ 
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 
@@ -392,8 +385,8 @@ export default function AccountMembershipsPage() {
 
                 {/* 시간권 */}
                 <SectionCard>
-                    <SectionTitle>시간권</SectionTitle>
-                    <SectionDesc>자녀별 남은 시간권을 합산해서 보여줘요.</SectionDesc>
+                    <SectionTitle>타임패스 맴버십</SectionTitle>
+                
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 
@@ -443,7 +436,7 @@ export default function AccountMembershipsPage() {
                 {/* 정액권 */}
                 <SectionCard>
                     <SectionTitle>내 정액권</SectionTitle>
-                    <SectionDesc>정액권(포인트) 잔액과 건수를 자녀별로 확인할 수 있어요.</SectionDesc>
+
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 

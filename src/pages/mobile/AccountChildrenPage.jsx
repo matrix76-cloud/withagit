@@ -1105,7 +1105,6 @@ export default function AccountChildrenPage() {
                 </HeaderBar>
 
                 <SectionCard>
-        
                     <SavedChildrenList
                         items={savedChildren}
                         onSelect={setEditingChild}
