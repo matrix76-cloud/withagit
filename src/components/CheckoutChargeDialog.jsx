@@ -114,42 +114,54 @@ const SectionLabel = styled.div`
   margin-bottom: 6px;
 `;
 
-const SelectBox = styled.button`
-  width: 100%;
-  min-height: 52px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid #e5e5e5;
+/* ===== 자녀 선택 영역 (타임패스 모달과 동일 스타일) ===== */
+
+const ChildCard = styled.div`
+  margin-top: 8px;
+  border-radius: 24px;
+  border: 1.5px solid #111827;
   background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  color: ${({ $placeholder }) => ($placeholder ? "#9ca3af" : "#111827")};
-  cursor: pointer;
+  overflow: hidden;
 `;
 
-const ChevronDown = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24">
-    <path fill="#9ca3af" d="M7 9l5 5 5-5H7z" />
-  </svg>
-);
-
-const AddChildRow = styled.div`
-  margin-top: 6px;
-  border-radius: 16px;
-  border: 1px dashed #f97316;
-  background: #fff7ed;
+const ChildCardHeader = styled.button`
+  width: 100%;
+  border: 0;
+  background: transparent;
   padding: 12px 16px;
-  font-size: 14px;
-  color: #9a3412;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  color: ${({ $placeholder }) => ($placeholder ? "#9ca3af" : "#111827")};
+`;
+
+const ChildDivider = styled.div`
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0 0 8px;
+`;
+
+const AddChildRow = styled.button`
+  width: calc(100% - 24px);
+  margin: 8px 12px 10px;
+  padding: 8px 14px 9px;
+  border-radius: 999px;
+  border: 1px dashed #facc15;
+  background: #fff9e6;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   cursor: pointer;
 `;
 
-/* 자녀 드롭다운 */
+/* 자녀 드롭다운 (타임패스와 동일) */
 
 const ChildDropdown = styled.div`
   margin-top: 8px;
@@ -181,10 +193,34 @@ const ChildItemButton = styled.button`
     font-weight: 700;
   }
   .meta {
+    margin-top: 2px;
     font-size: 12px;
     color: #6b7280;
   }
 `;
+
+/* ===== 금액 선택 영역 ===== */
+
+const SelectBox = styled.button`
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e5e5e5;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: ${({ $placeholder }) => ($placeholder ? "#9ca3af" : "#111827")};
+  cursor: pointer;
+`;
+
+const ChevronDown = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24">
+    <path fill="#9ca3af" d="M7 9l5 5 5-5H7z" />
+  </svg>
+);
 
 /* 금액 드롭다운 */
 
@@ -671,69 +707,76 @@ export default function CheckoutChargeDialog({
 
         {/* Body */}
         <Body>
-          {/* 자녀 연결 */}
+          {/* 자녀 연결 (타임패스 모달과 동일 구조) */}
           <Block>
             <SectionLabel>자녀 연결</SectionLabel>
-            <SelectBox
-              $placeholder={childLabel === "선택해주세요"}
-              type="button"
-              onClick={() => {
-                if (!children.length) {
-                  if (
-                    window.confirm(
-                      "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록하시겠어요?"
-                    )
-                  ) {
-                    onClose?.();
-                    navigate("/mypage");
+
+            <ChildCard>
+              <ChildCardHeader
+                type="button"
+                $placeholder={!selectedChildId}
+                onClick={() => {
+                  if (!children.length) {
+                    if (
+                      window.confirm(
+                        "등록된 자녀가 없습니다. 마이페이지에서 자녀를 먼저 등록하시겠어요?"
+                      )
+                    ) {
+                      onClose?.();
+                      navigate("/mypage");
+                    }
+                    return;
                   }
-                  return;
-                }
-                setChildDropdownOpen((prev) => !prev);
-              }}
-            >
-              <span>{childLabel}</span>
-              <ChevronDown />
-            </SelectBox>
+                  setChildDropdownOpen((prev) => !prev);
+                }}
+              >
+                <span>{childLabel}</span>
+                <ChevronDown />
+              </ChildCardHeader>
 
-            {childDropdownOpen && children.length > 0 && (
-              <ChildDropdown>
-                {children.map((c) => (
-                  <ChildItemButton
-                    key={c.childId}
-                    type="button"
-                    onClick={() => {
-                      setSelectedChildId(c.childId);
-                      setChildLabel(
-                        c.name
-                          ? c.birth
-                            ? `${c.name} (${c.birth})`
-                            : c.name
-                          : "선택해주세요"
-                      );
-                      setChildDropdownOpen(false);
-                    }}
-                  >
-                    <span className="name">
-                      {c.name || "(이름 없음)"}
-                    </span>
-                    {c.birth ? (
-                      <span className="meta">{c.birth}</span>
-                    ) : null}
-                  </ChildItemButton>
-                ))}
-              </ChildDropdown>
-            )}
+              {childDropdownOpen && children.length > 0 && (
+                <>
+                  <ChildDivider />
+                  <ChildDropdown>
+                    {children.map((c) => (
+                      <ChildItemButton
+                        key={c.childId}
+                        type="button"
+                        onClick={() => {
+                          setSelectedChildId(c.childId);
+                          setChildLabel(
+                            c.name
+                              ? c.birth
+                                ? `${c.name} (${c.birth})`
+                                : c.name
+                              : "선택해주세요"
+                          );
+                          setChildDropdownOpen(false);
+                        }}
+                      >
+                        <span className="name">
+                          {c.name || "(이름 없음)"}
+                        </span>
+                        {c.birth ? (
+                          <span className="meta">{c.birth}</span>
+                        ) : null}
+                      </ChildItemButton>
+                    ))}
+                  </ChildDropdown>
+                </>
+              )}
 
-            <AddChildRow
-              onClick={() => {
-                onClose?.();
-                navigate("/mypage");
-              }}
-            >
-              <span>+ 자녀 추가</span>
-              <span style={{ fontSize: 12 }}>클릭하면 마이페이지로 이동</span>
-            </AddChildRow>
+              <AddChildRow
+                type="button"
+                onClick={() => {
+                  onClose?.();
+                  navigate(isMobile ? "/m/account/children" : "/mypage");
+                }}
+              >
+                <span>+ 자녀 추가</span>
+                <span style={{ fontSize: 12 }}>클릭하면 마이페이지로 이동</span>
+              </AddChildRow>
+            </ChildCard>
           </Block>
 
           {/* 충전 금액 */}
@@ -811,9 +854,8 @@ export default function CheckoutChargeDialog({
           >
             {loading
               ? "충전 진행 중…"
-              : `충전하러 가기${
-                  total > 0 ? ` (${KRW(total)}원)` : ""
-                }`}
+              : `충전하러 가기${total > 0 ? ` (${KRW(total)}원)` : ""
+              }`}
           </SubmitButton>
         </Footer>
       </Dialog>

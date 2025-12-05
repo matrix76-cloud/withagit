@@ -1,7 +1,7 @@
 
 
 const colors = {
-    primary: "#F07A2A",        // 주황(대표)
+    primary: "#F35B05",        // 주황(대표)
     primaryHover: "#E86E00",
     primaryActive: "#CC6200",
 

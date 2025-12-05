@@ -72,25 +72,26 @@ const TopText = styled.div`
 const Label = styled.div`
   font-size: 18px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: -0.02em;
   color: #f07a2a;
   margin-bottom: 8px;
 
   @media (max-width: 960px) {
     font-size: 14px;
-    letter-spacing: 0.14em;
+  letter-spacing: -0.02em;
     margin-bottom: 6px;
   }
 `;
 
+
 const MainTitle = styled.h2`
   margin: 0;
-  font-family: "NanumSquareRound";
+  font-family: 'NanumSquareRound';
   font-size: clamp(32px, 4vw, 40px);
-  font-weight: 900;
+  font-weight: 800;
   color: #1a1a1a;
-  letter-spacing: -0.4px;
-  line-height: 1.18;
+  letter-spacing: -0.02px;
+  line-height: 1.28;
   position: relative;
   display: inline-block;
 
@@ -131,7 +132,7 @@ const Desc = styled.p`
   font-size: 14px;
   line-height: 1.55;
   color: #111;
-  font-weight :800;
+  font-weight :600;
   font-family:Pretendard;
 
   @media (max-width: 960px) {
@@ -202,8 +203,8 @@ const LeftBody = styled.p`
 `;
 
 const Em = styled.span`
-  color: #ff7e32;
-  font-weight: 900;
+  color: ${({ theme }) => theme.colors.primary}; 
+
 `;
 
 const OrbitWrap = styled.div`
@@ -271,7 +272,7 @@ const Tile = styled.div`
   @media (max-width: 960px) {
     border-radius: 22px;
     min-height: 170px;
-    padding: 18px 18px 18px 18px;
+    padding: 18px 30px 18px 30px;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
   }
   display: flex;
@@ -320,7 +321,7 @@ const TLineBottom = styled.div`
 `;
 
 const TAccent = styled.span`
-  color: ${({ $color }) => $color || "#ff8b4c"};
+  color: ${({ $color }) => $color || "#F35B05"};
   font-weight: 900;
 `;
 
@@ -330,7 +331,7 @@ const TTail = styled.span`
 `;
 
 const TitleEm = styled.span`
-  color: #ff7e32;
+ color: ${({ theme }) => theme.colors.primary};
   font-weight: 900;
 `;
 
@@ -472,7 +473,7 @@ function CoreValueCards() {
                   <TTitle>
                     <TLineTop>지역과 함께 발전하는</TLineTop>
                     <TLineBottom>
-                      <TAccent $color="#f7a777">스마트 돌봄</TAccent>
+                      <TAccent>스마트 돌봄</TAccent>
                     </TLineBottom>
                   </TTitle>
                   <TBody>

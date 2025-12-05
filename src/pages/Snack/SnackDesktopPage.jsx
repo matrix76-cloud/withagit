@@ -132,12 +132,7 @@ export default function SnackDesktopPage() {
                 {/* 메뉴 안내 */}
                 {tab === "menu" && (
                     <>
-                        <Hero>
-                            <h1>간식 구매하기</h1>
-                            <p>웹에서 간단히 담고 결제까지 한 번에!</p>
-                        </Hero>
-
-        
+                      
 
                         {loading && <Muted>불러오는 중…</Muted>}
                         {!loading && err && <Muted>메뉴를 불러오지 못했습니다.</Muted>}
@@ -159,11 +154,7 @@ export default function SnackDesktopPage() {
                                                         <Info>
                                                             <ItemTitle title={it.title}>{it.title}</ItemTitle>
                                                             <ItemPrice>{won(it.price)}</ItemPrice>
-                                                            <Stepper>
-                                                                <button className="btn" onClick={() => dec(it)} aria-label="빼기">−</button>
-                                                                <div className="qty">{qtyOf(it.id)}</div>
-                                                                <button className="btn" onClick={() => inc(it)} aria-label="담기">＋</button>
-                                                            </Stepper>
+                                                      
                                                         </Info>
                                                     </CardBox>
                                                 </SnackCard>
@@ -187,11 +178,7 @@ export default function SnackDesktopPage() {
                                                         <Info>
                                                             <ItemTitle title={it.title}>{it.title}</ItemTitle>
                                                             <ItemPrice>{won(it.price)}</ItemPrice>
-                                                            <Stepper>
-                                                                <button className="btn" onClick={() => dec(it)} aria-label="빼기">−</button>
-                                                                <div className="qty">{qtyOf(it.id)}</div>
-                                                                <button className="btn" onClick={() => inc(it)} aria-label="담기">＋</button>
-                                                            </Stepper>
+                                                   
                                                         </Info>
                                                     </CardBox>
                                                 </SnackCard>
@@ -239,35 +226,13 @@ export default function SnackDesktopPage() {
                                     </SingleCard>
                                 </SingleWrap>
 
-                                {/* 하단 예약 바 */}
-                                <BottomBar>
-                                    <div className="sum">
-                                        {selected
-                                            ? (<><b>{event.product?.title}</b> · {won(event.product?.price || 0)}</>)
-                                            : "상품을 선택해 주세요"}
-                                    </div>
-                                    <PrimaryBtn disabled={!canReserve} onClick={onReserve}>예약하기</PrimaryBtn>
-                                </BottomBar>
                             </>
                         )}
                     </>
                 )}
             </Wrap>
 
-            {/* 메뉴 탭 하단 Sticky 합계 바 */}
-            {tab === "menu" && (
-                <StickyBar>
-                    <StickyInner>
-                        <BarLeft>
-                            <div className="sum">총 {totalQty}개 · {won(totalKRW)}</div>
-                            <div className="sub">담은 간식은 장바구니에서 확인/수정할 수 있어요.</div>
-                        </BarLeft>
-                        <BarRight>
-                            <Btn $kind="accent" onClick={payNow} disabled={!cart.length}>바로 결제</Btn>
-                        </BarRight>
-                    </StickyInner>
-                </StickyBar>
-            )}
+           
         </Page>
     );
 }
@@ -311,7 +276,7 @@ const TopTab = styled.button`
 const Wrap = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 24px;
   width: 100%;
 `;
 
@@ -344,7 +309,7 @@ const SmallBtn = styled.button`
 
 const Section = styled.section` margin-top: 10px; `;
 const SectionHead = styled.div` display:grid; gap:4px; padding:6px 2px 8px; `;
-const SecTitle = styled.h3` margin:0; font-size:16px; font-weight:900; color:${C.text}; `;
+const SecTitle = styled.h3` margin:0; font-size:16px; color:${C.text}; `;
 const SecDesc = styled.div` font-size:12px; color:${C.sub}; `;
 
 const CardGrid = styled.div`
@@ -370,8 +335,8 @@ const Thumb = styled.div`
   background: #f3f4f6 center/cover no-repeat;
 `;
 const Info = styled.div` padding: 10px; display: grid; gap: 6px; `;
-const ItemTitle = styled.div` font-size: 15px; font-weight: 800; line-height: 1.3; `;
-const ItemPrice = styled.div` font-size: 14px; font-weight: 800; color: ${C.accent}; `;
+const ItemTitle = styled.div` font-size: 15px;  line-height: 1.3; `;
+const ItemPrice = styled.div` font-size: 14px; color: ${C.accent}; `;
 const Stepper = styled.div`
   margin-top: 2px;
   display: flex; gap: 8px; align-items: center; justify-content: flex-end;
@@ -390,7 +355,7 @@ const QtyBadge = styled.span`
   min-width: 24px; height: 24px; padding: 0 6px;
   border-radius: 999px;
   background: ${C.primary}; color: #fff;
-  font-size: 12px; font-weight: 900;
+  font-size: 12px; 
   display: inline-flex; align-items: center; justify-content: center;
 `;
 

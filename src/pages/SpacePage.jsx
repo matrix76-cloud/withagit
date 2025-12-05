@@ -166,47 +166,60 @@ const LocIcon = () => (
   </svg>
 );
 
-/* ===== Coming Soon 카드 (지점 카드랑 동일 그리드/폭) ===== */
+/* ===== Coming Soon 카드 (Landing SpotsSection 스타일 매칭) ===== */
+
+const StatusPillDark = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  width: 80px;
+`;
 
 const ComingCard = styled(CardBase)`
-  background: radial-gradient(circle at 0% 0%, #544032 0%, #2b211c 60%);
+  background: radial-gradient(circle at 0 0, #6b4b38 0%, #2b211c 60%);
   color: #ffffff;
-  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.38);
+  border-radius: 40px;
+  overflow: hidden;
+  min-height: 320px;
 `;
 
 const ComingHero = styled.div`
-  height: 210px;
-  padding: 20px 20px 0;
+  flex: 1;
+  padding: 18px 24px 0 24px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-`;
-
-const ComingStatus = styled.div`
-  width: 100%;
-  border-radius: 999px;
-  padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.16);
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 22px;
 `;
 
 const ComingTitleText = styled.div`
-  font-size: 26px;
+  margin-top: 36px;
+  margin-bottom: 8px;
+  font-size: 32px;
   font-weight: 900;
-  line-height: 1.2;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #ffc977 0%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  align-self: center;
 
-  @media (max-width: 720px) {
-    font-size: 24px;
+  @media (max-width: 960px) {
+    font-size: 56px;
   }
 `;
 
 const ComingInfo = styled.div`
-  background: #ffe5aa;
-  padding: 14px 18px 18px;
-  border-radius: 0 0 24px 24px;
+  margin-top: 28px;
+  background: #ffe3a0;
+  padding: 16px 24px 20px;
+  border-radius: 0 0 40px 40px;
   color: #4b3a2a;
   font-size: 13px;
 `;
@@ -220,32 +233,35 @@ const ComingBottomLoc = styled(BranchLocRow)`
   color: #4b3a2a;
 `;
 
-/* ===== 제안 카드 (지점 카드랑 동일 그리드/폭) ===== */
+/* ===== 제안 카드 (Landing SpotsSection 스타일 매칭) ===== */
 
 const SuggestCard = styled(CardBase)`
-  background: radial-gradient(circle at 0% 0%, #5b4332 0%, #2b211c 60%);
+  background: radial-gradient(circle at 0 0, #5b4332 0%, #2b211c 60%);
   color: #ffffff;
-  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.36);
+  border-radius: 40px;
+  overflow: hidden;
 `;
 
 const SuggestInner = styled.div`
-  height: 210px;
-  padding: 22px 24px 24px;
+  flex: 1;
+  padding: 76px 24px 26px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 18px;
+  text-align: center;
 `;
 
 const SuggestTopLabel = styled.div`
   font-size: 12px;
   color: #f7e6c6;
+  margin-bottom: 16px;
 `;
 
 const SuggestMain = styled.div`
-  font-size: 20px;
-  line-height: 1.6;
+  font-size: 25px;
   font-weight: 800;
+  line-height: 1.6;
 
   span {
     color: #ffb35a;
@@ -253,21 +269,23 @@ const SuggestMain = styled.div`
 `;
 
 const SuggestButtonWrap = styled.div`
+  margin-top: 32px;
   display: flex;
   justify-content: center;
 `;
 
 const SuggestButton = styled.button`
-  min-width: 160px;
-  padding: 11px 22px;
+  min-width: 260px;
+  padding: 14px 28px;
   border-radius: 999px;
   border: none;
   background: #ff7e32;
   color: #ffffff;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 16px;
+  font-family: Pretendard;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
   outline: none;
 
   &:hover {
@@ -277,7 +295,7 @@ const SuggestButton = styled.button`
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
   }
 `;
 
@@ -387,7 +405,7 @@ export default function SpacePage() {
             {/* Coming Soon 카드 */}
             <ComingCard>
               <ComingHero>
-                <ComingStatus>Open 예정</ComingStatus>
+                <StatusPillDark>Open 예정</StatusPillDark>
                 <ComingTitleText>
                   Coming
                   <br />
@@ -407,7 +425,9 @@ export default function SpacePage() {
             <SuggestCard>
               <SuggestInner>
                 <div>
-                  <SuggestTopLabel>우리 동네에 아지트가 필요하세요?</SuggestTopLabel>
+                  <SuggestTopLabel>
+                    우리 동네에 아지트가 필요하세요?
+                  </SuggestTopLabel>
                   <SuggestMain>
                     <span>다음 아지트를</span>
                     <br />

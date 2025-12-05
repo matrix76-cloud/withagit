@@ -318,7 +318,7 @@ const BenefitExampleTag = styled.span`
   display: inline-flex;
   align-items: center;
   margin-top: 4px;
-  padding: 6px 12px;
+  padding: 12px 12px;
   border-radius: 999px;
   background: #ffe7b1;
   font-size: 12px;

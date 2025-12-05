@@ -2,9 +2,10 @@
 // src/pages/SuggestPage.jsx
 // 위드아지트 — 다음 아지트 제안하기 페이지 (submitNextAgitSuggest 연동)
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { useUser } from "../contexts/UserContext";
 import { submitNextAgitSuggest } from "../services/branchSuggestService"; // ⚠️ 실제 경로에 맞게 조정
 
@@ -221,6 +222,83 @@ const Help = styled.p`
   line-height: 1.5;
 `;
 
+/* ✅ 제안 완료 모달 */
+const DoneOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9999;                       /* ✅ 풋바보다 위 */
+  background: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;               /* 아래에서 올라오는 바텀시트 느낌 */
+
+  padding: 0;
+  box-sizing: border-box;
+`;
+
+const DoneCard = styled.div`
+  width: 100%;                         /* ✅ 양옆 여백 없이 전체 폭 */
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 28px 28px 0 0;
+  padding: 28px 24px 28px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  position: relative;
+`;
+
+
+
+
+
+
+const DoneCloseButton = styled.button`
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  span {
+    font-size: 20px;
+    line-height: 1;
+    color: #666666;
+  }
+
+  &:hover {
+    background: #f5f5f5;
+  }
+`;
+
+const DoneAccent = styled.div`
+  font-size: 14px;
+  font-weight: 800;
+  color: #f97316;
+  margin-bottom: 10px;
+`;
+
+const DoneTitle = styled.div`
+  font-size: 20px;
+  font-weight: 900;
+  color: #111827;
+  margin-bottom: 10px;
+`;
+
+const DoneBody = styled.div`
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.7;
+  white-space: pre-line;
+`;
+
 export default function SuggestPage() {
   const nav = useNavigate();
   const { phoneE164, profile } = useUser() || {};
@@ -233,9 +311,28 @@ export default function SuggestPage() {
   const [contactName, setContactName] = useState("");
   const [contactInfo, setContactInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [doneOpen, setDoneOpen] = useState(false); // ✅ 완료 모달
+  const [portalEl, setPortalEl] = useState(null);   // ✅ 포털 타겟
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    let el = document.getElementById("modal-root");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "modal-root";
+      document.body.appendChild(el);
+    }
+    setPortalEl(el);
+  }, []);
+
 
   const handleClose = () => {
     nav(-1); // 이전 화면으로
+  };
+
+  const handleDoneClose = () => {
+    setDoneOpen(false);
+    nav(-1); // 완료 모달 닫을 때도 이전 화면으로
   };
 
   const handleFileChange = (e) => {
@@ -266,8 +363,8 @@ export default function SuggestPage() {
         contact: contactInfo.trim() || null,
       });
 
-      alert("제안을 보내주셔서 감사합니다! 😊");
-      nav(-1);
+      // ✅ 기존 alert/nav 대신 완료 모달 오픈
+      setDoneOpen(true);
     } catch (err) {
       console.error("[Suggest] submit error", err);
       alert("제안 제출 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
@@ -358,7 +455,9 @@ export default function SuggestPage() {
                 </FileIconBox>
                 <RealFileInput type="file" onChange={handleFileChange} />
               </FileInputShell>
-              <Help>이미지나 문서를 함께 보내고 싶다면 파일로 첨부해 주세요. (선택)</Help>
+              <Help>
+                이미지나 문서를 함께 보내고 싶다면 파일로 첨부해 주세요. (선택)
+              </Help>
             </Field>
 
             {/* 연락처 (선택) */}
@@ -387,6 +486,24 @@ export default function SuggestPage() {
           </Footer>
         </form>
       </Sheet>
+
+      {/* ✅ 제안 완료 모달 */}
+      {doneOpen && portalEl &&
+        createPortal(
+          <DoneOverlay onClick={handleDoneClose}>
+            <DoneCard onClick={(e) => e.stopPropagation()}>
+              <DoneCloseButton type="button" onClick={handleDoneClose}>
+                <span>×</span>
+              </DoneCloseButton>
+              <DoneAccent>아지트 제안 완료!</DoneAccent>
+              <DoneTitle>제안해주셔서 감사합니다.</DoneTitle>
+              <DoneBody>
+                {"모든 의견은 내부 검토 후\n서비스 개선에 반영됩니다."}
+              </DoneBody>
+            </DoneCard>
+          </DoneOverlay>,
+          portalEl
+        )}
     </Page>
   );
 }

@@ -160,7 +160,7 @@ const StoreButton = styled.a`
   font-weight: 800;
   text-decoration: none;
   letter-spacing: 0.04em;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  
   cursor: pointer;
   white-space: nowrap;
   min-width: 150px;
@@ -182,7 +182,6 @@ const StoreButtonGhost = styled(StoreButton)`
   /* 두 번째 버튼도 같은 주황 단색으로 */
   background: #f07a2a;
   color: #ffffff;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
   border: none;
 
   &:hover {

@@ -20,11 +20,11 @@ const accent = "var(--color-accent, #F07A2A)";
 
 /* ===== Section Layout ===== */
 const Section = styled.section`
-  background: #fff;
+  background: #fff7f2; /* 크림 배경 위에 흰 카드 느낌 */
   padding: 72px 16px 88px;
 
   @media (max-width: 720px) {
-    padding: 56px 16px 72px;
+    padding: 56px 16px 32px;
   }
 `;
 
@@ -108,30 +108,30 @@ const Slide = styled.div`
   justify-content: center;
 `;
 
-/* ===== Card 공통 ===== */
 const CardBase = styled.div`
   --plan-cta: ${accent};
 
   background: #ffffff;
   border-radius: 32px;
-  padding: 28px 26px 76px;
+  padding: 24px 24px 64px; /* PC: 버튼이 카드 밖으로 나가니까 약간 여유 */
 
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-height: 340px;
+  gap: 14px;
+  min-height: 0;
   position: relative;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease;
 
   &:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
   }
 
   @media (max-width: 720px) {
     width: calc(100% - 10px);
     margin: 0 auto;
-    border-radius: 28px;
-    padding: 24px 20px 68px;
+    border-radius: 24px;
+    padding: 20px 18px 32px; /* 👈 모바일은 아래 패딩을 줄여도 됨(버튼이 카드 안으로 들어옴) */
     min-height: 0;
 
     &:hover {
@@ -139,6 +139,24 @@ const CardBase = styled.div`
     }
   }
 `;
+
+const DetailButtonWrap = styled.div`
+  position: absolute;
+  bottom: 15px;        /* PC: 카드 안쪽에 살짝 띄워두기 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  @media (max-width: 720px) {
+    position: static;  /* 👈 모바일에서는 일반 플로우 */
+    bottom: auto;
+    transform: none;
+    margin-top: 18px;  /* 리스트 아래 여백 */
+  }
+`;
+
 
 const Card = styled(CardBase)``;
 
@@ -252,19 +270,10 @@ const List = styled.ul`
   }
 `;
 
-const DetailButtonWrap = styled.div`
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  display: flex;
-  justify-content: center;
 
-  @media (max-width: 720px) {
-    bottom: -20px;
-  }
-`;
+
+
+
 
 const ToggleBtn = styled.button`
   min-width: 200px;
@@ -481,7 +490,8 @@ export default function MembershipPlans() {
   const [familyDialogOpen, setFamilyDialogOpen] = useState(false);
 
   // 모바일 슬라이더 인덱스
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(0); // 0번을 아지트로 변경
+
   const totalPlans = 3;
   const canPrev = index > 0;
   const canNext = index < totalPlans - 1;
@@ -507,35 +517,7 @@ export default function MembershipPlans() {
 
         {/* ===== PC: 3컬럼 그리드 ===== */}
         <DesktopGrid>
-          {/* 타임패스 */}
-          <Card>
-            <CardHeader>
-              <PillRow>
-                <Pill $tone="timepass">{timeData.header.pill}</Pill>
-              </PillRow>
-              <CardTitle>{timeData.header.name}</CardTitle>
-            </CardHeader>
-
-            <List>
-              {timeData.summary.map((item, i) => (
-                <li key={i} className="hasCheck">
-                  {item.text}
-                </li>
-              ))}
-            </List>
-
-            <DetailButtonWrap>
-              <ToggleBtn
-                type="button"
-                $tone="light"
-                onClick={() => setTimepassDialogOpen(true)}
-              >
-                자세히보기
-              </ToggleBtn>
-            </DetailButtonWrap>
-          </Card>
-
-          {/* 아지트 */}
+          {/* 1. 아지트 (먼저) */}
           <Featured>
             <CardHeader>
               <PillRow>
@@ -576,7 +558,35 @@ export default function MembershipPlans() {
             </DetailButtonWrap>
           </Featured>
 
-          {/* 패밀리 */}
+          {/* 2. 타임패스 */}
+          <Card>
+            <CardHeader>
+              <PillRow>
+                <Pill $tone="timepass">{timeData.header.pill}</Pill>
+              </PillRow>
+              <CardTitle>{timeData.header.name}</CardTitle>
+            </CardHeader>
+
+            <List>
+              {timeData.summary.map((item, i) => (
+                <li key={i} className="hasCheck">
+                  {item.text}
+                </li>
+              ))}
+            </List>
+
+            <DetailButtonWrap>
+              <ToggleBtn
+                type="button"
+                $tone="light"
+                onClick={() => setTimepassDialogOpen(true)}
+              >
+                자세히보기
+              </ToggleBtn>
+            </DetailButtonWrap>
+          </Card>
+
+          {/* 3. 패밀리 */}
           <Card>
             <CardHeader>
               <PillRow>
@@ -637,37 +647,7 @@ export default function MembershipPlans() {
           </ArrowButton>
 
           <MobileSlides $index={index}>
-            {/* 0: 타임패스 */}
-            <Slide>
-              <Card>
-                <CardHeader>
-                  <PillRow>
-                    <Pill $tone="timepass">{timeData.header.pill}</Pill>
-                  </PillRow>
-                  <CardTitle>{timeData.header.name}</CardTitle>
-                </CardHeader>
-
-                <List>
-                  {timeData.summary.map((item, i) => (
-                    <li key={i} className="hasCheck">
-                      {item.text}
-                    </li>
-                  ))}
-                </List>
-
-                <DetailButtonWrap>
-                  <ToggleBtn
-                    type="button"
-                    $tone="light"
-                    onClick={() => setTimepassDialogOpen(true)}
-                  >
-                    자세히보기
-                  </ToggleBtn>
-                </DetailButtonWrap>
-              </Card>
-            </Slide>
-
-            {/* 1: 아지트 */}
+            {/* 0: 아지트 */}
             <Slide>
               <Featured>
                 <CardHeader>
@@ -708,6 +688,36 @@ export default function MembershipPlans() {
                   </ToggleBtn>
                 </DetailButtonWrap>
               </Featured>
+            </Slide>
+
+            {/* 1: 타임패스 */}
+            <Slide>
+              <Card>
+                <CardHeader>
+                  <PillRow>
+                    <Pill $tone="timepass">{timeData.header.pill}</Pill>
+                  </PillRow>
+                  <CardTitle>{timeData.header.name}</CardTitle>
+                </CardHeader>
+
+                <List>
+                  {timeData.summary.map((item, i) => (
+                    <li key={i} className="hasCheck">
+                      {item.text}
+                    </li>
+                  ))}
+                </List>
+
+                <DetailButtonWrap>
+                  <ToggleBtn
+                    type="button"
+                    $tone="light"
+                    onClick={() => setTimepassDialogOpen(true)}
+                  >
+                    자세히보기
+                  </ToggleBtn>
+                </DetailButtonWrap>
+              </Card>
             </Slide>
 
             {/* 2: 패밀리 */}

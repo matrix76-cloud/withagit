@@ -3,15 +3,17 @@
 // Withagit — 소식/문의 FAQ 섹션
 // - 상단 카테고리 콤보 + 바텀시트 팝업
 // - 카드형 Q/A 아코디언
-// - 하단 페이지네이션(목업)
+// - 하단 페이지네이션
 
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import styled from "styled-components";
 import { getFaqData } from "../../services/faqsService";
+import { listNotices } from "../../services/noticesService";
 
 const text = "var(--color-text, #111827)";
 const sub = "#6b7280";
 const accent = "#F35B05"; // 피그마 기준 오렌지
+const PAGE_SIZE = 4;       // ✅ 한 페이지에 4개씩
 
 /* 고정 카테고리 프리셋 */
 const CATS_PRESET = [
@@ -54,9 +56,9 @@ const CategoryButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 14px;       /* ✅ 글씨 조금 더 크게 */
   color: ${text};
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 `;
 
@@ -112,10 +114,7 @@ const CategoryItem = styled.li`
   width: 100%;
 `;
 
-/* 🔥 팝업 내 버튼 스타일
-   - box-shadow 제거
-   - 왼쪽 정렬
-   - 전체 폭의 1/3 사용 */
+/* 팝업 내 버튼 스타일 */
 const CategoryPill = styled.button`
   display: inline-flex;
   justify-content: center;
@@ -183,41 +182,55 @@ const QHead = styled.div`
   gap: 6px;
 `;
 
-const Badge = styled.span`
-  display: inline-block;
-  padding: 5px 14px;
-  border-radius: 999px;
-  background: rgba(243, 91, 5, 0.12);
-  color: ${accent};
-  font-size: 13.5px;
-  font-weight: 800;
-`;
+/* Q / A 라벨 정렬 */
 
-const Q = styled.span`
-  font-size: 17px;
+const Q = styled.div`
+  position: relative;
+  padding-left: 22px;        /* Q./A. 공통 좌측 여백 */
+  font-size: 15px;
+  font-weight: 700;          /* 질문은 좀 찐하게 */
   color: ${text};
-  letter-spacing: -0.1px;
+  line-height: 1.7;
+
+  &::before {
+    content: "Q.";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: 800;
+  }
 
   @media (max-width: 860px) {
-    font-size: 15px;
+    font-size: 14px;
   }
 `;
 
 const More = styled.span`
-  color: #c3cad5;
-  font-size: 22px;
+  color: #9ca3af;
+  font-size: 18px;
+  transform: translateY(1px);
 `;
 
 /* 답변 텍스트 */
 
 const A = styled.div`
   margin-top: 10px;
-  padding-left: 4px;
+  position: relative;
+  padding-left: 22px;        /* Q와 같은 X좌표 */
   padding-right: 4px;
-  color: ${text};
-  font-size: 15px;
-  line-height: 1.9;
+  color: ${sub};             /* 답변은 조금 연하게 */
+  font-size: 14px;
+  line-height: 1.8;
   white-space: pre-line;
+
+  &::before {
+    content: "A.";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: 700;
+    color: ${sub};
+  }
 `;
 
 /* 부드러운 아코디언 */
@@ -250,7 +263,7 @@ function Collapsible({ open, children, duration = 220 }) {
   );
 }
 
-/* ===== 페이지네이션 (min-height 바로 아래) ===== */
+/* ===== 페이지네이션 ===== */
 
 const PaginationWrap = styled.nav`
   margin: 20px 0 0;
@@ -270,9 +283,9 @@ const PageArrow = styled.button`
   border: none;
   background: transparent;
   padding: 0;
-  cursor: pointer;
   font-size: 16px;
-  color: #9ca3af;
+  color: ${({ disabled }) => (disabled ? "#d1d5db" : "#9ca3af")};
+  cursor: ${({ disabled }) => (disabled ? "default" : "pointer")};
 `;
 
 const PageDot = styled.button`
@@ -292,43 +305,75 @@ const PageDot = styled.button`
 /* ===== 컴포넌트 ===== */
 
 export default function NoticeSection() {
-  const [items, setItems] = useState([]);
+  // FAQ / 공지 데이터
+  const [faqItems, setFaqItems] = useState([]);
+  const [noticeItems, setNoticeItems] = useState([]);
+
   const [cat, setCat] = useState("공지"); // 기본값: 공지
   const [openId, setOpenId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [categoryOpen, setCategoryOpen] = useState(false);
 
+  // ✅ 페이징 상태
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
-      const { faqs } = await getFaqData();
-      if (!alive) return;
+      try {
+        const [{ faqs }, notices] = await Promise.all([
+          getFaqData(),
+          listNotices(),
+        ]);
+        if (!alive) return;
 
-      const normalized = (faqs || []).map((it, idx) => ({
-        ...it,
-        id: it.id || `faq_${idx}`,
-        cat: it.cat || "기타 문의",
-        q: it.q || "",
-        a: it.a || "",
-      }));
-      setItems(normalized);
-      setLoading(false);
+        const normalizedFaqs = (faqs || []).map((it, idx) => ({
+          ...it,
+          id: it.id || `faq_${idx}`,
+          cat: it.cat || "기타 문의",
+          q: it.q || "",
+          a: it.a || "",
+        }));
+
+        const normalizedNotices = (notices || []).map((it, idx) => ({
+          ...it,
+          id: it.id || `notice_${idx}`,
+          title: it.title || it.subject || "",
+          body: it.body || it.content || "",
+        }));
+
+        setFaqItems(normalizedFaqs);
+        setNoticeItems(normalizedNotices);
+      } catch (e) {
+        console.error("[NoticeSection] load error", e);
+      } finally {
+        if (alive) setLoading(false);
+      }
     })();
     return () => {
       alive = false;
     };
   }, []);
 
-  const filtered = useMemo(() => {
-    let list = items;
-    // '공지'는 전체 보여주고, 다른 값일 때만 카테고리 필터
-    if (cat && cat !== "공지") {
-      list = list.filter((x) => x.cat === cat);
-    }
-    return list;
-  }, [items, cat]);
+  // 공지 외 카테고리용 FAQ 필터
+  const filteredFaqs = useMemo(() => {
+    if (!faqItems.length) return [];
+    if (!cat || cat === "공지") return faqItems;
+    return faqItems.filter((x) => x.cat === cat);
+  }, [faqItems, cat]);
+
+  const isNoticeTab = cat === "공지";
+  const sourceList = isNoticeTab ? noticeItems : filteredFaqs;
+
+  const totalCount = sourceList.length;
+  const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const safePage = Math.min(currentPage, pageCount);
+  const startIndex = (safePage - 1) * PAGE_SIZE;
+  const pageSlice = sourceList.slice(startIndex, startIndex + PAGE_SIZE);
+
+  const hasList = totalCount > 0;
 
   const handleCategoryClick = () => {
     setCategoryOpen((prev) => !prev);
@@ -338,10 +383,19 @@ export default function NoticeSection() {
     setCat(name);
     setCategoryOpen(false);
     setOpenId(null);
+    setCurrentPage(1); // ✅ 카테고리 바뀌면 페이지 1로
   };
 
   const handleToggle = (id) => {
     setOpenId((prev) => (prev === id ? null : id));
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((p) => (p > 1 ? p - 1 : p));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((p) => (p < pageCount ? p + 1 : p));
   };
 
   /* ===== 로딩 / 빈 상태 ===== */
@@ -365,7 +419,7 @@ export default function NoticeSection() {
     );
   }
 
-  if (!filtered.length) {
+  if (!hasList) {
     return (
       <Wrap>
         <HeaderRow>
@@ -440,40 +494,82 @@ export default function NoticeSection() {
       {/* min-height 적용된 리스트 영역 */}
       <ContentArea>
         <List>
-          {filtered.map((it) => {
-            const on = openId === it.id;
-            return (
-              <QCard key={it.id}>
-                <Row
-                  role="button"
-                  aria-expanded={on}
-                  onClick={() => handleToggle(it.id)}
-                >
-                  <QHead>
-                    <Badge>{it.cat}</Badge>
-                    <Q>{it.q}</Q>
-                  </QHead>
-                  <More>{on ? "−" : "+"}</More>
-                </Row>
-                <Collapsible open={on}>
-                  <A>{it.a}</A>
-                </Collapsible>
-              </QCard>
-            );
-          })}
+          {isNoticeTab
+            ? pageSlice.map((it) => {
+              const on = openId === it.id;
+              return (
+                <QCard key={it.id}>
+                  <Row
+                    role="button"
+                    aria-expanded={on}
+                    onClick={() => handleToggle(it.id)}
+                  >
+                    <QHead>
+                      <Q>{it.title || "(제목 없음)"}</Q>
+                    </QHead>
+                    <More aria-hidden="true">{on ? "▴" : "▾"}</More>
+                  </Row>
+                  <Collapsible open={on}>
+                    <A>{it.body || ""}</A>
+                  </Collapsible>
+                </QCard>
+              );
+            })
+            : pageSlice.map((it) => {
+              const on = openId === it.id;
+              return (
+                <QCard key={it.id}>
+                  <Row
+                    role="button"
+                    aria-expanded={on}
+                    onClick={() => handleToggle(it.id)}
+                  >
+                    <QHead>
+                      <Q>{it.q}</Q>
+                    </QHead>
+                    <More aria-hidden="true">{on ? "▴" : "▾"}</More>
+                  </Row>
+                  <Collapsible open={on}>
+                    <A>{it.a}</A>
+                  </Collapsible>
+                </QCard>
+              );
+            })}
         </List>
       </ContentArea>
 
-      {/* min-height 바로 아래 페이징 (목업) */}
+      {/* ✅ 실제 페이징 적용된 네비게이션 */}
       <PaginationWrap aria-label="FAQ 페이지 이동">
         <PaginationInner>
-          <PageArrow type="button">{"<"}</PageArrow>
-          <PageDot type="button" active>
-            1
-          </PageDot>
-          <PageDot type="button">2</PageDot>
-          <PageDot type="button">3</PageDot>
-          <PageArrow type="button">{">"}</PageArrow>
+          <PageArrow
+            type="button"
+            disabled={safePage === 1}
+            onClick={handlePrevPage}
+          >
+            {"<"}
+          </PageArrow>
+
+          {Array.from({ length: pageCount }).map((_, idx) => {
+            const pageNum = idx + 1;
+            return (
+              <PageDot
+                key={pageNum}
+                type="button"
+                active={pageNum === safePage}
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </PageDot>
+            );
+          })}
+
+          <PageArrow
+            type="button"
+            disabled={safePage === pageCount}
+            onClick={handleNextPage}
+          >
+            {">"}
+          </PageArrow>
         </PaginationInner>
       </PaginationWrap>
     </Wrap>

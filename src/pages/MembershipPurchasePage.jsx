@@ -3,7 +3,8 @@
 // Withagit — 멤버십/정액권/프로그램/기타 상품 + 프로그램 상세(같은 페이지 하단 노출)
 
 import React, { useEffect, useState, useMemo } from "react";
-import styled from "styled-components";
+
+import styled, { keyframes } from "styled-components";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -44,6 +45,38 @@ const Page = styled.main`
   background: #ffffff;
   min-height: 100dvh;
 `;
+
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const FullPageSpinnerWrap = styled.div`
+  min-height: calc(100vh - 120px); /* 탭/헤더 높이 빼고 남은 영역 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+`;
+
+const Spinner = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 3px solid #e5e7eb;
+  border-top-color: ${accent};
+  animation: ${spin} 0.8s linear infinite;
+  margin-bottom: 12px;
+`;
+
+const SpinnerText = styled.div`
+  font-size: 13px;
+  color: #6b7280;
+`;
+
 
 /* ===== 상단 서브 탭바 (고정) ===== */
 
@@ -128,7 +161,7 @@ const TopTabLabel = styled.span`
 /* 탭바 높이만큼 스페이서 */
 
 const TabsSpacer = styled.div`
-  height: 100px;
+  height: 64px;
 `;
 
 /* ===== 공통 섹션 래퍼 ===== */
@@ -164,7 +197,7 @@ const SectionSubtitle = styled.p`
   line-height: 1.6;
   text-align: center;
   color: ${subText};
-  margin: 0 0 40px;
+  margin: 0 0 0px;
 
   @media (max-width: 768px) {
     font-size: 13px;
@@ -756,7 +789,7 @@ const ProgramHeaderTitle = styled.h2`
   font-size: 32px;
   line-height: 1.3;
   color: ${primaryText};
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.03em;
 
   @media (max-width: 768px) {
@@ -890,7 +923,7 @@ const ProgramDetailWrapper = styled.div`
 `;
 
 const ProgramLayout = styled.div`
-  margin-top: 16px;
+  margin-top: 8px;   /* ⬅️ 16px → 8px 으로 줄임 */
   display: grid;
   grid-template-columns: 3fr 1.5fr;
   column-gap: 32px;
@@ -905,6 +938,7 @@ const ProgramLayout = styled.div`
     row-gap: 20px;
   }
 `;
+
 
 /* 오른쪽 컬럼 */
 
@@ -1018,15 +1052,17 @@ const MobileModalBody = styled.div`
 `;
 
 const ProgramDetailShell = styled.div`
-  background: #ffffff;
-  border-radius: 32px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
-  padding: 24px 24px 28px;
+  /* 🔸 카드 느낌 제거: 배경/라운드/그림자 모두 제거 */
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+
+  /* 🔸 내용이 너무 붙지 않게 약간만 여백 */
+  padding: 16px 0 24px;
   box-sizing: border-box;
-  min-height: 360px;
 
   @media (max-width: 768px) {
-    min-height: auto;
+    padding: 12px 0 20px;
   }
 `;
 
@@ -1055,15 +1091,15 @@ const DetailShellDescription = styled.div`
 
 const ProgramImagesWrap = styled.div`
   margin-top: 16px;
-  padding: 8px;
-  border-radius: 18px;
-  background: #f7f7f7;
-  overflow-y: auto;
+  padding: 0;              /* 패딩 제거 */
+  border-radius: 0;        /* 라운드 제거 */
+  background: transparent; /* 회색 배경 제거 */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 8px;
 `;
+
 
 const ProgramDetailImage = styled.img`
   width: auto;
@@ -1979,7 +2015,7 @@ function ProgramDetail({ program }) {
             <ChildAddButton
               type="button"
               onClick={() => {
-                nav("/mypage");
+                nav(isMobile ? "/m/account/children" : "/mypage");
               }}
             >
               + 자녀 추가 (마이페이지로 이동)
@@ -2193,6 +2229,30 @@ export default function MembershipPurchasePage() {
     selectedProgramId &&
     programs.find((p) => p.id === selectedProgramId && p.isActive);
 
+  // ✅ 디테일 모드 진입 시, 디테일 섹션을 화면 최상단(탭 바로 아래)로 스크롤
+  useEffect(() => {
+    if (!inProgramDetailMode || !selectedProgram) return;
+    if (typeof document === "undefined") return;
+
+    try {
+      const el = document.getElementById("program-detail-section");
+      if (el) {
+        el.scrollIntoView({
+          behavior: "auto",
+          block: "start",
+        });
+      } else if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
+    } catch {
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
+    }
+  }, [inProgramDetailMode, selectedProgramId, selectedProgram]);
+
+
+
   // 탭 → 섹션 스크롤 (기본 모드에서만 사용)
   const scrollToSection = (targetId) => {
     if (!targetId) return;
@@ -2359,7 +2419,7 @@ export default function MembershipPurchasePage() {
 
   function MembershipSection() {
     return (
-      <Section id="section-membership" $pt={72} $pb={72}>
+      <Section id="section-membership" $pt={40} $pb={56}>
         <SectionTitle>멤버십 구매</SectionTitle>
         <SectionSubtitle>
           가족의 라이프스타일에 맞는 멤버십을 선택해보세요.
@@ -2498,13 +2558,6 @@ function ProgramSection() {
               onClick={() => {
                 setSelectedProgramId(p.id);
                 setInProgramDetailMode(true);
-                try {
-                  if (typeof window !== "undefined") {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }
-                } catch {
-                  // ignore
-                }
               }}
               style={{
                 border: isActive ? `2px solid ${accent}` : "none",
@@ -2590,19 +2643,14 @@ function OthersSection() {
           ))}
         </CardsRow>
 
-        <CarouselPageIndicator>
-          {otherPageCount > 0 && (
-            <span>
-              {safeOtherPage + 1} / {otherPageCount}
-            </span>
-          )}
-        </CarouselPageIndicator>
+     
       </Section>
     </SectionGrayBg>
   );
 }
 
 
+  /* ====== 디테일 모드 렌더 ====== */
   /* ====== 디테일 모드 렌더 ====== */
   if (inProgramDetailMode && selectedProgram) {
     return (
@@ -2625,8 +2673,16 @@ function OthersSection() {
                       setSelectedProgramId(null);
                       setTopTab(tab.key);
                       try {
-                        if (typeof window !== "undefined") {
-                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        if (typeof window !== "undefined" && tab.targetId) {
+                          const el = document.getElementById(tab.targetId);
+                          if (el) {
+                            el.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                          } else {
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }
                         }
                       } catch {
                         // ignore
@@ -2653,6 +2709,8 @@ function OthersSection() {
       </Page>
     );
   }
+
+
 
   /* ====== 기본 모드 렌더 (한 페이지에 쭉) ====== */
 

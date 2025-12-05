@@ -1555,7 +1555,7 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
                     window.matchMedia &&
                     window.matchMedia("(max-width: 768px)").matches;
 
-                  navigate(isMobile ? "/m/account" : "/mypage");
+                  navigate(isMobile ? "/m/account/children" : "/mypage");
                 }}
               >
                 <span>+</span>

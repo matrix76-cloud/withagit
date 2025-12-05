@@ -190,6 +190,7 @@ const QuickMenuLabel = styled.span`
   font-weight: 600;
   color: #333333;
   text-align: center;
+  font-family:Pretendard;
 
   @media (max-width: 960px) {
     font-size: 11px;

@@ -817,7 +817,7 @@ export default function CheckoutConfirmDialog({
                         등록된 자녀가 없습니다. 추가해 주세요.
                     </div>
                     <AddChildBox>
-                        <AddChildBtn type="button" onClick={() => (typeof onAddChild === "function" ? onAddChild() : navigate("/mypage"))}>
+                        <AddChildBtn type="button" onClick={() => (typeof onAddChild === "function" ? onAddChild() : navigate("/m/account/children"))}>
                             + 자녀 추가
                         </AddChildBtn>
                     </AddChildBox>
@@ -915,7 +915,8 @@ export default function CheckoutConfirmDialog({
                 <AddChildBox>
                     <AddChildBtn
                         type="button"
-                        onClick={() => (typeof onAddChild === "function" ? onAddChild() : navigate("/mypage"))}
+                        onClick={() => (typeof onAddChild === "function" ? onAddChild() :
+                            navigate("/m/account/children"))}
                     >
                         + 자녀 추가
                     </AddChildBtn>

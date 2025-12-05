@@ -214,6 +214,30 @@ function validateChildRow(c) {
 
 /* ===== 스타일 (모바일 레이아웃) ===== */
 
+
+const AddChildButton = styled.button`
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px dashed #facc6b;
+  background: #fff9e6;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover {
+    background: #fff4d4;
+  }
+
+  &:active {
+    background: #ffeec0;
+  }
+`;
+
+
 const Page = styled.main`
   min-height: 100dvh;
   background: #f8f9fb;
@@ -293,7 +317,6 @@ const Cards = styled.div`
   grid-template-columns: 1fr;
   gap: 12px;
 `;
-
 const ChildCard = styled.button`
   width: 100%;
   border-radius: 18px;
@@ -302,8 +325,8 @@ const ChildCard = styled.button`
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   grid-template-areas:
-    "photo action"
-    "meta  action";
+    "photo close"
+    "meta  meta";
   column-gap: 12px;
   row-gap: 8px;
   align-items: flex-start;
@@ -327,6 +350,125 @@ const CardMeta = styled.div`
   width: 100%;
 `;
 
+const CardAct = styled.div`
+  grid-area: close;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+`;
+
+const DeleteIconButton = styled.button`
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    color: #4b5563;
+    transition: color 0.12s ease, transform 0.08s ease;
+  }
+
+  &:hover svg {
+    color: #111827;
+  }
+
+  &:active svg {
+    transform: scale(0.96);
+  }
+`;
+
+const EditModalBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: flex-end;   /* ✅ 아래로 붙이기 */
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+`;
+
+const EditModalSheet = styled.div`
+  width: 100%;
+  max-width: 100%;
+  max-height: 80dvh;
+  border-radius: 32px 32px 0 0;   /* ✅ 위쪽만 라운드, 아래는 0 */
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.35);
+  padding: 20px 20px 24px;
+  box-sizing: border-box;
+  overflow-y: auto;
+`;
+
+const ModalHeaderRow = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* ✅ 제목 가운데 */
+  margin-bottom: 8px;
+`;
+
+const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 20px;           /* ✅ 더 크게 */
+  font-weight: 800;
+  color: #111827;
+`;
+
+const ModalCloseButton = styled.button`
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    color: #6b7280;
+  }
+
+  &:hover svg {
+    color: #111827;
+  }
+
+  &:active {
+    background: #f3f4f6;
+  }
+`;
+
+
+
+const ModalHintText = styled.p`
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: #6b7280;
+
+  .asterisk {
+    color: #ef4444;
+    margin-right: 4px;
+  }
+`;
+
+
 const InfoTable = styled.div`
   display: grid;
   grid-template-columns: auto 1fr;
@@ -336,17 +478,42 @@ const InfoTable = styled.div`
   color: #6b7280;
 `;
 
+const EditRow = styled.div`
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const EditButton = styled.button`
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: #111827;
+  }
+
+  span.arrow {
+    font-size: 13px;
+  }
+`;
+
+
 const InfoLabelPrimary = styled.div`
   font-weight: 800;
   color: #111827;
 `;
 
 const InfoValuePrimary = styled.div`
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #111827;
+   text-align: right;      /* ✅ 오른쪽 정렬 */
+   color: #111827;
 `;
 
 const InfoLabel = styled.div`
@@ -354,10 +521,7 @@ const InfoLabel = styled.div`
 `;
 
 const InfoValue = styled.div`
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: right;      /* ✅ 오른쪽 정렬 */
   color: #111827;
 `;
 
@@ -394,13 +558,7 @@ const InfoStrong = styled.span`
   font-weight: 700;
 `;
 
-const CardAct = styled.div`
-  grid-area: action;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-`;
+
 
 const CardDeleteBtn = styled.button`
   border: 1px solid #ef4444;
@@ -448,16 +606,17 @@ const EmptyBox = styled.div`
 `;
 
 /* 추가/수정 폼 쪽 */
-
 const FormCard = styled.section`
-  margin-top: 18px;
-  padding: 16px 16px 18px;
-  border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+  margin-top: ${(p) => (p.flat ? 10 : 18)}px;
+  padding: ${(p) => (p.flat ? "0" : "16px 16px 18px")};
+  border-radius: ${(p) => (p.flat ? "0" : "20px")};
+  background: ${(p) => (p.flat ? "transparent" : "#ffffff")};
+  box-shadow: ${(p) =>
+        p.flat ? "none" : "0 10px 26px rgba(15, 23, 42, 0.05)"};
   display: grid;
   gap: 16px;
 `;
+
 
 const FormRow = styled.div`
   display: grid;
@@ -484,11 +643,43 @@ const FormRow3 = styled.div`
   }
 `;
 
+
 const FieldLabel = styled.label`
   font-size: 12px;
   font-weight: 700;
   color: #6b7280;
+  display: block;
+  margin-bottom: 4px;   /* 라벨 아래 여백 */
 `;
+
+const RadioGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+`;
+
+const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #374151;
+`;
+
+
+
+const GenderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+
+
+
+
+
 
 const InputBox = styled.input`
   height: 40px;
@@ -524,23 +715,10 @@ const LabelRow = styled.div`
 `;
 
 const RequiredMark = styled.span`
-  color: #ef4444;
-  margin-left: 2px;
+  display: none;   /* ✅ 모든 * 표시 숨김 */
 `;
 
-const RadioGroup = styled.div`
-  display: flex;
-  gap: 14px;
-  padding-top: 4px;
-`;
 
-const RadioLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: #374151;
-`;
 
 const PhotoBox = styled.div`
   width: 100%;
@@ -584,7 +762,6 @@ const Btn = styled.button`
 `;
 
 /* ===== 자녀 목록 컴포넌트 ===== */
-
 function SavedChildrenList({ items = [], onSelect, onDelete }) {
     const fPhone = (v) => {
         if (!v) return "";
@@ -640,7 +817,7 @@ function SavedChildrenList({ items = [], onSelect, onDelete }) {
                                 key={c.childId}
                                 onClick={() => onSelect && onSelect(c)}
                             >
-                                {/* 사진: 위쪽 */}
+                                {/* 사진 */}
                                 <CardPhotoBox>
                                     <ChildPhoto
                                         path={c.avatarUrl || c.photo}
@@ -649,7 +826,7 @@ function SavedChildrenList({ items = [], onSelect, onDelete }) {
                                     />
                                 </CardPhotoBox>
 
-                                {/* 텍스트: 사진 아래에서 시작 */}
+                                {/* 텍스트 테이블 + 수정하기 버튼 */}
                                 <CardMeta>
                                     <InfoTable>
                                         {/* 1행: 이름 | 성별 · 생일 · 나이 */}
@@ -677,16 +854,33 @@ function SavedChildrenList({ items = [], onSelect, onDelete }) {
                                         <InfoLabel>연락처</InfoLabel>
                                         <InfoValue>{contact || "-"}</InfoValue>
                                     </InfoTable>
+
+                                    {/* 오른쪽 아래 수정하기 버튼 */}
+                                    <EditRow>
+                                        <EditButton
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onSelect && onSelect(c);
+                                            }}
+                                        >
+                                            <span>수정하기</span>
+                                            <span className="arrow" aria-hidden="true">
+                                                ›
+                                            </span>
+                                        </EditButton>
+                                    </EditRow>
                                 </CardMeta>
 
-                                {/* 삭제 버튼: 항상 카드 오른쪽 */}
+                                {/* 오른쪽 위 X 아이콘 */}
                                 <CardAct
                                     onClick={(e) => {
                                         e.stopPropagation();
                                     }}
                                 >
-                                    <CardDeleteBtn
+                                    <DeleteIconButton
                                         type="button"
+                                        aria-label="자녀 삭제"
                                         onClick={() => {
                                             const label = c.name || c.childId || "해당 자녀";
                                             if (
@@ -698,22 +892,39 @@ function SavedChildrenList({ items = [], onSelect, onDelete }) {
                                             }
                                         }}
                                     >
-                                        삭제
-                                    </CardDeleteBtn>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path
+                                                d="M6 6l12 12M18 6L6 18"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="1.8"
+                                                strokeLinecap="round"
+                                            />
+                                        </svg>
+                                    </DeleteIconButton>
                                 </CardAct>
                             </ChildCard>
                         );
                     })}
                 </Cards>
             )}
-
         </>
     );
 }
 
+
 /* ===== 자녀 추가/수정 카드 ===== */
 
-function ChildFormCard({ mode, model, onChange, onPickPhoto, onSave, onCancel, saving }) {
+function ChildFormCard({
+    mode,
+    model,
+    onChange,
+    onPickPhoto,
+    onSave,
+    onCancel,
+    saving,
+    hideTitle,
+}) {
     const isEdit = mode === "edit";
     const maxDay =
         model.birthYear && model.birthMonth
@@ -723,11 +934,17 @@ function ChildFormCard({ mode, model, onChange, onPickPhoto, onSave, onCancel, s
     const fileId = `child-photo-${model.id}`;
 
     return (
-        <FormCard>
-            <LabelRow>
-                <SectionTitle>{isEdit ? "자녀 정보 수정하기" : "자녀 정보 추가"}</SectionTitle>
-            </LabelRow>
+        <FormCard flat={hideTitle}>
+            {/* 모달 안에서는 hideTitle=true로 들어옴 */}
+            {!hideTitle && (
+                <LabelRow>
+                    <SectionTitle>
+                        {isEdit ? "자녀 정보 수정하기" : "자녀 정보 추가"}
+                    </SectionTitle>
+                </LabelRow>
+            )}
 
+            {/* 사진 */}
             <FormRow>
                 <PhotoBox onClick={() => document.getElementById(fileId)?.click()}>
                     {model.photo ? (
@@ -745,52 +962,54 @@ function ChildFormCard({ mode, model, onChange, onPickPhoto, onSave, onCancel, s
                 />
             </FormRow>
 
-            <FormRow2>
-                <div>
-                    <FieldLabel>
-                        이름<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
-                    <InputBox
-                        value={model.name}
-                        onChange={(e) => onChange({ name: e.target.value })}
-                        placeholder="예: 김하늘"
-                        readOnly={isEdit} // 수정 모드에서는 이름 잠금
-                    />
-                </div>
-                <div>
-                    <FieldLabel>
-                        성별<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
-                    <RadioGroup>
-                        <RadioLabel>
-                            <input
-                                type="radio"
-                                name={`gender-${model.id}`}
-                                value="male"
-                                checked={model.gender === "male"}
-                                onChange={() => onChange({ gender: "male" })}
-                            />
-                            <span>남</span>
-                        </RadioLabel>
-                        <RadioLabel>
-                            <input
-                                type="radio"
-                                name={`gender-${model.id}`}
-                                value="female"
-                                checked={model.gender === "female"}
-                                onChange={() => onChange({ gender: "female" })}
-                            />
-                            <span>여</span>
-                        </RadioLabel>
-                    </RadioGroup>
-                </div>
-            </FormRow2>
+            {/* 이름 */}
+            <FormRow>
+                <FieldLabel>
+                    이름<RequiredMark>*</RequiredMark>
+                </FieldLabel>
+                <InputBox
+                    value={model.name}
+                    onChange={(e) => onChange({ name: e.target.value })}
+                    placeholder="예: 김하늘"
+                    readOnly={isEdit}
+                />
+            </FormRow>
 
-            <FormRow3>
-                <div>
-                    <FieldLabel>
-                        출생연도<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
+            {/* 성별 */}
+            <FormRow>
+                <FieldLabel>
+                    성별<RequiredMark>*</RequiredMark>
+                </FieldLabel>
+                <RadioGroup>
+                    <RadioLabel>
+                        <input
+                            type="radio"
+                            name={`gender-${model.id}`}
+                            value="male"
+                            checked={model.gender === "male"}
+                            onChange={() => onChange({ gender: "male" })}
+                        />
+                        <span>남</span>
+                    </RadioLabel>
+                    <RadioLabel>
+                        <input
+                            type="radio"
+                            name={`gender-${model.id}`}
+                            value="female"
+                            checked={model.gender === "female"}
+                            onChange={() => onChange({ gender: "female" })}
+                        />
+                        <span>여</span>
+                    </RadioLabel>
+                </RadioGroup>
+            </FormRow>
+
+            {/* 출생년 / 월 / 일 */}
+            <FormRow>
+                <FieldLabel>
+                    출생년 / 월 / 일<RequiredMark>*</RequiredMark>
+                </FieldLabel>
+                <FormRow3>
                     <SelectBox
                         value={model.birthYear}
                         onChange={(e) => onChange({ birthYear: e.target.value })}
@@ -802,11 +1021,6 @@ function ChildFormCard({ mode, model, onChange, onPickPhoto, onSave, onCancel, s
                             </option>
                         ))}
                     </SelectBox>
-                </div>
-                <div>
-                    <FieldLabel>
-                        월<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
                     <SelectBox
                         value={model.birthMonth}
                         onChange={(e) => onChange({ birthMonth: e.target.value })}
@@ -818,11 +1032,6 @@ function ChildFormCard({ mode, model, onChange, onPickPhoto, onSave, onCancel, s
                             </option>
                         ))}
                     </SelectBox>
-                </div>
-                <div>
-                    <FieldLabel>
-                        일<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
                     <SelectBox
                         value={model.birthDay}
                         onChange={(e) => onChange({ birthDay: e.target.value })}
@@ -834,53 +1043,43 @@ function ChildFormCard({ mode, model, onChange, onPickPhoto, onSave, onCancel, s
                             </option>
                         ))}
                     </SelectBox>
-                </div>
-            </FormRow3>
+                </FormRow3>
+            </FormRow>
 
-            <FormRow3>
-                <div>
-                    <FieldLabel>
-                        학교<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
+            {/* 학교 / 학년 / 반 */}
+            <FormRow>
+                <FieldLabel>
+                    학교 / 학년 / 반<RequiredMark>*</RequiredMark>
+                </FieldLabel>
+                <FormRow3>
                     <InputBox
                         value={model.school}
                         onChange={(e) => onChange({ school: e.target.value })}
                         placeholder="예: 수지초등학교"
                     />
-                </div>
-                <div>
-                    <FieldLabel>
-                        학년<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
                     <InputBox
                         value={model.grade}
                         onChange={(e) => onChange({ grade: e.target.value })}
-                        placeholder="예: 4학년"
+                        placeholder="예: 3학년"
                     />
-                </div>
-                <div>
-                    <FieldLabel>
-                        반<RequiredMark>*</RequiredMark>
-                    </FieldLabel>
                     <InputBox
                         value={model.classroom}
                         onChange={(e) => onChange({ classroom: e.target.value })}
                         placeholder="예: 1반"
                     />
-                </div>
-            </FormRow3>
+                </FormRow3>
+            </FormRow>
 
+            {/* 자녀 연락처(선택) */}
             <FormRow>
-                <div>
-                    <FieldLabel>자녀 연락처 (선택)</FieldLabel>
-                    <InputBox
-                        value={formatLocalPhone(normalizePhoneKR(model.contactPhone || ""))}
-                        onChange={(e) =>
-                            onChange({ contactPhone: normalizePhoneKR(e.target.value) })
-                        }
-                        placeholder="예: 010-1234-5678"
-                    />
-                </div>
+                <FieldLabel>자녀 연락처(선택)</FieldLabel>
+                <InputBox
+                    value={formatLocalPhone(normalizePhoneKR(model.contactPhone || ""))}
+                    onChange={(e) =>
+                        onChange({ contactPhone: normalizePhoneKR(e.target.value) })
+                    }
+                    placeholder="예: 010-1234-5678"
+                />
             </FormRow>
 
             <ButtonRow>
@@ -912,6 +1111,7 @@ function ChildFormCard({ mode, model, onChange, onPickPhoto, onSave, onCancel, s
     );
 }
 
+
 /* ===== 메인 페이지 ===== */
 
 export default function AccountChildrenPage() {
@@ -920,6 +1120,26 @@ export default function AccountChildrenPage() {
     const [savedChildren, setSavedChildren] = useState(() => children || []);
     const [editingChild, setEditingChild] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+
+
+    const handleEditRequest = (child) => {
+        setEditingChild(child);
+        setEditModalOpen(true);
+    };
+
+    const handleCreateRequest = () => {
+        setEditingChild(null);
+        setModel(makeBlank());
+        setEditModalOpen(true);
+    };
+
+    const closeEditModal = () => {
+        setEditingChild(null);
+        setModel(makeBlank());
+        setEditModalOpen(false);
+    };
+    
 
     useEffect(() => {
         setSavedChildren(children || []);
@@ -1035,9 +1255,18 @@ export default function AccountChildrenPage() {
             });
 
             await refresh?.();
+
+            setEditModalOpen(false);
+
+            const msg = editingChild
+                ? "자녀 정보가 수정되었습니다."
+                : "자녀 정보가 저장되었습니다.";
+
             setEditingChild(null);
             setModel(makeBlank());
-            alert(editingChild ? "자녀 정보가 수정되었습니다." : "자녀 정보가 저장되었습니다.");
+            alert(msg);
+
+           
         } catch (e) {
             console.error(e);
             alert("저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
@@ -1107,23 +1336,60 @@ export default function AccountChildrenPage() {
                 <SectionCard>
                     <SavedChildrenList
                         items={savedChildren}
-                        onSelect={setEditingChild}
+                        onSelect={handleEditRequest}
                         onDelete={handleDeleteChild}
                     />
                 </SectionCard>
 
-                <ChildFormCard
-                    mode={editingChild ? "edit" : "create"}
-                    model={model}
-                    onChange={change}
-                    onPickPhoto={handlePickPhoto}
-                    onSave={handleSaveChild}
-                    onCancel={() => {
-                        setEditingChild(null);
-                        setModel(makeBlank());
-                    }}
-                    saving={saving}
-                />
+                <AddChildButton type="button" onClick={handleCreateRequest}>
+                    + 자녀 추가하기
+                </AddChildButton>
+
+  
+                {/* 자녀 수정 모달 */}
+                {editModalOpen && (
+                    <EditModalBackdrop
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) {
+                                closeEditModal();
+                            }
+                        }}
+                    >
+                        <EditModalSheet onClick={(e) => e.stopPropagation()}>
+                            <ModalHeaderRow>
+                                <ModalTitle>{editingChild ? "자녀 수정하기" : "자녀 추가하기"}</ModalTitle>
+                                <ModalCloseButton
+                                    type="button"
+                                    aria-label="닫기"
+                                    onClick={closeEditModal}
+                                >
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path
+                                            d="M6 6l12 12M18 6L6 18"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                </ModalCloseButton>
+                            </ModalHeaderRow>
+
+                            <ChildFormCard
+                                mode={editingChild ? "edit" : "create"}
+                                model={model}
+                                onChange={change}
+                                onPickPhoto={handlePickPhoto}
+                                onSave={handleSaveChild}
+                                onCancel={closeEditModal}
+                                saving={saving}
+                                hideTitle
+                            />
+                        </EditModalSheet>
+                    </EditModalBackdrop>
+                )}
+
+
             </Container>
         </Page>
     );

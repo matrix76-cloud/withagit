@@ -1,10 +1,12 @@
 /* eslint-disable */
 // src/pages/mobile/AccountNewsPage.jsx
 
-import React from "react";
+
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import NoticeSection from "../../components/help/NoticeSection";
+
+import React, { useState } from "react";
 
 const text = "var(--color-text, #111827)";
 const sub = "#6b7280";
@@ -60,7 +62,7 @@ const HeroSection = styled.section`
 
 const HeroTitle = styled.h1`
   margin: 0 0 6px;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: ${text};
   text-align: center;
@@ -68,21 +70,23 @@ const HeroTitle = styled.h1`
 
 const HeroTitleHighlight = styled.span`
   position: relative;
-  padding: 0 4px;
   display: inline-block;
+  padding: 0 4px;
+  z-index: 0;
 
   &::before {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 3px;
-    height: 45%;
+    bottom: 3px;      /* 텍스트 밑에서 살짝 떨어지게 */
+    height: 40%;      /* 형광펜 두께 */
     background: #ffe39b;
     border-radius: 999px;
-    z-index: -1;
+    z-index: -1;      /* 글자 뒤로 */
   }
 `;
+
 
 const HeroSub = styled.p`
   margin: 0 0 14px;
@@ -96,21 +100,21 @@ const SearchWrap = styled.div`
 `;
 
 const SearchBar = styled.div`
-  height: 40px;
+  height: 46px;                /* ✅ 40 → 46 정도로 키우기 */
   border-radius: 999px;
   background: #f3f4f6;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 14px;
+  padding: 0 16px;             /* 살짝 여유 */
+  font-size: 14px;
 `;
-
 const SearchInput = styled.input`
   flex: 1;
   border: none;
   background: transparent;
   outline: none;
-  font-size: 13px;
+  font-size: 14px;             /* 13 → 14 */
 `;
 
 /* ===== 하단 노란 카드 ===== */
@@ -168,6 +172,7 @@ const OutlineBtn = styled.button`
 
 export default function AccountNewsPage() {
   const nav = useNavigate();
+  const [keyword, setKeyword] = useState("");
 
   return (
     <Page>
@@ -183,13 +188,17 @@ export default function AccountNewsPage() {
           <SearchWrap>
             <SearchBar>
               🔍
-              <SearchInput placeholder="무엇이든 찾아보세요" />
+              <SearchInput
+                placeholder="무엇이든 찾아보세요"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
             </SearchBar>
           </SearchWrap>
         </HeroSection>
 
         {/* 공지 리스트 + 페이지네이션 */}
-        <NoticeSection />
+        <NoticeSection keyword={keyword} />
       </Content>
 
       {/* 하단 노란 배너 */}
@@ -197,8 +206,16 @@ export default function AccountNewsPage() {
         <HelpTitle>원하는 답변을 못 찾으셨나요?</HelpTitle>
         <HelpSub>지금 바로 1:1 문의하기</HelpSub>
         <ButtonsRow>
-          <OrangeBtn>1:1 문의하기</OrangeBtn>
-          <OutlineBtn>제안하기</OutlineBtn>
+          <OrangeBtn
+            type="button"
+            onClick={() => nav("/help/feedback")}       
+          >1:1 문의하기</OrangeBtn>
+          <OutlineBtn
+            type="button"
+            onClick={() => nav("/branches/suggest")}
+          >
+            제안하기
+          </OutlineBtn>
         </ButtonsRow>
       </HelpBand>
     </Page>

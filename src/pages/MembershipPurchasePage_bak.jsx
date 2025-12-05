@@ -168,8 +168,8 @@ const SectionSubtitle = styled.p`
 
 const ChargeSectionWrap = styled.section`
   max-width: 1120px;
-  margin: 30px auto;
-  padding: 64px 20px 80px;
+  margin: 0px auto 20px;
+  padding: 24px 20px 80px;
   background: #f7f8fc;
   border-radius: 40px;
   box-sizing: border-box;
@@ -281,7 +281,7 @@ const ChargeTitle = styled.h3`
   }
 
   @media (max-width: 768px) {
-    font-size: 28px;
+    font-size: 24px;
   }
 `;
 
@@ -1858,7 +1858,7 @@ function ProgramDetail({ program }) {
             <ChildAddButton
               type="button"
               onClick={() => {
-                nav("/mypage");
+                nav(isMobile ? "/m/account/children" : "/mypage");
               }}
             >
               + 자녀 추가 (마이페이지로 이동)
