@@ -24,7 +24,7 @@ const Section = styled.section`
   padding: 72px 16px 88px;
 
   @media (max-width: 720px) {
-    padding: 56px 16px 32px;
+    padding: 56px 0px 32px;
   }
 `;
 

@@ -305,7 +305,7 @@ const ChargeTitleHighlight = styled.span`
 
 const ChargeSubtitle = styled.p`
   margin: 0 0 32px;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.7;
   color: #555;
   max-width: 360px;

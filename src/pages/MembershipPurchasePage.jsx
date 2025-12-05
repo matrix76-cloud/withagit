@@ -193,14 +193,14 @@ const SectionTitle = styled.h2`
 `;
 
 const SectionSubtitle = styled.p`
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   text-align: center;
   color: ${subText};
   margin: 0 0 0px;
 
   @media (max-width: 768px) {
-    font-size: 13px;
+    font-size: 15px;
   }
 `;
 
@@ -799,14 +799,14 @@ const ProgramHeaderTitle = styled.h2`
 
 const ProgramHeaderSubtitle = styled.p`
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.7;
   color: ${subText};
   max-width: 640px;
   text-align: center;
 
   @media (max-width: 768px) {
-    font-size: 13px;
+    font-size: 15px;
     max-width: 100%;
   }
 `;
