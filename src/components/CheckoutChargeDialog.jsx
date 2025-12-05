@@ -770,6 +770,10 @@ export default function CheckoutChargeDialog({
                 type="button"
                 onClick={() => {
                   onClose?.();
+                         const isMobile =
+                    typeof window !== "undefined" &&
+                    window.matchMedia &&
+                    window.matchMedia("(max-width: 768px)").matches;
                   navigate(isMobile ? "/m/account/children" : "/mypage");
                 }}
               >

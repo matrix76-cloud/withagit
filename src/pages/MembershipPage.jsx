@@ -255,7 +255,7 @@ const BenefitSection = styled.section`
 
 const BenefitInner = styled.div`
   max-width: 1120px;
-  margin: 0 auto;
+  margin: 20px auto;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -289,7 +289,7 @@ const BenefitBullets = styled.ul`
   padding: 0;
   list-style: none;
     @media (max-width: 960px) {
-    font-size: 16px;
+    font-size: 18px;
   }
 `;
 
@@ -300,17 +300,18 @@ const BenefitBullet = styled.li`
   font-size: 14px;
   line-height: 1.7;
   color: #555555;
+  letter-spacing : -0.03em;
 
   &::before {
     content: "✓";
     position: absolute;
     left: 0;
     top: 0;
-    font-size: 13px;
+    font-size: 12px;
     color: #f07a2a;
   }
     @media (max-width: 960px) {
-    font-size: 12px;
+    font-size: 13px;
   }
 `;
 

@@ -2015,6 +2015,11 @@ function ProgramDetail({ program }) {
             <ChildAddButton
               type="button"
               onClick={() => {
+
+                const isMobile =
+                    typeof window !== "undefined" &&
+                    window.matchMedia &&
+                    window.matchMedia("(max-width: 768px)").matches;
                 nav(isMobile ? "/m/account/children" : "/mypage");
               }}
             >
