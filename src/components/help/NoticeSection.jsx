@@ -157,6 +157,31 @@ const List = styled.div`
   gap: 10px;
 `;
 
+const NoticeBody = styled.div`
+  margin-top: 10px;
+  padding-right: 4px;
+  color: ${sub};
+  font-size: 14px;
+  line-height: 1.8;
+
+  /* 공지 html 안의 기본 태그들 정리 */
+  p {
+    margin: 0 0 8px;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 8px 0;
+  }
+`;
+
+
 /* 질문 카드 */
 
 const QCard = styled.article`
@@ -242,8 +267,11 @@ function Collapsible({ open, children, duration = 220 }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
     if (open) {
-      requestAnimationFrame(() => setH(el.scrollHeight + 2));
+      // 여유 높이 12px 정도 더 줘서 잘림 방지
+      const next = el.scrollHeight + 12;
+      setH(next);
     } else {
       setH(0);
     }
@@ -495,46 +523,49 @@ export default function NoticeSection() {
       <ContentArea>
         <List>
           {isNoticeTab
-            ? pageSlice.map((it) => {
-              const on = openId === it.id;
-              return (
-                <QCard key={it.id}>
-                  <Row
-                    role="button"
-                    aria-expanded={on}
-                    onClick={() => handleToggle(it.id)}
-                  >
-                    <QHead>
-                      <Q>{it.title || "(제목 없음)"}</Q>
-                    </QHead>
-                    <More aria-hidden="true">{on ? "▴" : "▾"}</More>
-                  </Row>
-                  <Collapsible open={on}>
-                    <A>{it.body || ""}</A>
-                  </Collapsible>
-                </QCard>
-              );
-            })
-            : pageSlice.map((it) => {
-              const on = openId === it.id;
-              return (
-                <QCard key={it.id}>
-                  <Row
-                    role="button"
-                    aria-expanded={on}
-                    onClick={() => handleToggle(it.id)}
-                  >
-                    <QHead>
-                      <Q>{it.q}</Q>
-                    </QHead>
-                    <More aria-hidden="true">{on ? "▴" : "▾"}</More>
-                  </Row>
-                  <Collapsible open={on}>
-                    <A>{it.a}</A>
-                  </Collapsible>
-                </QCard>
-              );
-            })}
+        ? pageSlice.map((it) => {
+            const on = openId === it.id;
+            return (
+              <QCard key={it.id}>
+                <Row
+                  role="button"
+                  aria-expanded={on}
+                  onClick={() => handleToggle(it.id)}
+                >
+                  <QHead>
+                    <Q>{it.title || "(제목 없음)"}</Q>
+                  </QHead>
+                  <More aria-hidden="true">{on ? "▴" : "▾"}</More>
+                </Row>
+                <Collapsible open={on}>
+                  <NoticeBody
+                    dangerouslySetInnerHTML={{ __html: it.bodyHtml || "" }}
+                  />
+                </Collapsible>
+              </QCard>
+            );
+          })
+        : pageSlice.map((it) => {
+            const on = openId === it.id;
+            return (
+              <QCard key={it.id}>
+                <Row
+                  role="button"
+                  aria-expanded={on}
+                  onClick={() => handleToggle(it.id)}
+                >
+                  <QHead>
+                    <Q>{it.q}</Q>
+                  </QHead>
+                  <More aria-hidden="true">{on ? "▴" : "▾"}</More>
+                </Row>
+                <Collapsible open={on}>
+                  <A>{it.a}</A>
+                </Collapsible>
+              </QCard>
+            );
+          })}
+
         </List>
       </ContentArea>
 
