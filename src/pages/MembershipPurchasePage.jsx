@@ -1179,11 +1179,15 @@ const BookingSectionTitle = styled.div`
 
 /* 달력 */
 
+
+
+/* 달력 — 더 크게 / 여백 넉넉하게 */
+
 const CalendarBox = styled.div`
-  border-radius: 18px;
+  border-radius: 20px;
   border: 1px solid #eee2cf;
   background: #fff;
-  padding: 16px 18px 14px;
+  padding: 20px 22px 18px;
   box-sizing: border-box;
 `;
 
@@ -1191,24 +1195,25 @@ const CalendarHeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  font-size: 13px;
+  margin-bottom: 14px;
+  font-size: 14px;
   color: ${primaryText};
 `;
 
 const CalendarMonthLabel = styled.span`
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 16px;
 `;
 
 const CalendarNav = styled.div`
   display: flex;
-  gap: 4px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 14px;
 `;
 
 const CalendarNavButton = styled.button`
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   border: none;
   background: transparent;
@@ -1227,9 +1232,9 @@ const CalendarNavButton = styled.button`
 const CalendarWeekRow = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  font-size: 11px;
+  font-size: 12px;
   color: #b3b3b3;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 `;
 
 const CalendarWeekCell = styled.div`
@@ -1239,24 +1244,24 @@ const CalendarWeekCell = styled.div`
 const CalendarGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  row-gap: 6px;
-  column-gap: 0;
+  row-gap: 8px;
+  column-gap: 4px;
 `;
 
 const CalendarDayCell = styled.button`
   border: none;
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
 
-  width: 32px;
-  height: 32px;
-  margin: 0 auto;
+  width: 40px;
+  height: 40px;
+  margin: 2px auto;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  font-size: 12px;
+  font-size: 14px;
   box-sizing: border-box;
   border-radius: 999px;
 
@@ -1264,8 +1269,8 @@ const CalendarDayCell = styled.button`
     $isSelected
       ? "#f07a2a"
       : $isAvailable
-        ? "rgba(240, 122, 42, 0.3)"
-        : "transparent"};
+      ? "rgba(240, 122, 42, 0.18)"
+      : "transparent"};
 
   color: ${({ $isSelected, $isAvailable }) =>
     $isSelected ? "#ffffff" : $isAvailable ? "#222222" : "#d0d0d0"};
@@ -1278,17 +1283,17 @@ const CalendarDayCell = styled.button`
 
   &:hover {
     ${({ $clickable }) =>
-    $clickable &&
-    `
-      transform: translateY(-1px);
-    `}
+      $clickable &&
+      `
+        transform: translateY(-1px);
+      `}
   }
 `;
 
 const CalendarDot = styled.div`
-  margin-top: 2px;
-  width: 6px;
-  height: 6px;
+  margin-top: 3px;
+  width: 7px;
+  height: 7px;
   border-radius: 999px;
 
   background: ${({ $active, $available }) =>
@@ -1299,7 +1304,7 @@ const CalendarDot = styled.div`
 `;
 
 const CalendarEmptyCell = styled.div`
-  height: 28px;
+  height: 32px;
 `;
 
 const CalendarDayNumber = styled.div`
@@ -1307,11 +1312,13 @@ const CalendarDayNumber = styled.div`
 `;
 
 const CalendarHint = styled.p`
-  margin: 8px 2px 0;
-  font-size: 11px;
-  line-height: 1.5;
+  margin: 10px 2px 0;
+  font-size: 12px;
+  line-height: 1.6;
   color: ${subText};
 `;
+
+
 
 /* 세부 프로그램 (타임 슬롯) */
 
