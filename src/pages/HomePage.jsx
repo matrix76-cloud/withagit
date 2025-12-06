@@ -67,7 +67,7 @@ export default function HomePage() {
     };
 
     const onClickContact = () => {
-        navigate("/m/faq");
+        navigate("/help/feedback");
     };
 
     const onClickSuggest = () => {

@@ -77,7 +77,6 @@ export async function createOrderDraft(phoneE164, payload = {}) {
     console.log("payload:", payload);
     console.groupEnd();
 
-
     const {
         type,
         childId = null,
@@ -86,6 +85,8 @@ export async function createOrderDraft(phoneE164, payload = {}) {
         amountKRW,
         product = null,
         provider = null,
+        meta = null,   // 🔹 픽업용 메타( pick ups 등 )
+        buyer = null,  // 🔹 구매자 정보(이메일/이름 등)
     } = payload;
 
     assertOrderType(type);
@@ -102,8 +103,8 @@ export async function createOrderDraft(phoneE164, payload = {}) {
     if (type === ORDER_TYPE.TIMEPASS) {
         if (!(Number(minutes || 0) > 0)) throw new Error("minutes must be > 0 for timepass");
     }
-    // CASHPASS는 금액권이므로 months=0(무기한)도 허용. 기간형으로 팔면 months>0 설정.
-    // PROGRAM 타입은 childId/months/minutes 제약 없음 (예약 메타는 meta.*에 저장).
+    // CASHPASS는 금액권이므로 months=0(무기한)도 허용.
+    // PROGRAM/PICKUP 타입은 childId/months/minutes 제약 없음 (예약 메타는 meta.*에 저장).
 
     const orderId = makeOrderId(type);
     const createdAt = nowMs();
@@ -114,10 +115,12 @@ export async function createOrderDraft(phoneE164, payload = {}) {
         amountKRW: Number(amountKRW),
         status: ORDER_STATUS.PENDING,
         product: product ? { ...product } : null,
-        childId: childId || null,    // POINTS/PROGRAM은 null이어도 됨
+        childId: childId || null,    // POINTS/PROGRAM/PICKUP 은 null이어도 됨
         months: Number(months || 0),
         minutes: Number(minutes || 0),
         provider: provider ? { ...provider } : null,
+        buyer: buyer ? { ...buyer } : null,   // 🔹 신규: 구매자 정보 저장
+        meta: meta ? { ...meta } : null,      // 🔹 신규: 픽업/프로그램 등 주문 메타 저장
         txnId: null,                 // PG 고유 거래 ID (결제 후 세팅)
         createdAt,
         updatedAt: createdAt,
@@ -129,6 +132,7 @@ export async function createOrderDraft(phoneE164, payload = {}) {
 
     return { orderId };
 }
+
 
 /** getOrder */
 export async function getOrder(phoneE164, orderId) {

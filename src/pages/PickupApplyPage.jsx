@@ -332,11 +332,93 @@ const BlockHint = styled.div`
 
 /* 캘린더 */
 
-const CalendarShell = styled.div`
- 
-  padding: 20px 0px 0px;   /* 전체 여백 ↑ */
 
+const CalendarShell = styled.div`
+  margin-top: 12px;
+  padding: 18px 12px 14px;     /* ⬅️ 상단·좌우·하단 여백 넉넉하게 */
+  border-radius: 18px;
+  background: #ffffff;
 `;
+
+const CalendarHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;                   /* 좌우 버튼·텍스트 간격 */
+  margin-bottom: 18px;         /* 헤더와 요일 줄 사이 여백 */
+`;
+
+const MonthLabelText = styled.div`
+  font-size: 16px;
+  font-weight: 700;
+  color: ${primaryText};
+`;
+
+const MonthNav = styled.div`
+  display: flex;
+  gap: 6px;
+`;
+
+const MonthNavBtn = styled.button`
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  font-size: 18px;
+  color: #111827;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+
+  }
+`;
+
+const WeekRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+  text-align: center;
+`;
+
+const DayGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 8px;                /* 날짜 사이 세로 간격 */
+`;
+
+const DayCell = styled.button`
+  border: none;
+  background: ${({ $selected }) => ($selected ? accent : "transparent")};
+  color: ${({ $selected }) => ($selected ? "#ffffff" : "#111827")};
+  border-radius: 999px;
+  font-size: 14px;
+  padding: 10px 0;             /* 날짜 원 크기 ↑ */
+  margin: 2px 0;
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ $selected }) =>
+    $selected ? accent : "rgba(249,115,22,0.06)"};
+  }
+
+  &:disabled {
+    color: #d1d5db;
+    cursor: default;
+    background: transparent;
+  }
+`;
+
+
+
 
 const SelectedDateText = styled.div`
   font-size: 13px;
@@ -375,77 +457,6 @@ const ChildDivider = styled.div`
 
 
 
-const CalendarHeaderRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;                 /* 좌우 버튼 간격 ↑ */
-  margin-bottom: 20px;       /* 헤더와 요일 라인 사이 여백 ↑ */
-`;
-
-const MonthLabelText = styled.div`
-  font-size: 16px;           /* "2026년 1월" 글씨 크게 */
-  font-weight: 700;
-  color: ${primaryText};
-`;
-
-const MonthNav = styled.div`
-  display: flex;
-  gap: 6px;
-`;
-
-const MonthNavBtn = styled.button`
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  border: none;
-  background: #fff;
-  font-size: 18px;
-  color: #111;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-`;
-
-const WeekRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  font-size: 13px;           /* 요일 글씨 ↑ */
-  color: #9ca3af;
-  margin-bottom: 10px;
-  text-align: center;
-`;
-
-const DayGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  row-gap: 6px;              /* 날짜 사이 간격 ↑ */
-`;
-
-const DayCell = styled.button`
-  border: none;
-  background: ${({ $selected }) => ($selected ? accent : "transparent")};
-  color: ${({ $selected }) => ($selected ? "#ffffff" : "#111827")};
-  border-radius: 999px;
-  font-size: 14px;           /* 날짜 숫자 크게 */
-  padding: 10px 0;           /* 세로 크기 ↑ */
-  margin: 2px 0;
-  cursor: pointer;
-
-  &:hover {
-    background: ${({ $selected }) =>
-      $selected ? accent : "rgba(249, 115, 22, 0.06)"};
-  }
-
-  &:disabled {
-    color: #d1d5db;
-    cursor: default;
-    background: transparent;
-  }
-`;
 
 
 
@@ -488,16 +499,23 @@ const TimeHeaderTitle = styled.div`
 
 const TimeApplyButton = styled.button`
   border-radius: 12px;
-  border: 1px solid #f0eded;
-  background: #f0eded;
+  border: 1px solid ${({ $primary }) => ($primary ? accent : "#f0eded")};
+  background: ${({ $primary }) => ($primary ? accent : "#f0eded")};
   padding: 10px 12px;
   font-size: 12px;
   font-weight: 700;
-  color: #4b5563;
+  color: ${({ $primary }) => ($primary ? "#ffffff" : "#4b5563")};
   cursor: pointer;
 
-
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+    border-color: #e5e7eb;
+    background: #f3f4f6;
+    color: #9ca3af;
+  }
 `;
+
 
 
 const TimePickerBox = styled.div`
@@ -1012,6 +1030,8 @@ const RightSlotChip = styled.button`
 
 /* 장바구니 버튼 + 카드 */
 
+/* 장바구니 버튼 + 카드 */
+
 const CartActionsRow = styled.div`
   margin-top: 12px;
   display: flex;
@@ -1023,8 +1043,8 @@ const CartButton = styled.button`
   padding: 12px 18px;
   border-radius: 10px;
   border: none;
-  background: #e6e6e6;
-  color: #666666;
+  background: ${({ $primary }) => ($primary ? accent : "#e6e6e6")};
+  color: ${({ $primary }) => ($primary ? "#ffffff" : "#666666")};
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -1032,26 +1052,130 @@ const CartButton = styled.button`
   &:active {
     transform: translateY(1px);
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 `;
 
 const CartList = styled.div`
-  margin-top: 12px;
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 `;
+
+/* 피그마 스타일 예약 카드 */
 
 const CartCard = styled.div`
   border-radius: 18px;
-  border: 1px solid #fee2e2;
-  background: #fff7ed;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: ${primaryText};
+  border: 1px solid #f3f4f6;
+  background: #ffffff;
+  padding: 14px 16px 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 `;
+
+const CartHeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+`;
+
+const CartBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: ${accent};
+  background: #fff3e6;
+`;
+
+const CartCloseBtn = styled.button`
+  border: none;
+  background: transparent;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: #9ca3af;
+  }
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+const CartMainDateTime = styled.div`
+  font-size: 14px;
+  font-weight: 800;
+  color: ${primaryText};
+  margin-bottom: 4px;
+`;
+
+const CartInfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: ${primaryText};
+  margin-top: 2px;
+`;
+
+const CartInfoKey = styled.span`
+  flex: 0 0 auto;
+  color: #9ca3af;
+  font-weight: 500;
+`;
+
+const CartInfoVal = styled.span`
+  flex: 1 1 auto;
+  text-align: right;
+  color: #4b5563;
+  white-space: pre-line;
+`;
+
+const CartPriceLine = styled.div`
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: ${accent};
+  text-align: right;
+`;
+
+/* 총 예상 가격 */
+const CartTotalRow = styled.div`
+  margin-top: 16px;              /* ⬅️ 윗부분과 간격 더 벌리기 */
+  text-align: right;
+  font-size: 13px;
+  color: #111827;
+
+  .label {
+    font-weight: 400;
+  }
+
+  .value {
+    margin-left: 6px;
+    font-size: 15px;             /* ⬅️ 금액 폰트 더 큼 */
+    font-weight: 800;            /* ⬅️ 금액만 굵게 */
+  }
+`;
+
 
 const CartLineTop = styled.div`
   font-weight: 700;
@@ -1215,18 +1339,9 @@ const ModalEmpty = styled.div`
   color: ${subText};
 `;
 
-const CartPriceLine = styled.div`
-  margin-top: 4px;
-  font-size: 14px;
-  font-weight: 800;
-  color: ${accent};
-`;
+
 
 /* ================== 왼쪽 컬럼 컴포넌트 ================== */
-
-
-
-
 
 const TIME_WHEEL_ITEM_HEIGHT = 32;
 
@@ -1297,64 +1412,74 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
   const navigate = useNavigate();
   const children = Array.isArray(ctxChildren) ? ctxChildren : [];
 
+
   const today = useMemo(() => {
     const t = new Date();
     t.setHours(0, 0, 0, 0);
     return t;
   }, []);
 
-  const agitzSet = useMemo(() => {
-    const set = new Set();
-    if (Array.isArray(ctxMemberships)) {
-      ctxMemberships.forEach((m) => {
-        if (
-          m &&
-          m.kind === MEMBERSHIP_STATUS.AGITZ &&
-          (m.status === MEMBERSHIP_STATUS.ACTIVE ||
-            m.status === MEMBERSHIP_STATUS.FUTURE) &&
-          m.childId
-        ) {
-          set.add(m.childId);
-        }
-      });
-    }
-    return set;
+  /* 🔹 자녀별 보유 멤버십 태그 계산
+     - 정규 멤버십(AGITZ)
+     - 패밀리 멤버십(FAMILY)
+     - 필요하면 타임패스/정액권도 확장 가능 */
+  const membershipTagsByChild = useMemo(() => {
+    const map = new Map();
+
+    (ctxMemberships || []).forEach((m) => {
+      if (!m || !m.childId) return;
+
+      const status = m.status || MEMBERSHIP_STATUS.ACTIVE;
+      if (
+        status !== MEMBERSHIP_STATUS.ACTIVE &&
+        status !== MEMBERSHIP_STATUS.FUTURE
+      ) {
+        return;
+      }
+
+      const list = map.get(m.childId) || [];
+
+      switch (m.kind) {
+        case MEMBERSHIP_KIND.AGITZ:
+          if (!list.includes("정규 멤버십")) list.push("아지트 멤버십");
+          break;
+        case MEMBERSHIP_KIND.FAMILY:
+          if (!list.includes("패밀리 멤버십")) list.push("패밀리 멤버십");
+          break;
+        case MEMBERSHIP_KIND.TIMEPASS:
+          if (!list.includes("타임패스")) list.push("타임패스");
+          break;
+        case MEMBERSHIP_KIND.CASHPASS:
+          if (!list.includes("정액권")) list.push("정액권");
+          break;
+        default:
+          break;
+      }
+
+      map.set(m.childId, list);
+    });
+
+    return map;
   }, [ctxMemberships]);
 
-  const familySet = useMemo(() => {
-    const set = new Set();
-    if (Array.isArray(ctxMemberships)) {
-      ctxMemberships.forEach((m) => {
-        if (
-          m &&
-          m.kind === MEMBERSHIP_KIND.FAMILY &&
-          (m.status === MEMBERSHIP_STATUS.ACTIVE ||
-            m.status === MEMBERSHIP_STATUS.FUTURE) &&
-          m.childId
-        ) {
-          set.add(m.childId);
-        }
-      });
-    }
-    return set;
-  }, [ctxMemberships]);
-
+  // 🔹 드롭다운에 쓸 자녀 리스트
   const childItems = useMemo(
     () =>
       children.map((c, index) => {
         const id = c.childId || c.id || "child-" + index;
         const name = c.name || c.childName || "";
         const birth = c.birth || c.birthDate || "";
+        const tags = membershipTagsByChild.get(id) || [];
+
         return {
           id,
           name,
           birth,
           isDefault: index === 0,
-          hasAgitz: agitzSet.has(id),
-          hasFamily: familySet.has(id),
+          tags,
         };
       }),
-    [children, agitzSet, familySet]
+    [children, membershipTagsByChild]
   );
 
   const [activeChildId, setActiveChildId] = useState(null);
@@ -1383,11 +1508,11 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
     }
   }, [childItems, activeChildId]);
 
+  // 🔹 달력/시간 상태 (원래 코드 그대로 유지)
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const monthCells = useMemo(() => getMonthMatrix(currentMonth), [currentMonth]);
 
-  // 🔸 휠용 상태
   const [ampm, setAmPm] = useState("AM");
   const [hour, setHour] = useState(1);
   const [minute, setMinute] = useState(0);
@@ -1398,7 +1523,7 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
     []
   );
   const minuteItems = useMemo(
-    () => Array.from({ length: 12 }, (_, i) => i * 5), // 0,5,10,...55
+    () => Array.from({ length: 12 }, (_, i) => i * 5),
     []
   );
 
@@ -1467,6 +1592,9 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
     onChangeSlots([]);
   };
 
+  const canAddSlot = !!(activeChildId && selectedDate);
+
+
   return (
     <LeftWrap>
       <SectionHeader>
@@ -1529,14 +1657,15 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
                         >
                           <span className="name">{c.name || "(이름 없음)"}</span>
                           {c.birth && <span className="meta">{c.birth}</span>}
-                          {(c.hasAgitz || c.hasFamily) && (
+
+                          {/* 🔹 여기서 멤버십 뱃지 표시 */}
+                          {c.tags.length > 0 && (
                             <div className="badge-row">
-                              {c.hasAgitz && (
-                                <span className="badge">정규 멤버십</span>
-                              )}
-                              {c.hasFamily && (
-                                <span className="badge">패밀리 멤버십</span>
-                              )}
+                              {c.tags.map((label) => (
+                                <span key={label} className="badge">
+                                  {label}
+                                </span>
+                              ))}
                             </div>
                           )}
                         </ChildItemButton>
@@ -1565,29 +1694,44 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
           </ChildAddRowWrap>
         </PickupSubSection>
 
-
         {/* 2) 날짜 선택 섹션 */}
         <PickupSubSection>
           <BlockLabelRow>
-              {selectedDate ? (
-              // ✅ 날짜 선택된 경우: 안내 문구 대신 날짜만 보여주기
+            {selectedDate ? (
               <SelectedDateText>
-              {formatSelectedDateLabel(selectedDate)}
+                {formatSelectedDateLabel(selectedDate)}
               </SelectedDateText>
-              ) : (
-              // ✅ 아직 선택 안 했을 때만 안내 문구 노출
+            ) : (
               <SectionLabel>날짜를 선택해주세요</SectionLabel>
-              )}
-            </BlockLabelRow>
+            )}
+          </BlockLabelRow>
 
           <CalendarShell>
             <CalendarHeaderRow>
               <MonthNavBtn type="button" onClick={() => moveMonth(-1)}>
-                ‹
+                <svg width="16" height="16" viewBox="0 0 24 24">
+                  <path
+                    d="M15 4L9 12L15 20"
+                    fill="none"
+                    stroke="#111827"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </MonthNavBtn>
               <MonthLabelText>{formattedMonth}</MonthLabelText>
               <MonthNavBtn type="button" onClick={() => moveMonth(1)}>
-                ›
+                <svg width="16" height="16" viewBox="0 0 24 24">
+                  <path
+                    d="M9 4L15 12L9 20"
+                    fill="none"
+                    stroke="#111827"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </MonthNavBtn>
             </CalendarHeaderRow>
 
@@ -1634,14 +1778,16 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
         <PickupSubSection>
           <TimeHeaderRow>
             <TimeHeaderTitle>시간을 선택해주세요</TimeHeaderTitle>
-            <TimeApplyButton type="button" onClick={addSlot}>
+            <TimeApplyButton
+              type="button"
+              onClick={addSlot}
+              disabled={!canAddSlot}
+              $primary={canAddSlot}
+            >
               이대로 담기
             </TimeApplyButton>
           </TimeHeaderRow>
-
           <TimePickerBox>
- 
-
             <TimeColumns>
               <ScrollWheelColumn
                 items={ampmItems}
@@ -1663,11 +1809,10 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
               />
             </TimeColumns>
           </TimePickerBox>
-
-
         </PickupSubSection>
       </PickupMainCard>
 
+      {/* 담긴 슬롯 리스트 */}
       <SelectedSlotsRow>
         {slots.map((s) => (
           <SlotChip key={s.id} type="button" onClick={() => removeSlot(s.id)}>
@@ -1681,15 +1826,17 @@ function PickupLeftColumn({ slots, onChangeSlots }) {
           </SlotChip>
         ))}
       </SelectedSlotsRow>
-
     </LeftWrap>
   );
-
 }
+
 
 /* ================== 오른쪽 컬럼 (지도 + 정류장 모달 + 장바구니) ================== */
 
-function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems }) {
+function PickupRightColumn({ slots, onChangeSlots, cartItems, hasPickupMembership, onChangeCartItems,
+  onExposeChildMap,          // ← 추가
+  onExposePickupChildIds     // ← 추가
+ }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const startMarkerRef = useRef(null);
@@ -1712,7 +1859,8 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
   const [placesLoading, setPlacesLoading] = useState(false);
   const [placesSearch, setPlacesSearch] = useState("");
 
-  const { children: ctxChildren } = useUser() || {};
+  
+  const { children: ctxChildren, memberships: ctxMemberships } = useUser() || {};
   const children = Array.isArray(ctxChildren) ? ctxChildren : [];
 
   const childMap = useMemo(() => {
@@ -1725,7 +1873,43 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     return map;
   }, [children]);
 
-  // "위드아지트" 정류장 찾기
+
+ const pickupEligibleChildIds = useMemo(() => {
+   const set = new Set();
+   const list = Array.isArray(ctxMemberships) ? ctxMemberships : [];
+
+   list.forEach((m) => {
+     if (!m || !m.childId) return;
+
+     const kind = m.kind;
+     const status = m.status;
+
+     const isPickupKind =
+       kind === MEMBERSHIP_KIND.AGITZ ||
+       kind === "agitz" ||
+       kind === MEMBERSHIP_KIND.FAMILY ||
+       kind === "family";
+
+     const isActive =
+       !status ||
+       status === MEMBERSHIP_STATUS.ACTIVE ||
+       status === "active" ||
+       status === MEMBERSHIP_STATUS.FUTURE ||
+       status === "future";
+
+     if (isPickupKind && isActive) {
+       set.add(m.childId);
+     }
+   });
+
+   console.groupCollapsed("[PickupRightColumn] pickupEligibleChildIds");
+   console.log("memberships:", list);
+   console.log("eligible childIds:", Array.from(set));
+   console.groupEnd();
+
+   return set;
+ }, [ctxMemberships]);
+
   const sujichoPlace = useMemo(() => {
     if (!places.length) return null;
     const byName = places.find((p) => (p.placeName || "").includes("위드아지트"));
@@ -1737,7 +1921,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     return null;
   }, [places]);
 
-  // 지도 초기화 — SDK/DOM 준비될 때까지 재시도
+  // 지도 초기화
   useEffect(() => {
     let cancelled = false;
     let tries = 0;
@@ -1983,13 +2167,13 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
 
     const agit = sujichoPlace
       ? {
-          name: sujichoPlace.placeName || sujichoPlace.address || "",
-          address: sujichoPlace.address || "",
-          lat: Number(sujichoPlace.lat),
-          lng: Number(sujichoPlace.lng),
-          price:
-            sujichoPlace.price != null ? Number(sujichoPlace.price) : null,
-        }
+        name: sujichoPlace.placeName || sujichoPlace.address || "",
+        address: sujichoPlace.address || "",
+        lat: Number(sujichoPlace.lat),
+        lng: Number(sujichoPlace.lng),
+        price:
+          sujichoPlace.price != null ? Number(sujichoPlace.price) : null,
+      }
       : null;
 
     if (placesTarget === "start") {
@@ -2015,7 +2199,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
 
   const slotChips = useMemo(
     () =>
-      slots.map((s) => {
+      slots.map((s, idx) => {
         const h12 = (s.hour % 12) || 12;
         const ampmLabel = s.ampm === "PM" ? "오후" : "오전";
         const datePretty = s.date.replace(/-/g, ".");
@@ -2031,6 +2215,11 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
   );
 
   const handleAddToCart = () => {
+    console.groupCollapsed("[PickupRightColumn] handleAddToCart");
+    console.log("slots:", slots);
+    console.log("pickupEligibleChildIds:", Array.from(pickupEligibleChildIds));
+    console.groupEnd();
+
     if (!slots.length) {
       alert("왼쪽에서 날짜·시간을 먼저 담아 주세요.");
       return;
@@ -2040,6 +2229,36 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
       return;
     }
 
+    // 🔹 슬롯에 담긴 자녀들 중, 멤버십 없는 아이가 있는지 체크
+    const invalidChildIds = new Set();
+    slots.forEach((s) => {
+      const cid = s.childId;
+      if (!cid) {
+        invalidChildIds.add("__unknown__");
+        return;
+      }
+      if (!pickupEligibleChildIds.has(cid)) {
+        invalidChildIds.add(cid);
+      }
+    });
+
+    if (invalidChildIds.size > 0) {
+      // 첫 번째 문제 자녀만 메시지에 표시
+      const firstId = invalidChildIds.values().next().value;
+      const childName =
+        firstId === "__unknown__" ? "선택된 자녀" : childMap[firstId] || firstId;
+
+      alert(
+        `픽업은 아지트/패밀리 멤버십이 있는 자녀만 신청 가능합니다.\n'${childName}'의 멤버십을 먼저 확인해 주세요.`
+      );
+
+      // 필요하면 멤버십 구매 팝업도 같이 띄우기
+      // if (onNeedMembership) onNeedMembership();
+
+      return;
+    }
+
+    // 🔹 여기까지 왔으면 모든 슬롯 자녀가 멤버십 보유 → 장바구니에 담기
     const next = [...(cartItems || [])];
 
     slots.forEach((s) => {
@@ -2066,6 +2285,38 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     onChangeCartItems(next);
   };
 
+
+  const handleRemoveCartItem = (id) => {
+    const next = (cartItems || []).filter((item) => item.id !== id);
+    onChangeCartItems(next);
+  };
+
+  const totalPrice = useMemo(
+    () =>
+      (cartItems || []).reduce(
+        (sum, item) => sum + Number(item.priceKRW || 0),
+        0
+      ),
+    [cartItems]
+  );
+
+  const canAddCart =
+    slots.length > 0 &&
+    startQuery.trim().length > 0 &&
+    endQuery.trim().length > 0;
+  
+  useEffect(() => {
+    if (onExposeChildMap) {
+      onExposeChildMap(childMap);
+    }
+  }, [childMap]);
+
+  // 상위로 eligibleChildIds 전달
+  useEffect(() => {
+    if (onExposePickupChildIds) {
+      onExposePickupChildIds(pickupEligibleChildIds);
+    }
+  }, [pickupEligibleChildIds]);
   return (
     <>
       <RightWrap>
@@ -2119,7 +2370,30 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
           </SearchFieldsWrap>
         </SearchBlock>
 
-        {/* ✅ 지도 박스: 여기서 항상 렌더 */}
+        <FullListRow>
+          <FullListLink
+            type="button"
+            onClick={() => {
+              window.open(
+                "https://withagit.notion.site/2a373656c615801da096d43782fbbb72?v=608db1f3f2cc437db42fa66234bfd190",
+                "_blank"
+              );
+            }}
+          >
+            출발/도착 전체보기
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M9 5h10v10M9 15L19 5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </FullListLink>
+        </FullListRow>
+
         <MapBox>
           <MapContainer ref={mapRef} />
           {distanceKm > 0 && (
@@ -2131,7 +2405,12 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
         </MapBox>
 
         <CartActionsRow>
-          <CartButton type="button" onClick={handleAddToCart}>
+          <CartButton
+            type="button"
+            onClick={handleAddToCart}
+            disabled={!canAddCart}
+            $primary={canAddCart}
+          >
             예약 담기
           </CartButton>
         </CartActionsRow>
@@ -2143,22 +2422,63 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
           onChange={(e) => setMemo(e.target.value)}
         />
 
-    
-
+        {/* 예약 카드 리스트 */}
         <CartList>
-          {(cartItems || []).map((item) => (
-            <CartCard key={item.id}>
-              <CartLineTop>
-                {item.childName} · {item.date}
-              </CartLineTop>
-              <CartLineMiddle>{item.timeText}</CartLineMiddle>
-              <CartLineBottom>
-                출발: {item.startLabel} / 도착: {item.endLabel}
-              </CartLineBottom>
-              <CartPriceLine>요금 {KRW(item.priceKRW)}원</CartPriceLine>
-            </CartCard>
-          ))}
+          {(cartItems || []).map((item, index) => {
+            const dateLabel = formatChipDateLabel(item.date);
+            return (
+              <CartCard key={item.id}>
+                <CartHeaderRow>
+                  <CartBadge>예약정보 {index + 1}</CartBadge>
+                  <CartCloseBtn
+                    type="button"
+                    aria-label="예약 삭제"
+                    onClick={() => handleRemoveCartItem(item.id)}
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        d="M6 6l12 12M18 6L6 18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </CartCloseBtn>
+                </CartHeaderRow>
+
+                <CartMainDateTime>
+                  {dateLabel} {item.timeText}
+                </CartMainDateTime>
+
+                <CartInfoRow>
+                  <CartInfoKey>자녀</CartInfoKey>
+                  <CartInfoVal>{item.childName}</CartInfoVal>
+                </CartInfoRow>
+                <CartInfoRow>
+                  <CartInfoKey>출발지</CartInfoKey>
+                  <CartInfoVal>{item.startLabel}</CartInfoVal>
+                </CartInfoRow>
+                <CartInfoRow>
+                  <CartInfoKey>도착지</CartInfoKey>
+                  <CartInfoVal>{item.endLabel}</CartInfoVal>
+                </CartInfoRow>
+
+                <CartInfoRow>
+                  <CartInfoKey>픽업 예상 가격</CartInfoKey>
+                  <CartInfoVal>{KRW(item.priceKRW)}원</CartInfoVal>
+                </CartInfoRow>
+              </CartCard>
+            );
+          })}
         </CartList>
+
+        {cartItems && cartItems.length > 0 && (
+          <CartTotalRow>
+            <span className="label">픽업 총 예상 가격</span>
+            <span className="value">{KRW(totalPrice)}원</span>
+          </CartTotalRow>
+        )}
       </RightWrap>
 
       {showPlacesModal && (
@@ -2219,6 +2539,7 @@ function PickupRightColumn({ slots, onChangeSlots, cartItems, onChangeCartItems 
     </>
   );
 }
+
 
 
 
@@ -2291,14 +2612,14 @@ const BottomBar = styled.div`
 `;
 
 const ApplyButton = styled.button`
-  width: 80%;               /* 🔹 너비 살짝 줄이기 */
-  max-width: 380px;         /* 데스크탑에서도 너무 넓지 않게 */
-  height: 46px;             /* 살짝 낮게 */
+  width: 80%;
+  max-width: 380px;
+  height: 46px;
   border-radius: 999px;
   border: none;
-  background: #e4e4e4;      /* 🔹 피그마처럼 밝은 회색 톤 */
-  color: #4b5563;
-  font-size: 13px;          /* 🔹 글자 조금 작게 */
+  background: ${({ $primary }) => ($primary ? accent : "#e4e4e4")};
+  color: ${({ $primary }) => ($primary ? "#ffffff" : "#4b5563")};
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.01em;
   cursor: pointer;
@@ -2306,30 +2627,152 @@ const ApplyButton = styled.button`
   pointer-events: auto;
 
   &:hover {
-    filter: brightness(0.99);  /* 미세한 변화만 */
+    filter: brightness(0.99);
   }
 
   &:active {
     transform: translateY(1px);
   }
 
+  /* 🔹 disabled일 때도 투명도는 그대로, 클릭만 막기 */
+  &:disabled {
+    cursor: default;
+  }
+
   @media (min-width: 960px) {
-    max-width: 360px;        /* PC에선 더 컴팩트하게 */
+    max-width: 360px;
   }
 `;
 
+const MembershipGuardBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const MembershipGuardCard = styled.div`
+  width: min(360px, 90vw);
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.25);
+  text-align: center;
+`;
+
+const MembershipGuardTitle = styled.div`
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+`;
+
+const MembershipGuardText = styled.div`
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.7;
+  margin-bottom: 18px;
+`;
+
+const MembershipGuardButtons = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+`;
+
+const MembershipGuardBtnMain = styled.button`
+  min-width: 140px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: ${accent};
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+`;
+
+const MembershipGuardBtnSub = styled.button`
+  min-width: 90px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+`;
+
+
+
+const FullListRow = styled.div`
+  margin-top: 6px;
+  text-align: right;
+`;
+
+const FullListLink = styled.button`
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+
+  font-size: 12px;
+  font-weight: 700;
+  color: ${accent};
+
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+`;
 
 
 /* ================== 페이지 컴포넌트 ================== */
 
 export default function PickupApplyPage() {
+  
+  const { memberships: ctxMemberships } = useUser() || {};
+  const nav = useNavigate();
+
   const [slots, setSlots] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-
+  const [membershipGuardOpen, setMembershipGuardOpen] = useState(false);
+  const [eligibleChildIds, setEligibleChildIds] = useState(new Set());
+  const [childMap, setChildMap] = useState({});
+  
   useEffect(() => {
-    // 진입 로깅 등 필요하면 여기
-  }, []);
+    console.groupCollapsed("[PickupApplyPage] mount");
+    console.log("ctxMemberships:", ctxMemberships);
+    console.groupEnd();
+  }, [ctxMemberships]);
+
+  const hasPickupMembership = useMemo(
+    () =>
+      (ctxMemberships || []).some(
+        (m) =>
+          (m.kind === MEMBERSHIP_KIND.AGITZ ||
+            m.kind === "agitz" ||
+            m.kind === MEMBERSHIP_KIND.FAMILY ||
+            m.kind === "family") &&
+          (m.status === MEMBERSHIP_STATUS.ACTIVE ||
+            m.status === "active" ||
+            m.status === MEMBERSHIP_STATUS.FUTURE ||
+            m.status === "future")
+      ),
+    [ctxMemberships]
+  );
+
+
+  const canApply = cartItems.length > 0;
 
   return (
     <Page>
@@ -2346,6 +2789,8 @@ export default function PickupApplyPage() {
             onChangeSlots={setSlots}
             cartItems={cartItems}
             onChangeCartItems={setCartItems}
+            onExposePickupChildIds={setEligibleChildIds}   // 🔥 추가
+            onExposeChildMap={setChildMap}                 // 🔥 추가
           />
         </MainGrid>
 
@@ -2355,70 +2800,146 @@ export default function PickupApplyPage() {
           </InfoTitleRow>
           <InfoList>
             <InfoItem>
-              매 달 1일~15일에 다음 달 선예약이 오픈됩니다. 16일 이후는 상황에 따라 픽업 예약이
-              불가능 할 수 있습니다.
+              매 달 <strong>1일~15일</strong>에 다음 달 선예약이 오픈됩니다.
             </InfoItem>
             <InfoItem>
-              리스트에 없는 픽업, 도착 장소는{" "}
-              <span
-                className="strong-link"
-                onClick={() => alert("다른 픽업 장소 요청 페이지로 이동 예정")}
-              >
-                다른 픽업 장소 요청
+              <strong>16일 이후</strong>는 상황에 따라 픽업 예약이 불가능할 수 있습니다.
+            </InfoItem>
+            <InfoItem>
+              리스트에 없는 픽업 정류장은 <strong>위드아지트로 연락</strong>해 주세요.
+              1:1 상담을 통해 확정됩니다.
+            </InfoItem>
+            <InfoItem>
+              픽업 출발 혹은 도착지 중 한 곳은 <strong>위드아지트</strong>로 설정되어야 합니다.
+              <br />
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                (학원 ↔ 학원, 위드아지트 ↔ 자택, 택시 서비스 등 오픈 예정)
               </span>
-              을 통해 요청해 주세요. 1:1 상담을 통해 확정됩니다.
-            </InfoItem>
-            <InfoItem>
-              픽업 출발 혹은 도착지 중 한 곳은 위드아지트로 설정 필요합니다. 추후 학원 ↔ 학원,
-              위드아지트 ↔ 자택, 택시 서비스 등 오픈 예정
             </InfoItem>
             <InfoItem>
               <span
                 className="strong-link"
-                onClick={() => alert("다른 픽업 장소 요청하기 이동")}
+                onClick={() => {
+                  window.open("http://pf.kakao.com/_qYzvkn/chat", "_blank");
+                }}
               >
                 다른 픽업 장소 요청하기
-              </span>{" "}
-              버튼 /{" "}
+              </span>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                {" "} (카카오톡 채널로 연결)
+              </span>
+            </InfoItem>
+            <InfoItem>
               <span
                 className="strong-link"
-                onClick={() => alert("수지초 아지트 정류장 확인하기 이동")}
+                onClick={() => {
+                  window.open(
+                    "https://withagit.notion.site/2a373656c615801da096d43782fbbb72?v=608db1f3f2cc437db42fa66234bfd190",
+                    "_blank"
+                  );
+                }}
               >
-                수지초 아지트 정류장 확인하기
-              </span>{" "}
-              버튼
+                위드아지트 정류장 확인하기
+              </span>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                {" "} (노선 전체 정류장 페이지)
+              </span>
             </InfoItem>
           </InfoList>
         </InfoBoxWrap>
 
+        {/* 하단 픽업 신청 버튼 */}
         <BottomBar>
           <ApplyButton
             type="button"
+            disabled={!canApply}
+            $primary={canApply}
             onClick={() => {
-              if (!cartItems.length) {
-                alert("장바구니에 담긴 픽업 예약이 없습니다.");
+              if (!canApply) return;
+
+              // 🔹 장바구니에 담긴 자녀 childId만 검사 (중복 제거)
+              const pickupChildIds = [...new Set(cartItems.map(i => i.childId))];
+
+              // 🔹 eligibleChildIds 는 PickupRightColumn → PickupApplyPage 로 전달된 Set
+              const invalid = pickupChildIds.filter(cid => !eligibleChildIds.has(cid));
+
+              if (invalid.length > 0) {
+                const badId = invalid[0];
+                const badName = childMap[badId] || "해당 자녀";
+
+                alert(
+                  `픽업은 아지트/패밀리 멤버십이 있는 자녀만 신청 가능합니다.\n'${badName}'의 멤버십을 먼저 확인해주세요.`
+                );
+
+                setMembershipGuardOpen(true);
                 return;
               }
+
+              // 🔥 정상 → 결제창
               setCheckoutOpen(true);
             }}
           >
             픽업 신청하기
           </ApplyButton>
+
+
         </BottomBar>
       </PageInner>
 
+      {/* 결제 / 신청 다이얼로그 */}
       <CheckoutPickupDialog
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
         items={cartItems}
         onProceed={(res) => {
           if (res?.ok) {
-            // 결제 완료 시 장바구니/슬롯 초기화 정도만
             setCartItems([]);
             setSlots([]);
           }
         }}
       />
+
+      {/* 멤버십 가드 팝업 */}
+      {membershipGuardOpen && (
+        <MembershipGuardBackdrop
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setMembershipGuardOpen(false);
+            }
+          }}
+        >
+          <MembershipGuardCard onClick={(e) => e.stopPropagation()}>
+            <MembershipGuardTitle>멤버십이 필요해요</MembershipGuardTitle>
+            <MembershipGuardText>
+              픽업 서비스는{" "}
+              <strong>아지트 / 패밀리 멤버십</strong> 회원만 이용하실 수 있어요.
+              <br />
+              멤버십을 먼저 가입한 후 다시 신청해 주세요.
+            </MembershipGuardText>
+            <MembershipGuardButtons>
+              <MembershipGuardBtnSub
+                type="button"
+                onClick={() => setMembershipGuardOpen(false)}
+              >
+                닫기
+              </MembershipGuardBtnSub>
+              <MembershipGuardBtnMain
+                type="button"
+                onClick={() => {
+                  setMembershipGuardOpen(false);
+                  const isMobile =
+                    typeof window !== "undefined" &&
+                    window.matchMedia &&
+                    window.matchMedia("(max-width: 768px)").matches;
+                  nav(isMobile ? "/m/membership" : "/membership");
+                }}
+              >
+                멤버십 구매하러 가기
+              </MembershipGuardBtnMain>
+            </MembershipGuardButtons>
+          </MembershipGuardCard>
+        </MembershipGuardBackdrop>
+      )}
     </Page>
   );
 }

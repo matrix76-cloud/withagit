@@ -870,7 +870,8 @@ function SavedChildrenGrid({ items = [], onDelete, onSelect }) {
                                         const label = c.name || c.childId || "해당 자녀";
                                         if (
                                             window.confirm(
-                                                `정말 '${label}'을(를) 삭제할까요?\n삭제 후 되돌릴 수 없습니다.`
+                                                `정말 '${label}'을(를) 삭제할까요?\n삭제 후 되돌릴 수 없습니다. 
+                                                \n보유 멤버십은 자동 해지되며 삭제 후 되돌릴 수 없습니다.  `
                                             )
                                         ) {
                                             onDelete && onDelete(c);

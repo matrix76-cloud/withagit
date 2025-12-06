@@ -418,35 +418,31 @@ const BenefitItem = styled.div`
 
 const CheckList = styled.ul`
   margin: 0;
-  padding: 0;
-  list-style: none;
+  padding-left: 16px;      /* 왼쪽 여백 살짝만 */
+  list-style: disc;        /* 기본 동그라미 dot 사용 */
 
   display: grid;
-  gap: 6px;
+  gap: 10px;
   font-size: 13px;
   color: #4b5563;
 
   li {
-    position: relative;
-    padding-left: 14px;
-    line-height: 1.7;
+    margin: 0;
   }
 
-  li::before {
-    content: "";
-    position: absolute;
-    left: 3px;
-    top: 0.9em;
-    width: 4px;
-    height: 4px;
-    border-radius: 999px;
-    background: #9ca3af;
+  .line1 {
+    display: block;        /* 제목은 한 줄 단독 */
+    font-weight: 700;
   }
 
-  li strong {
-    font-weight: 900;
+  .line2 {
+    display: block;        /* 설명은 다음 줄 */
+    margin-top: 2px;
+    font-size: 12px;
+    color: #9ca3af;
   }
 `;
+
 
 /* Footer CTA */
 const Footer = styled.div`
@@ -1029,18 +1025,30 @@ export default function CheckoutTimepassDialog({
       <SectionTitle>확인하세요!</SectionTitle>
       <BenefitCard>
         <CheckList>
-          <li>필요할 때만 가볍게 이용</li>
           <li>
-            평일 이용 2시간/4시간 선택, <strong>유효기간 1개월</strong>
+            <span className="line1">자녀 등록 필수</span>
+            <span className="line2">
+              자녀 정보가 미등록일 경우 충전이 불가합니다.
+            </span>
           </li>
           <li>
-            자녀 1인 기준, 잔여 시간 <strong>분 단위 차감</strong>
+            <div className="line1">충전 금액 사용 기한</div>
+            <div className="line2">
+              충전일로부터 12개월간 사용 가능해요.
+            </div>
           </li>
           <li>
-            포함 서비스: 아지트 공간 &amp; 교구 무제한 이용
-            <span style={{ color: "#6b7280" }}> (픽업 서비스 이용 불가)</span>
+            <div className="line1">환불 및 양도 불가</div>
+            <div className="line2">
+              충전된 정액권은 환불·양도가 불가합니다.
+            </div>
           </li>
-          <li>추가 결제 항목: 간식, 유료 교구 및 프로그램</li>
+          <li>
+            <span className="line1">다른 자녀에게 금액 이전 불가</span>
+            <span className="line2">
+              자녀별 계정으로만 사용 가능해요.
+            </span>
+          </li>
         </CheckList>
       </BenefitCard>
     </>

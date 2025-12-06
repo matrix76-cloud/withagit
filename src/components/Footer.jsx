@@ -56,7 +56,7 @@ const ColHideMobile = styled(Col)`
 `;
 
 const Title = styled.div`
-  font-weight: 800; /* Pretendard ExtraBold */
+  font-weight: 900; /* Pretendard ExtraBold */
   margin-bottom: 4px;
   color: #fff;
   font-size: 12px;
@@ -78,7 +78,7 @@ const Links = styled.div`
     color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     font-size: 12px;
-    font-weight: 400; /* Regular */
+    font-weight: 500; /* Regular */
   }
 
   a:hover {
@@ -136,7 +136,7 @@ const ContactItem = styled.div`
 const BizBox = styled.div`
   grid-column: 1 / -1;
   margin-top: 4px;
-  padding: 10px 12px;
+  padding: 16px 16px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   font-size: 12px;
@@ -144,9 +144,9 @@ const BizBox = styled.div`
   background: rgba(255, 255, 255, 0.03);
 
   @media (max-width: 720px) {
-    font-size: 11.5px;
+    font-size: 12px;
     line-height: 1.45;
-    padding: 8px 10px;
+    padding: 16px 16px;
   }
 `;
 
@@ -161,6 +161,7 @@ const BizLine = styled.div`
   opacity: 0.85;
   font-size: 12px;
   font-weight: 400;
+  line-height: 1.7;
 `;
 
 const Inline = styled.span`
@@ -170,11 +171,11 @@ const Inline = styled.span`
 
 const Bottom = styled.div`
   max-width: ${({ theme }) => theme?.sizes?.container || "1120px"};
-  margin: 16px auto 0;
+  margin: 16px auto 10px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 600;
   opacity: 0.7;
   text-align: center;
 `;
@@ -241,8 +242,6 @@ export default function Footer() {
             <Inline>
               주소: 경기도 용인시 수지구 포은대로 313번길 7-10, 107호
             </Inline>
-          </BizLine>
-          <BizLine>
             <Inline>사업자등록번호: 159-87-03692</Inline>
             <Inline>대표자: 양소영</Inline>
             <Inline>통신판매업 신고번호: 제2025-용인수지-2455</Inline>

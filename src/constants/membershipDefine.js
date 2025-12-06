@@ -19,9 +19,9 @@ export const MEMBERSHIP_STATUS = Object.freeze({
 
 // 멤버십 이름(화면 표기용)
 export const MEMBERSHIP_LABEL = {
-    [MEMBERSHIP_KIND.AGITZ]: "정규 멤버십",
+    [MEMBERSHIP_KIND.AGITZ]: "아지트 멤버십",
     [MEMBERSHIP_KIND.FAMILY]: "패밀리 멤버십",
-    [MEMBERSHIP_KIND.TIMEPASS]: "시간권",
+    [MEMBERSHIP_KIND.TIMEPASS]: "타임패스 멤버십",
     [MEMBERSHIP_KIND.CASHPASS]: "정액권",
 };
 

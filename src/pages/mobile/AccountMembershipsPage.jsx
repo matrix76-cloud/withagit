@@ -20,11 +20,26 @@ import {
 
 const won = (n) => `₩${Number(n || 0).toLocaleString()}`;
 
+// 날짜만 표현 (YYYY-MM-DD)
+const fmtDateOnly = (ms) => {
+    if (!ms && ms !== 0) return "-";
+    const num = Number(ms);
+    if (!Number.isFinite(num)) return "-";
+    const d = new Date(num);
+    if (!Number.isFinite(d.getTime())) return "-";
+
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+};
+
+// exclusive end ms → 날짜 기준 종료일
 const fmtExclusiveEnd = (exclusiveMs) => {
     if (!exclusiveMs) return "-";
     const ms = Number(exclusiveMs);
     if (!Number.isFinite(ms)) return "-";
-    return fmtDateTime(ms - 1000);
+    return fmtDateOnly(ms - 1000);
 };
 
 /* ===== 스타일 ===== */
@@ -34,8 +49,8 @@ const Page = styled.main`
   background: #f8f9fb;
   padding: 16px 0 24px;
   box-sizing: border-box;
-  font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont,
-    system-ui, "Segoe UI", "Noto Sans KR", sans-serif;
+  font-family: "NanumSquareRound", -apple-system, BlinkMacSystemFont, system-ui,
+    "Segoe UI", "Noto Sans KR", sans-serif;
 `;
 
 const Container = styled.div`
@@ -83,14 +98,16 @@ const HeaderTitle = styled.h1`
 const SectionCard = styled.section`
   margin-top: 20px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 `;
+
 const SectionTitle = styled.h2`
   margin: 0 0 4px;
   font-size: 13px;
   font-weight: 600;
   color: #6b7280;
 `;
+
 const SectionDesc = styled.p`
   margin: 0;
   font-size: 12px;
@@ -102,10 +119,10 @@ const SectionDesc = styled.p`
 const MembershipCards = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 12px;
 `;
 
-/* kind별 느낌만 다르게 */
+/* kind별 느낌만 다르게 (필요 시 확장용, 현재는 사용 X) */
 
 const kindBg = {
     agitz: "#f0fff4",
@@ -121,31 +138,43 @@ const kindBorder = {
     cashpass: "#a5f3fc",
 };
 
+/* 메인 카드 스타일 — 크기/패딩/폰트 업그레이드 */
+
 const MCard = styled.div`
-  border-radius: 14px;
-  padding: 10px 12px;
-  display: grid;
-  gap: 6px;
+  border-radius: 24px;
+  padding: 20px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
+  border: none;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+
+  /* 🔹 카드 높이 통일 (아지트 멤버십 기준) */
+  min-height: 150px;   /* 필요하면 140~160 사이에서 살짝 조절해도 됨 */
 `;
+
+
 const MTop = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+  margin-bottom: 8px;
 `;
 
 const MTitle = styled.div`
   font-weight: 800;
-  font-size: 14px;
+  font-size: 18px;
   color: #111827;
 `;
 
 const Tag = styled.span`
-  display: inline-block;
-  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
@@ -153,17 +182,23 @@ const Tag = styled.span`
   background: ${({ bg }) => bg || "#f3f4f6"};
 `;
 
+/* 라벨/값 한 줄 */
+
 const MLine = styled.div`
-  display: grid;
-  grid-template-columns: 60px 1fr;
-  gap: 6px;
-  font-size: 12px;
+  display: flex;
+  justify-content: space-between;   /* ⬅️ 값이 오른쪽으로 */
+  align-items: center;
+  font-size: 13px;
   color: #4b5563;
+  margin-top: 2px;
 `;
 
 const Key = styled.span`
   color: #9ca3af;
+  margin-right: 6px;
+  flex-shrink: 0;                   /* 라벨은 왼쪽에 고정 */
 `;
+/* 빈 상태 박스 (타임패스/정액권 등에서 사용) */
 
 const EmptyBox = styled.div`
   padding: 12px 10px;
@@ -233,13 +268,17 @@ export default function AccountMembershipsPage() {
         const map = new Map();
         for (const t of timepasses) {
             const cid = t.childId || "__none__";
-            const prev = map.get(cid) || { minutes: 0, count: 0, nearestExpire: null };
+            const prev =
+                map.get(cid) || { minutes: 0, count: 0, nearestExpire: null };
             const mins = Number(t.remainMinutes || 0);
             const exp = t.expiresAt ? Number(t.expiresAt) : null;
 
             prev.minutes += isNaN(mins) ? 0 : mins;
             prev.count += 1;
-            if (exp) prev.nearestExpire = prev.nearestExpire ? Math.min(prev.nearestExpire, exp) : exp;
+            if (exp)
+                prev.nearestExpire = prev.nearestExpire
+                    ? Math.min(prev.nearestExpire, exp)
+                    : exp;
 
             map.set(cid, prev);
         }
@@ -250,13 +289,17 @@ export default function AccountMembershipsPage() {
         const map = new Map();
         for (const cp of cashpasses) {
             const cid = cp.childId || "__none__";
-            const prev = map.get(cid) || { krw: 0, count: 0, nearestExpire: null };
+            const prev =
+                map.get(cid) || { krw: 0, count: 0, nearestExpire: null };
             const amt = Number(cp.remainKRW ?? cp.balanceKRW ?? 0);
             const exp = cp.expiresAt ? Number(cp.expiresAt) : null;
 
             prev.krw += isNaN(amt) ? 0 : amt;
             prev.count += 1;
-            if (exp) prev.nearestExpire = prev.nearestExpire ? Math.min(prev.nearestExpire, exp) : exp;
+            if (exp)
+                prev.nearestExpire = prev.nearestExpire
+                    ? Math.min(prev.nearestExpire, exp)
+                    : exp;
 
             map.set(cid, prev);
         }
@@ -299,94 +342,12 @@ export default function AccountMembershipsPage() {
         <Page>
             <Container>
                 <HeaderBar>
-                    <BackButton onClick={onBack}>‹</BackButton>
                     <HeaderTitle>내 멤버십</HeaderTitle>
                 </HeaderBar>
 
-                {/* 정규 멤버십 */}
-                <SectionCard>
-                    <SectionTitle>정규 멤버십</SectionTitle>
-               
-
-                    {loading && <EmptyBox>불러오는 중…</EmptyBox>}
-
-                    {!loading && agitzMemberships.length === 0 && (
-                        <EmptyBox>정규 멤버십이 없습니다.</EmptyBox>
-                    )}
-
-                    {!loading && agitzMemberships.length > 0 && (
-                        <MembershipCards>
-                            {agitzMemberships.map((m) => (
-                                <MCard key={m.mid} $kind="agitz">
-                                    <MTop>
-                                        <MTitle>{MEMBERSHIP_LABEL[MEMBERSHIP_KIND.AGITZ]}</MTitle>
-                                        {statusTag(m.status || MEMBERSHIP_STATUS.ACTIVE)}
-                                    </MTop>
-                                    <MLine>
-                                        <Key>자녀</Key>
-                                        <span>{childNameById.get(m.childId) || m.childId || "-"}</span>
-                                    </MLine>
-                                    <MLine>
-                                        <Key>기간</Key>
-                                        <span>
-                                            {m.startedAt ? fmtDateTime(m.startedAt) : "-"} ~{" "}
-                                            {m.expiresAt ? fmtExclusiveEnd(m.expiresAt) : "-"}
-                                        </span>
-                                    </MLine>
-                                    <MLine>
-                                        <Key>주문</Key>
-                                        <span>{m.orderId || "-"}</span>
-                                    </MLine>
-                                </MCard>
-                            ))}
-                        </MembershipCards>
-                    )}
-                </SectionCard>
-
-                {/* 패밀리 멤버십 */}
-                <SectionCard>
-                    <SectionTitle>패밀리 멤버십</SectionTitle>
- 
-
-                    {loading && <EmptyBox>불러오는 중…</EmptyBox>}
-
-                    {!loading && familyMemberships.length === 0 && (
-                        <EmptyBox>패밀리 멤버십이 없습니다.</EmptyBox>
-                    )}
-
-                    {!loading && familyMemberships.length > 0 && (
-                        <MembershipCards>
-                            {familyMemberships.map((m) => (
-                                <MCard key={m.mid} $kind="family">
-                                    <MTop>
-                                        <MTitle>{MEMBERSHIP_LABEL[MEMBERSHIP_KIND.FAMILY]}</MTitle>
-                                        {statusTag(m.status || MEMBERSHIP_STATUS.ACTIVE)}
-                                    </MTop>
-                                    <MLine>
-                                        <Key>자녀</Key>
-                                        <span>{childNameById.get(m.childId) || m.childId || "-"}</span>
-                                    </MLine>
-                                    <MLine>
-                                        <Key>기간</Key>
-                                        <span>
-                                            {m.startedAt ? fmtDateTime(m.startedAt) : "-"} ~{" "}
-                                            {m.expiresAt ? fmtExclusiveEnd(m.expiresAt) : "-"}
-                                        </span>
-                                    </MLine>
-                                    <MLine>
-                                        <Key>주문</Key>
-                                        <span>{m.orderId || "-"}</span>
-                                    </MLine>
-                                </MCard>
-                            ))}
-                        </MembershipCards>
-                    )}
-                </SectionCard>
-
                 {/* 시간권 */}
                 <SectionCard>
-                    <SectionTitle>타임패스 맴버십</SectionTitle>
-                
+                    <SectionTitle>타임패스 멤버십</SectionTitle>
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 
@@ -406,7 +367,7 @@ export default function AccountMembershipsPage() {
                                     <MCard key={`timepass_${cid}`} $kind="timepass">
                                         <MTop>
                                             <MTitle>
-                                                {MEMBERSHIP_LABEL[MEMBERSHIP_KIND.TIMEPASS]} (합산)
+                                                {MEMBERSHIP_LABEL[MEMBERSHIP_KIND.TIMEPASS]}
                                             </MTitle>
                                             <Tag bg="#eff6ff" color="#1d4ed8">
                                                 {agg.count}건
@@ -433,10 +394,114 @@ export default function AccountMembershipsPage() {
                     )}
                 </SectionCard>
 
+                {/* 아지트 멤버십 */}
+                <SectionCard>
+                    <SectionTitle>아지트 멤버십</SectionTitle>
+
+                    {loading && <EmptyBox>불러오는 중…</EmptyBox>}
+
+                    {!loading && agitzMemberships.length === 0 && (
+                        <EmptyBox>아지트 멤버십이 없습니다.</EmptyBox>
+                    )}
+
+                    {!loading && agitzMemberships.length > 0 && (
+                        <MembershipCards>
+                            {agitzMemberships.map((m) => (
+                                <MCard key={m.mid} $kind="agitz">
+                                    <MTop>
+                                        <MTitle>
+                                            {MEMBERSHIP_LABEL[MEMBERSHIP_KIND.AGITZ]}
+                                        </MTitle>
+                                        {statusTag(m.status || MEMBERSHIP_STATUS.ACTIVE)}
+                                    </MTop>
+                                    <MLine>
+                                        <Key>자녀</Key>
+                                        <span>
+                                            {childNameById.get(m.childId) || m.childId || "-"}
+                                        </span>
+                                    </MLine>
+                                    <MLine>
+                                        <Key>기간</Key>
+                                        <span>
+                                            {m.startedAt ? fmtDateOnly(m.startedAt) : "-"} ~{" "}
+                                            {m.expiresAt ? fmtExclusiveEnd(m.expiresAt) : "-"}
+                                        </span>
+                                    </MLine>
+                                    <MLine>
+                                        <Key>주문</Key>
+                                        <span>{m.orderId || "-"}</span>
+                                    </MLine>
+                                </MCard>
+                            ))}
+                        </MembershipCards>
+                    )}
+                </SectionCard>
+
+                {/* 패밀리 멤버십 */}
+                <SectionCard>
+                    <SectionTitle>패밀리 멤버십</SectionTitle>
+
+                    {loading && <EmptyBox>불러오는 중…</EmptyBox>}
+
+                    {/* ⬇️ 멤버십 없을 때도 카드 형태로 노출 */}
+                    {!loading && familyMemberships.length === 0 && (
+                        <MembershipCards>
+                            <MCard $kind="family">
+                                <MTop>
+                                    <MTitle>
+                                        {MEMBERSHIP_LABEL[MEMBERSHIP_KIND.FAMILY] ||
+                                            "패밀리 멤버십"}
+                                    </MTitle>
+                                </MTop>
+                                <div
+                                    style={{
+                                        fontSize: 13,
+                                        color: "#9ca3af",
+                                        marginTop: 4,
+                                    }}
+                                >
+                                    패밀리 멤버십이 없습니다.
+                                </div>
+                            </MCard>
+                        </MembershipCards>
+                    )}
+
+                    {!loading && familyMemberships.length > 0 && (
+                        <MembershipCards>
+                            {familyMemberships.map((m) => (
+                                <MCard key={m.mid} $kind="family">
+                                    <MTop>
+                                        <MTitle>
+                                            {MEMBERSHIP_LABEL[MEMBERSHIP_KIND.FAMILY]}
+                                        </MTitle>
+                                        {statusTag(m.status || MEMBERSHIP_STATUS.ACTIVE)}
+                                    </MTop>
+                                    <MLine>
+                                        <Key>자녀</Key>
+                                        <span>
+                                            {childNameById.get(m.childId) || m.childId || "-"}
+                                        </span>
+                                    </MLine>
+                                    <MLine>
+                                        <Key>기간</Key>
+                                        <span>
+                                            {m.startedAt ? fmtDateOnly(m.startedAt) : "-"} ~{" "}
+                                            {m.expiresAt ? fmtExclusiveEnd(m.expiresAt) : "-"}
+                                        </span>
+                                    </MLine>
+                                    <MLine>
+                                        <Key>주문</Key>
+                                        <span>{m.orderId || "-"}</span>
+                                    </MLine>
+                                </MCard>
+                            ))}
+                        </MembershipCards>
+                    )}
+                </SectionCard>
+
                 {/* 정액권 */}
                 <SectionCard>
                     <SectionTitle>내 정액권</SectionTitle>
-
 
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 

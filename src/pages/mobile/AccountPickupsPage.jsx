@@ -81,80 +81,78 @@ const SectionCard = styled.section`
   gap: 12px;
 `;
 
-const SectionTitle = styled.h2`
-  margin: 0;
-  font-size: 15px;
-  font-weight: 800;
-  color: #111827;
-`;
-
-const SectionDesc = styled.p`
-  margin: 0;
-  font-size: 12px;
-  color: #6b7280;
-`;
-
 const ListWrap = styled.div`
   display: grid;
   gap: 10px;
   margin-top: 4px;
 `;
 
+/* ==== 멤버십 카드 느낌 픽업 카드 ==== */
+
 const PickupCard = styled.div`
-  border-radius: 16px;
-  padding: 10px 12px 10px;
+  border-radius: 18px;
+  padding: 14px 14px 12px;
   background: #ffffff;
   border: 1px solid #eef0f4;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-  display: grid;
-  gap: 4px;
-`;
-
-const RowTop = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 8px;
 `;
 
-const DateText = styled.div`
-  font-size: 11px;
-  color: #6b7280;
+/* 상단: 제목(경로) + 상태 뱃지 */
+const CardHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
 `;
 
-const RouteText = styled.div`
-  font-size: 13px;
-  font-weight: 700;
+const CardTitle = styled.div`
+  font-size: 14px;
+  font-weight: 800;
   color: #111827;
+  line-height: 1.4;
 `;
 
-const RowMid = styled.div`
+const StatusTagWrap = styled.div`
+  flex: 0 0 auto;
+`;
+
+/* 정보 행: 라벨 | 값 */
+const InfoRow = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 2px;
-`;
-
-const ChildText = styled.div`
   font-size: 12px;
   color: #4b5563;
 `;
 
-const Amount = styled.div`
-  font-size: 13px;
-  font-weight: 800;
-  color: #111827;
-  text-align: right;
+const InfoLabel = styled.div`
+  flex: 0 0 auto;
+  color: #9ca3af;
+  font-weight: 600;
 `;
 
-const RowBottom = styled.div`
-  margin-top: 2px;
-  display: flex;
-  justify-content: flex-end;
+const InfoValue = styled.div`
+  flex: 1 1 auto;
+  text-align: right;
+  color: #4b5563;
+  font-weight: 600;
+  white-space: pre-line;
+`;
+
+const AmountValue = styled(InfoValue)`
+  color: #16a34a;
+  font-weight: 800;
+  font-size: 13px;
 `;
 
 const Tag = styled.span`
   display: inline-block;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
@@ -215,16 +213,18 @@ export default function AccountPickupsPage() {
                         const meta = v.meta || {};
                         const pickups = Array.isArray(meta.pickups) ? meta.pickups : [];
 
+                        const createdAtText = v.createdAt ? fmtDateTime(v.createdAt) : "-";
+
                         if (pickups.length > 0) {
                             pickups.forEach((p, idx) => {
-                                const whenStr =
-                                    p.date && p.timeText
-                                        ? `${p.date} ${p.timeText}`
-                                        : v.createdAt || null;
+                                const hasDateTime = p.date && p.timeText;
+                                const whenText = hasDateTime
+                                    ? `${p.date} ${p.timeText}`
+                                    : createdAtText;
 
                                 list.push({
                                     id: `${docSnap.id}_${idx}`,
-                                    when: whenStr,
+                                    whenText,
                                     route: `${p.startLabel || "-"} → ${p.endLabel || "-"}`,
                                     childName: p.childName || p.childId || "-",
                                     fare: p.priceKRW || v.amountKRW || 0,
@@ -234,7 +234,7 @@ export default function AccountPickupsPage() {
                         } else {
                             list.push({
                                 id: docSnap.id,
-                                when: v.createdAt || null,
+                                whenText: createdAtText,
                                 route: "픽업 예약",
                                 childName: "-",
                                 fare: v.amountKRW || 0,
@@ -255,12 +255,24 @@ export default function AccountPickupsPage() {
 
     const statusTag = (label) => {
         if (label === "픽업 신청 완료") {
-            return <Tag bg="#ecfdf5" color="#047857">픽업 신청 완료</Tag>;
+            return (
+                <Tag bg="#ecfdf5" color="#047857">
+                    픽업 신청 완료
+                </Tag>
+            );
         }
         if (label === "취소됨") {
-            return <Tag bg="#fee2e2" color="#991b1b">취소됨</Tag>;
+            return (
+                <Tag bg="#fee2e2" color="#991b1b">
+                    취소됨
+                </Tag>
+            );
         }
-        return <Tag bg="#eff6ff" color="#1d4ed8">{label || "픽업 신청"}</Tag>;
+        return (
+            <Tag bg="#eff6ff" color="#1d4ed8">
+                {label || "픽업 신청"}
+            </Tag>
+        );
     };
 
     if (!initialized) {
@@ -295,8 +307,6 @@ export default function AccountPickupsPage() {
                 </HeaderBar>
 
                 <SectionCard>
-              
-
                     {loading && <EmptyBox>불러오는 중…</EmptyBox>}
 
                     {!loading && rows.length === 0 && (
@@ -307,17 +317,23 @@ export default function AccountPickupsPage() {
                         <ListWrap>
                             {rows.map((r) => (
                                 <PickupCard key={r.id}>
-                                    <RowTop>
-                                        <div>
-                                            <RouteText>{r.route}</RouteText>
-                                            <DateText>{fmtDateTime(r.when)}</DateText>
-                                        </div>
-                                        <Amount>{won(r.fare)}</Amount>
-                                    </RowTop>
-                                    <RowMid>
-                                        <ChildText>자녀: {r.childName}</ChildText>
-                                    </RowMid>
-                                    <RowBottom>{statusTag(r.statusLabel)}</RowBottom>
+                                    <CardHeaderRow>
+                                        <CardTitle>{r.route}</CardTitle>
+                                        <StatusTagWrap>{statusTag(r.statusLabel)}</StatusTagWrap>
+                                    </CardHeaderRow>
+
+                                    <InfoRow>
+                                        <InfoLabel>자녀</InfoLabel>
+                                        <InfoValue>{r.childName}</InfoValue>
+                                    </InfoRow>
+                                    <InfoRow>
+                                        <InfoLabel>일시</InfoLabel>
+                                        <InfoValue>{r.whenText}</InfoValue>
+                                    </InfoRow>
+                                    <InfoRow>
+                                        <InfoLabel>금액</InfoLabel>
+                                        <AmountValue>{won(r.fare)}</AmountValue>
+                                    </InfoRow>
                                 </PickupCard>
                             ))}
                         </ListWrap>

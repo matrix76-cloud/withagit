@@ -261,33 +261,38 @@ const AmountItemButton = styled.button`
 
 /* FAQ / 안내 영역 */
 
-const NoteBox = styled.div`
+// FAQ / 안내 영역
+
+const NoteBox = styled.ul`
   margin-top: 12px;
-  padding: 18px 20px;
+  padding: 18px 22px 18px 26px;  /* 왼쪽 살짝 여유 */
   border-radius: 20px;
   background: #f7f7f7;
   font-size: 13px;
   color: #4b5563;
   line-height: 1.6;
+
+  list-style: disc;             /* ● 기본 점 사용 */
 `;
 
 const NoteItem = styled.li`
-  margin-left: 1.2em;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  list-style-position: outside; /* 점을 바깥쪽에 */
 
-  &::marker {
-    font-size: 0.8em;
-  }
-
-  span {
+  .title {
     display: block;
-  }
-
-  strong {
     font-weight: 700;
     color: #111827;
   }
+
+  .desc {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: #9ca3af;
+  }
 `;
+
 
 /* ===== Footer ===== */
 
@@ -822,26 +827,26 @@ export default function CheckoutChargeDialog({
             <SectionLabel>이용 안내</SectionLabel>
             <NoteBox as="ul">
               <NoteItem>
+                <div> <strong>자녀 등록 필수</strong></div>
                 <span>
-                  <strong>자녀 등록 필수</strong>
                   자녀 정보가 미등록일 경우 충전이 불가합니다.
                 </span>
               </NoteItem>
               <NoteItem>
-                <span>
-                  <strong>충전 금액 사용 기한</strong>
+                <div> <strong>충전 금액 사용 기한</strong></div>
+                <span>   
                   충전일로부터 12개월간 사용 가능해요.
                 </span>
               </NoteItem>
               <NoteItem>
+                <div> <strong>환불 및 양도 불가</strong></div>
                 <span>
-                  <strong>환불 및 양도 불가</strong>
                   충전된 정액권은 환불·양도가 불가합니다.
                 </span>
               </NoteItem>
               <NoteItem>
+                <div> <strong>다른 자녀에게 금액 이전 불가</strong></div>
                 <span>
-                  <strong>다른 자녀에게 금액 이전 불가</strong>
                   자녀별 계정으로만 사용 가능해요.
                 </span>
               </NoteItem>

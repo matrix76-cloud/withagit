@@ -180,6 +180,20 @@ const Section = styled.section`
   }
 `;
 
+const MembersSection = styled.section`
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: ${({ $pt = 80, $pb = 80 }) => `${$pt}px 20px ${$pb}px`};
+
+  /* 상단 고정 헤더/탭에 가려지지 않도록 */
+  scroll-margin-top: 140px;
+
+  @media (max-width: 768px) {
+    padding: ${({ $pt = 56, $pb = 56 }) => `${$pt}px 0px ${$pb}px`};
+    scroll-margin-top: 120px;
+  }
+`;
+
 const SectionTitle = styled.h2`
   font-size: 32px;
   line-height: 1.3;
@@ -743,15 +757,15 @@ const ICON_ITEMS = [
 const FAQ_ITEMS = [
   {
     q: "프로그램 예약은 언제까지 취소할 수 있나요?",
-    a: "예약 후 24시간 전까지는 무료 취소가 가능합니다.",
+    a: "프로그램마다 상이하니 상세페이지를 확인해주세요.\n주말 프로그램은 이용일 1일 전, 방학 프로그램은 클래스 7일 전까지 취소 가능합니다.",
   },
   {
     q: "정액권으로도 프로그램을 예약할 수 있나요?",
-    a: "정액권 잔액이 있을 경우, 프로그램 결제 시 함께 사용할 수 있습니다.",
+    a: "정액권 잔액으로도 결제 가능합니다.",
   },
   {
     q: "결제 중인데 잔여석이 없어졌다고 나와요. 왜 그런가요?",
-    a: "프로그램 잔여석은 실시간으로 변동될 수 있어, 동시에 결제하는 다른 보호자에 의해 마감될 수 있습니다.",
+    a: "프로그램별 잔여석은 실시간으로 변동될 수 있어요.",
   },
 ];
 
@@ -1851,11 +1865,7 @@ function ProgramDetail({ program }) {
           const metaParts = [];
           if (dateLabel) metaParts.push(dateLabel);
           if (timeLabel) metaParts.push(timeLabel);
-          if (closed) {
-            metaParts.push("마감");
-          } else if (remain != null) {
-            metaParts.push(`잔여 ${remain}석`);
-          }
+     
           const metaText = metaParts.join(" · ");
 
           const slotPrice =
@@ -2231,6 +2241,29 @@ export default function MembershipPurchasePage() {
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [inProgramDetailMode, setInProgramDetailMode] = useState(false);
 
+
+  // 🔹 초기 진입 스피너용: 최소 2초 + 프로그램 목록 로딩 완료까지
+  const [timerDone, setTimerDone] = useState(false);
+  const [dataReady, setDataReady] = useState(false);
+
+  // 최소 2초 타이머
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setTimerDone(true);
+    }, 2000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // 프로그램 목록 로딩이 끝나면 dataReady = true
+  useEffect(() => {
+    if (!programsLoading) {
+      setDataReady(true);
+    }
+  }, [programsLoading]);
+
+  // 🔹 여기서 initialLoading 계산 (❗ 이 줄이 useEffect들보다 위에 있어야 함)
+  const initialLoading = !(timerDone && dataReady);
+
   const { children: ctxChildren } = useUser() || {};
   const children = useMemo(
     () => (Array.isArray(ctxChildren) ? ctxChildren : []),
@@ -2264,11 +2297,10 @@ export default function MembershipPurchasePage() {
   }, [inProgramDetailMode, selectedProgramId, selectedProgram]);
 
 
-
-  // 탭 → 섹션 스크롤 (기본 모드에서만 사용)
   const scrollToSection = (targetId) => {
     if (!targetId) return;
     if (typeof document === "undefined") return;
+
     const el = document.getElementById(targetId);
     if (!el) return;
 
@@ -2278,9 +2310,12 @@ export default function MembershipPurchasePage() {
         block: "start",
       });
     } catch (e) {
-      console.warn("[MembershipPurchasePage] scrollIntoView error", e);
+      console.warn("[MembershipPurchasePage] scrollToSection error", e);
     }
   };
+
+
+
 
     useEffect(() => {
     if (tabFromQuery !== "program") return;
@@ -2431,13 +2466,13 @@ export default function MembershipPurchasePage() {
 
   function MembershipSection() {
     return (
-      <Section id="section-membership" $pt={40} $pb={56}>
+      <MembersSection id="section-membership" $pt={40} $pb={56}>
         <SectionTitle>멤버십 구매</SectionTitle>
         <SectionSubtitle>
           가족의 라이프스타일에 맞는 멤버십을 선택해보세요.
         </SectionSubtitle>
         <MembershipPlans />
-      </Section>
+      </MembersSection>
     );
   }
 
@@ -2648,7 +2683,7 @@ function OthersSection() {
                 </ProgramMeta>
                 <ProgramPriceRow>
                   <span>{p.price}</span>
-                  <Muted>{p.remain}</Muted>
+            
                 </ProgramPriceRow>
               </ProgramBody>
             </ProgramCard>

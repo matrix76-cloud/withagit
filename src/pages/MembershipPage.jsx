@@ -1,12 +1,12 @@
 /* eslint-disable */
 // src/pages/MembershipPage.jsx
 import React, { useState } from "react";
-
 import styled, { keyframes } from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 import MembershipPlans from "../components/MembershipPlans";
 
-// 멤버십 혜택 오른쪽 일러스트 5개 (형이 실제 파일명/경로에 맞게 교체)
+// 멤버십 혜택 오른쪽 일러스트 5개
 import benefit1Img from "../assets/membership/benefit-1.png";
 import benefit2Img from "../assets/membership/benefit-2.png";
 import benefit3Img from "../assets/membership/benefit-3.png";
@@ -28,17 +28,14 @@ import vacationReadingImg from "../assets/program/vacation-reading.png";
 import seasonSchoolImg from "../assets/program/season-school.png";
 import seasonStudyImg from "../assets/program/season-study.png";
 
-
 import heroSlide1Img from "../assets/membership/hero-slide-1.png";
 import heroSlide2Img from "../assets/membership/hero-slide-2.png";
 import heroSlide3Img from "../assets/membership/hero-slide-3.png";
 import heroSlide4Img from "../assets/membership/hero-slide-4.png";
 import heroSlide5Img from "../assets/membership/hero-slide-5.png";
 
-
 import spaceShareWeekdayImg from "../assets/membership/space-share-weekday.png";
 import spaceShareSundayImg from "../assets/membership/space-share-sunday.png";
-
 
 import parentStep1Img from "../assets/membership/parent-step1.png";
 import parentStep2Img from "../assets/membership/parent-step2.png";
@@ -51,14 +48,10 @@ import childStep3Img from "../assets/membership/child-step3.png";
 import childStep4Img from "../assets/membership/child-step4.png";
 import childStep5Img from "../assets/membership/child-step5.png";
 
-
-
 const Page = styled.main`
   background: #ffffff;
   min-height: 100dvh;
 `;
-
-/* ===== 멤버십 혜택 히어로 섹션 ===== */
 
 /* ===== 멤버십 혜택 히어로 섹션 + 이미지 슬라이드 ===== */
 
@@ -114,13 +107,12 @@ const HeroTitleHighlight = styled.span`
     left: -2px;
     right: -2px;
     bottom: 3px;
-    height: 0.55em;      /* 글자 절반 정도 채워지는 형광펜 느낌 */
-    background: #ffe39b; /* 통일된 형광펜 색 */
-    border-radius: 6px;  /* 살짝 라운드 */
+    height: 0.55em;
+    background: #ffe39b;
+    border-radius: 6px;
     z-index: -1;
   }
 `;
-
 
 const HeroSub = styled.p`
   margin: 4px 0 0;
@@ -129,7 +121,7 @@ const HeroSub = styled.p`
   color: #555555;
 `;
 
-/* ▼ 히어로 이미지 슬라이더 */
+/* 히어로 이미지 슬라이드 */
 
 const HeroSliderWrap = styled.div`
   margin-top: 24px;
@@ -156,12 +148,10 @@ const HeroSlide = styled.div`
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
   padding: 14px 14px 12px;
 
-  /* 🔸 모바일: 한 화면에 카드 2장 + 3번째 카드 1/3 정도 힌트로 보이게 */
   @media (max-width: 768px) {
     flex: 0 0 calc(100% / 2.3);
   }
 
-  /* 🔸 PC에서는 살짝 더 넓게 */
   @media (min-width: 960px) {
     flex: 0 0 240px;
   }
@@ -174,10 +164,8 @@ const HeroSlideImage = styled.img`
   border-radius: 18px;
 `;
 
-
-
-
 /* 공통 섹션 래퍼 (이미지 섹션에서 사용) */
+
 const ImageSection = styled.section`
   width: 100%;
   box-sizing: border-box;
@@ -202,12 +190,10 @@ const FullImage = styled.img`
 
 /* ================= 멤버십 혜택 1~5 섹션 ================= */
 
-
 const BenefitCard = styled.div`
   width: 88%;
   max-width: 960px;
   margin: 0 auto;
-
   border-radius: 80px;
   background: #ffffff;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.04);
@@ -222,13 +208,11 @@ const BenefitCard = styled.div`
     max-width: 100%;
     border-radius: 32px;
     padding: 28px 22px 26px;
-    flex-direction: column;      /* 위아래로 쌓기 */
+    flex-direction: column;
     align-items: stretch;
     gap: 16px;
   }
 `;
-
-
 
 const BenefitLeft = styled.div`
   flex: 1.2;
@@ -236,11 +220,9 @@ const BenefitLeft = styled.div`
   text-align: left;
 
   @media (max-width: 960px) {
-    order: 2;              /* 모바일에서 텍스트는 아래로 */
+    order: 2;
   }
 `;
-
-
 
 const BenefitSection = styled.section`
   width: 100%;
@@ -261,7 +243,6 @@ const BenefitInner = styled.div`
   gap: 32px;
 `;
 
-
 const BenefitEyebrow = styled.p`
   margin: 0 0 10px;
   font-size: 13px;
@@ -272,6 +253,7 @@ const BenefitEyebrow = styled.p`
     display: none;
   }
 `;
+
 const BenefitTitle = styled.h3`
   margin: 0 0 16px;
   font-size: 26px;
@@ -288,7 +270,8 @@ const BenefitBullets = styled.ul`
   margin: 0 0 18px;
   padding: 0;
   list-style: none;
-    @media (max-width: 960px) {
+
+  @media (max-width: 960px) {
     font-size: 18px;
   }
 `;
@@ -300,7 +283,7 @@ const BenefitBullet = styled.li`
   font-size: 14px;
   line-height: 1.7;
   color: #555555;
-  letter-spacing : -0.03em;
+  letter-spacing: -0.03em;
 
   &::before {
     content: "✓";
@@ -310,7 +293,8 @@ const BenefitBullet = styled.li`
     font-size: 12px;
     color: #f07a2a;
   }
-    @media (max-width: 960px) {
+
+  @media (max-width: 960px) {
     font-size: 13px;
   }
 `;
@@ -325,7 +309,8 @@ const BenefitExampleTag = styled.span`
   font-size: 12px;
   font-weight: 700;
   color: #8a5b16;
-      @media (max-width: 960px) {
+
+  @media (max-width: 960px) {
     font-size: 9px;
   }
 `;
@@ -348,7 +333,7 @@ const BenefitRight = styled.div`
   justify-content: center;
 
   @media (max-width: 960px) {
-    order: 1;                  /* 아이콘을 위로 */
+    order: 1;
     justify-content: flex-start;
     align-items: flex-start;
     margin-bottom: 4px;
@@ -365,7 +350,6 @@ const BenefitIconCircle = styled.div`
   justify-content: center;
 
   @media (max-width: 960px) {
-    /* 🔸 모바일에서는 동그라미 배경/사이즈 제거 + 왼쪽 정렬 */
     width: auto;
     height: auto;
     border-radius: 0;
@@ -381,16 +365,12 @@ const BenefitIconImage = styled.img`
   object-fit: contain;
 
   @media (max-width: 960px) {
-    /* 🔸 모바일용 아이콘은 작게 */
     width: 56px;
     height: 56px;
   }
 `;
 
-
-
-
-/* ===== "위드아지트는 이렇게 이용해요" 섹션 전용 스타일 ===== */
+/* ===== "위드아지트는 이렇게 이용해요" 섹션 ===== */
 
 const HowSection = styled.section`
   width: 100%;
@@ -454,7 +434,52 @@ const HowSub = styled.p`
   color: #757575;
 `;
 
-/* ===== 프로그램 섹션 스타일 (이전 그대로) ===== */
+const HowGroupsWrap = styled.div`
+  max-width: 1120px;
+  margin: 28px auto 0;
+  font-family: "NanumSquareRound";
+  padding: 20px;
+`;
+
+const HowGroup = styled.div`
+  & + & {
+    margin-top: 24px;
+  }
+`;
+
+const HowGroupTitle = styled.div`
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #111;
+`;
+
+const HowStepGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+
+  @media (min-width: 960px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+`;
+
+const HowStepCard = styled.div`
+  border-radius: 24px;
+  padding: 12px 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const HowStepImage = styled.img`
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+`;
+
+/* ===== 프로그램 섹션 ===== */
 
 const ProgramSection = styled.section`
   width: 100%;
@@ -507,28 +532,25 @@ const ProgramHighlight = styled.span`
     left: -2px;
     right: -2px;
     bottom: 3px;
-    height: 0.55em;       /* 글자 절반 높이만 칠하기 */
-    background: #ffe39b;  /* 형광펜 색 */
-    border-radius: 6px;   /* 살짝 둥글게 */
+    height: 0.55em;
+    background: #ffe39b;
+    border-radius: 6px;
     z-index: -1;
   }
 `;
 
-
 const ProgramTabsRow = styled.div`
-  /* 폭을 콘텐츠만큼만 쓰고 중앙 정렬 */
   display: inline-flex;
   align-items: flex-end;
-  gap: 20px;              /* 탭 사이 간격 */
+  gap: 20px;
   padding-bottom: 8px;
   border-bottom: 1px solid #e5e5e5;
-  margin: 32px auto 0;    /* 가운데 정렬 */
+  margin: 32px auto 0;
 `;
-
 
 const ProgramTab = styled.div`
   position: relative;
-  padding: 10px 4px 14px;   /* 좌우 패딩 줄여서 탭 폭도 슬림하게 */
+  padding: 10px 4px 14px;
   cursor: pointer;
   font-family: "NanumSquareRound";
   font-size: 14px;
@@ -538,41 +560,32 @@ const ProgramTab = styled.div`
   &::after {
     content: "";
     position: absolute;
-    left: 0;                /* 밑줄을 텍스트 폭에 맞게 */
+    left: 0;
     right: 0;
     bottom: -2px;
     height: 2px;
-    background: ${({ $active }) => ($active ? "#f7f7a2a" : "transparent")};
+    background: ${({ $active }) => ($active ? "#f07a2a" : "transparent")};
     border-radius: 999px;
   }
 `;
 
-
 const scrollIcons = keyframes`
-  0% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-85%);  /* ⬅️ 35% → 55% 로 늘려서 4번째까지 보이게 */
-  }
-  100% {
-    transform: translateX(0);
-  }
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-85%); }
+  100% { transform: translateX(0); }
 `;
 
-/* 오른쪽 아이콘 배너 컨테이너 */
 const ProgramRight = styled.div`
-  overflow: hidden;         /* 배너 밖으로 나간 부분은 숨김 */
+  overflow: hidden;
 `;
 
-/* 4개짜리 탭에서만 사용하는 자동 슬라이드 배너 줄 */
 const ProgramIconsRow = styled.div`
   display: flex;
   align-items: center;
   gap: 48px;
-  animation: ${scrollIcons} 8s ease-in-out infinite; /* ⬅️ 10s → 8s (더 빠르게) */
+  animation: ${scrollIcons} 8s ease-in-out infinite;
 `;
-/* 2개짜리 탭 등, 정적인 아이콘 줄 */
+
 const ProgramIconsStaticRow = styled.div`
   display: flex;
   align-items: center;
@@ -593,7 +606,7 @@ const ProgramIconImage = styled.img`
   width: 120px;
   height: 120px;
   margin: 0 auto 12px;
-  display: float;
+  display: block;
   object-fit: contain;
 `;
 
@@ -609,18 +622,14 @@ const ProgramIconCaption = styled.div`
   color: #777777;
 `;
 
-
-
-
-
-
 const ProgramBody = styled.div`
-  margin: 40px auto 0;                             /* 살짝 위 여백만 */
+  margin: 40px auto 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); 
-  column-gap: 32px;                                /* ✅ 기존 56px → 32px 로 좁힘 */
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  column-gap: 32px;
   align-items: center;
   width: 80%;
+
   @media (max-width: 960px) {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 32px;
@@ -686,8 +695,7 @@ const ProgramTag = styled.span`
   color: #8a5b16;
 `;
 
-
-/* 시즌 프로그램용 박스 레이아웃 */
+/* 시즌 프로그램용 카드 */
 
 const SeasonCard = styled.div`
   flex: 1 1 160px;
@@ -835,13 +843,12 @@ const FamilyHighlight = styled.span`
     left: -2px;
     right: -2px;
     bottom: 3px;
-    height: 0.55em;          /* 글자 높이의 절반 정도만 칠해짐 */
-    background: #ffe39b;     /* 형광펜 색 */
-    border-radius: 6px;      /* 살짝만 둥글게 */
+    height: 0.55em;
+    background: #ffe39b;
+    border-radius: 6px;
     z-index: -1;
   }
 `;
-
 
 const FamilySub = styled.p`
   margin: 4px 0 0;
@@ -849,7 +856,6 @@ const FamilySub = styled.p`
   line-height: 1.8;
   color: #555555;
 `;
-
 
 const FamilyCards = styled.div`
   display: grid;
@@ -872,7 +878,7 @@ const FamilyCard = styled.div`
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
 
   @media (max-width: 960px) {
-    height : 140px;
+    height: 140px;
     padding: 18px 55px;
   }
 `;
@@ -941,85 +947,131 @@ const FamilyCardIcon = styled.img`
   }
 `;
 
+/* ===== FAQ 섹션 ===== */
 
-
-/* ===== 멤버십 이용 방법 – 단계 카드 ===== */
-
-const HowGroupsWrap = styled.div`
-  max-width: 1120px;
-  margin: 28px auto 0;
-  font-family: "NanumSquareRound";
-  padding:20px;
+const FaqHeaderRow = styled.div`
+  margin-bottom: 24px;
 `;
 
-const HowGroup = styled.div`
-  & + & {
-    margin-top: 24px;
-  }
-`;
-
-const HowGroupTitle = styled.div`
-  margin-bottom: 10px;
-  font-size: 13px;
-  font-weight: 900;
-  color: #111;
-`;
-
-
-
-
-const HowStepGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 16px; /* 세로 12, 가로 16 */
-
-  @media (min-width: 960px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-`;
-
-const HowStepCard = styled.div`
-  border-radius: 24px;
-
-  padding: 12px 12px 14px;
-
+const FaqTop = styled.div`
   display: flex;
+  flex-direction: column;
+  align-items: center;   /* FAQ + 제목 가운데 정렬 */
+  gap: 6px;
+`;
+
+const FaqEyebrow = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: #f97316;
+`;
+
+const FaqTitle = styled.h2`
+  margin: 0;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 900;
+  line-height: 1.3;
+  color: #111827;
+  letter-spacing: -0.03em;
+`;
+
+const FaqTitleHighlight = styled.span`
+  position: relative;
+  display: inline-block;
+  padding: 0 6px;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 3px;
+    height: 42%;
+    background: #ffe39b;
+    border-radius: 999px;
+    z-index: -1;
+  }
+`;
+
+const FaqMoreRow = styled.div`
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end; /* 전체 보기 오른쪽 끝 */
+`;
+
+const FaqMoreButton = styled.button`
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
+  padding: 6px 4px;
+
+  svg {
+    margin-top: 1px;
+  }
+`;
+
+
+const FaqSection = styled.section`
+  width: 100%;
+  box-sizing: border-box;
+  padding: 64px 16px 88px;
+  background: #fffdf8;
 
   @media (max-width: 960px) {
-    /* 모바일에서도 2열이니까 min-width 안 줘도 됨 */
+    padding: 48px 16px 72px;
   }
 `;
 
-const HowStepImage = styled.img`
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+const FaqInner = styled.div`
+  max-width: 1120px;
+  margin: 0 auto;
+  font-family: "NanumSquareRound";
 `;
 
 
 
 
-const HowStepBadge = styled.div`
-  position: absolute;
-  top: -10px;
-  left: 10px;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  background: #111111;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
+const FaqList = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
 `;
 
+const FaqItem = styled.div`
+  border-radius: 24px;
+  background: #F5F5F5;
+  padding: 18px 20px 20px;
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.7;
 
+  @media (max-width: 960px) {
+    border-radius: 18px;
+    padding: 16px 16px 18px;
+    font-size: 13px;
+  }
+`;
 
+const FaqQ = styled.div`
+  margin-bottom: 6px;
+  font-weight: 700;
+`;
+
+const FaqA = styled.div`
+  font-size: 13px;
+  color: #4b5563;
+
+  @media (max-width: 960px) {
+    font-size: 12px;
+  }
+`;
 
 /* ===== 프로그램 탭 데이터 ===== */
 
@@ -1087,7 +1139,8 @@ const PROGRAM_TABS = {
   },
 };
 
-/* 멤버십 혜택 카드 데이터 (텍스트 + 아이콘) */
+/* 멤버십 혜택 카드 데이터 */
+
 const HERO_SLIDES = [
   { key: "hero-1", img: heroSlide1Img, alt: "멤버십 혜택 요약 1" },
   { key: "hero-2", img: heroSlide2Img, alt: "멤버십 혜택 요약 2" },
@@ -1176,21 +1229,38 @@ const HOW_CHILD_STEPS = [
   { num: 5, img: childStep5Img, alt: "다음 학원 픽업 또는 귀가" },
 ];
 
+/* FAQ 데이터 */
+
+const MEMBERSHIP_FAQ_ITEMS = [
+  {
+    q: "비회원도 예약이 가능한가요?",
+    a: "평일 아지트는 멤버십 전용으로 운영되며, 비회원은 주말/방학 프로그램 예약을 통해 다양한 프로그램을 이용하실 수 있습니다.",
+  },
+  {
+    q: "타임패스도 픽업 신청이 가능한가요?",
+    a: "아지트/패밀리 멤버십 멤버만 픽업 서비스 이용이 가능합니다.",
+  },
+  {
+    q: "형제자매가 함께 이용하고 싶어요.",
+    a: "아지트 멤버십 + 패밀리 멤버십(15%)으로 경제적으로 멤버십 구독 가능합니다.",
+  },
+];
+
 /* ================= Page Component ================= */
 
 export default function MembershipPage() {
   const [activeTab, setActiveTab] = useState("weekend");
   const [showPickupModal, setShowPickupModal] = useState(false);
+  const nav = useNavigate();
 
   const current = PROGRAM_TABS[activeTab];
 
-  // 멤버십 혜택 카드 섹션
   function BenefitStepsSection() {
     return (
       <BenefitSection>
         <BenefitInner>
           {BENEFITS.map((b, index) => {
-            const isReverse = index % 2 === 1; // 0,2,4는 기본 / 1,3은 좌우 반전
+            const isReverse = index % 2 === 1;
 
             return (
               <BenefitCard key={b.key} $reverse={isReverse}>
@@ -1229,7 +1299,6 @@ export default function MembershipPage() {
     );
   }
 
-  // 프로그램 소개 섹션 (주말/방학/시즌 탭)
   function MembershipProgramSection() {
     function handleTabClick(nextKey) {
       setActiveTab(nextKey);
@@ -1282,7 +1351,6 @@ export default function MembershipPage() {
 
             <ProgramRight>
               {current.icons.length === 4 ? (
-                // ✅ 아이콘이 4개인 탭(weekend)만 자동 슬라이드 배너
                 <ProgramIconsRow>
                   {current.icons.map((icon, idx) => (
                     <ProgramIconCard key={idx}>
@@ -1300,12 +1368,13 @@ export default function MembershipPage() {
                           </span>
                         ))}
                       </ProgramIconTitle>
-                      {icon.caption && <ProgramIconCaption>{icon.caption}</ProgramIconCaption>}
+                      {icon.caption && (
+                        <ProgramIconCaption>{icon.caption}</ProgramIconCaption>
+                      )}
                     </ProgramIconCard>
                   ))}
                 </ProgramIconsRow>
               ) : (
-                // ✅ 나머지 탭(아이콘 2개짜리)은 정적으로 배치
                 <ProgramIconsStaticRow>
                   {current.icons.map((icon, idx) => (
                     <ProgramIconCard key={idx}>
@@ -1319,17 +1388,18 @@ export default function MembershipPage() {
                         {icon.title.split("\n").map((line, i) => (
                           <span key={i}>
                             {line}
-                            {i < icon.title.length - 1 && <br />}
+                            {i < icon.title.split("\n").length - 1 && <br />}
                           </span>
                         ))}
                       </ProgramIconTitle>
-                      {icon.caption && <ProgramIconCaption>{icon.caption}</ProgramIconCaption>}
+                      {icon.caption && (
+                        <ProgramIconCaption>{icon.caption}</ProgramIconCaption>
+                      )}
                     </ProgramIconCard>
                   ))}
                 </ProgramIconsStaticRow>
               )}
             </ProgramRight>
-
           </ProgramBody>
         </ProgramInner>
       </ProgramSection>
@@ -1350,7 +1420,6 @@ export default function MembershipPage() {
             아이들의 일상 돌봄부터 배움, 놀이까지 한 공간에서
           </HeroSub>
 
-          {/* 🔸 히어로 이미지 슬라이드 (손으로 슬라이드 가능) */}
           <HeroSliderWrap>
             <HeroSliderScroller>
               {HERO_SLIDES.map((slide) => (
@@ -1365,9 +1434,6 @@ export default function MembershipPage() {
     );
   }
 
-
-
-  // 아지트 공간 대관 / 함께 나누는 시간 섹션
   function MembershipFamilyTimeSection() {
     return (
       <FamilySection>
@@ -1379,11 +1445,9 @@ export default function MembershipPage() {
               <br />
               <FamilyHighlight>자유롭게 나눠보세요</FamilyHighlight>
             </FamilyTitle>
-         
           </FamilyHeader>
 
           <FamilyCards>
-            {/* 평일 오전 카드 */}
             <FamilyCard>
               <FamilyCardLeft>
                 <FamilyBadge $variant="blue">평일 오전</FamilyBadge>
@@ -1399,17 +1463,13 @@ export default function MembershipPage() {
               </FamilyCardRight>
             </FamilyCard>
 
-            {/* 일요일 카드 */}
             <FamilyCard>
               <FamilyCardLeft>
                 <FamilyBadge $variant="orange">일요일에는</FamilyBadge>
                 <FamilyCardTitle>
-                
-
                   생일파티, 가족행사,
                   <br />
                   원데이 클래스
-
                 </FamilyCardTitle>
               </FamilyCardLeft>
               <FamilyCardRight>
@@ -1439,7 +1499,6 @@ export default function MembershipPage() {
         </HowInner>
 
         <HowGroupsWrap>
-          {/* 회원(부모님) 단계 */}
           <HowGroup>
             <HowGroupTitle>회원(부모님)</HowGroupTitle>
             <HowStepGrid>
@@ -1451,7 +1510,6 @@ export default function MembershipPage() {
             </HowStepGrid>
           </HowGroup>
 
-          {/* 아이 단계 */}
           <HowGroup>
             <HowGroupTitle>아이</HowGroupTitle>
             <HowStepGrid>
@@ -1467,29 +1525,55 @@ export default function MembershipPage() {
     );
   }
 
+  function MembershipFaqSection() {
+    return (
+      <FaqSection>
+        <FaqInner>
+          <FaqHeaderRow>
+            <FaqTop>
+              <FaqEyebrow>FAQ</FaqEyebrow>
+              <FaqTitle>
+                <FaqTitleHighlight>자주 묻는 질문</FaqTitleHighlight>
+              </FaqTitle>
+            </FaqTop>
+
+            <FaqMoreRow>
+              <FaqMoreButton type="button" onClick={() => nav("/m/account/news")}>
+                전체 보기
+                <svg width="16" height="16" viewBox="0 0 24 24">
+                  <path
+                    fill="#9ca3af"
+                    d="M9.29 6.71L13.17 10.59 9.29 14.46 10.71 15.88 15.99 10.59 10.71 5.29 9.29 6.71Z"
+                  />
+                </svg>
+              </FaqMoreButton>
+            </FaqMoreRow>
+          </FaqHeaderRow>
+
+
+          <FaqList>
+            {MEMBERSHIP_FAQ_ITEMS.map((item, idx) => (
+              <FaqItem key={idx}>
+                <FaqQ>Q. {item.q}</FaqQ>
+                <FaqA>A. {item.a}</FaqA>
+              </FaqItem>
+            ))}
+          </FaqList>
+        </FaqInner>
+      </FaqSection>
+    );
+  }
 
   return (
     <Page>
-      {/* 맨 위 멤버십 플랜 섹션 */}
       <MembershipPlans />
-
-      
-      {/* 멤버십 혜택 히어로 */}
       <MembershipHeroSection />
-
-      {/* 멤버십 혜택 1~5 카드 */}
       <BenefitStepsSection />
-
-      {/* 프로그램 섹션 */}
       <MembershipProgramSection />
-
-      {/* 아지트를 함께 나누는 시간 (통 이미지) */}
       <MembershipFamilyTimeSection />
-
-      {/* 위드아지트는 이렇게 이용해요 */}
       <MembershipHowToUseSection />
+      <MembershipFaqSection />
 
-      {/* 픽업 거리별 요금표 모달 */}
       {showPickupModal && (
         <PickupModalOverlay onClick={() => setShowPickupModal(false)}>
           <PickupModalCard onClick={(e) => e.stopPropagation()}>

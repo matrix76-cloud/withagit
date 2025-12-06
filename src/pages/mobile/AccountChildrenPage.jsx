@@ -122,6 +122,7 @@ function ChildPhoto({ path, size = 64, alt = "" }) {
                 style={{
                     width: size,
                     height: size,
+                    maxWidth:140,
                     borderRadius: 18,
                     background: "#e5e7eb",
                     border: "1px solid #e5e7eb",
@@ -216,8 +217,8 @@ function validateChildRow(c) {
 
 
 const AddChildButton = styled.button`
-  width: 100%;
-  margin-top: 16px;
+  width: 80%;
+  margin: 16px 10%;
   padding: 12px 16px;
   border-radius: 999px;
   border: 1px dashed #facc6b;
@@ -289,8 +290,7 @@ const SectionCard = styled.section`
   margin-top: 12px;
   padding: 16px 16px 18px;
   border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+
   display: grid;
   gap: 14px;
 `;
@@ -390,31 +390,40 @@ const EditModalBackdrop = styled.div`
   inset: 0;
   z-index: 40;
   background: rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: flex-end;   /* ✅ 아래로 붙이기 */
-  justify-content: center;
-  padding: 0;
+
+  /* 🔹 스크롤은 오버레이 한 군데만 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
   box-sizing: border-box;
 `;
 
+// 바텀시트처럼 보이지만, 사실은 "위에서부터 있는 카드" + 큰 radius
 const EditModalSheet = styled.div`
   width: 100%;
-  max-width: 100%;
-  max-height: 80dvh;
-  border-radius: 32px 32px 0 0;   /* ✅ 위쪽만 라운드, 아래는 0 */
+  max-width: 480px;
+  margin: 40px auto 0;              /* 위에 살짝 여백 */
+
+  /* 화면 높이보다 길어질 수 있으니, 최소 높이만 제한 */
+  min-height: calc(100dvh - 40px);
   background: #ffffff;
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.35);
-  padding: 20px 20px 24px;
+
+  padding: 20px 20px
+    calc(24px + env(safe-area-inset-bottom));     /* 하단 여유 + iOS 안전 영역 */
   box-sizing: border-box;
-  overflow-y: auto;
 `;
+
+
+
 
 const ModalHeaderRow = styled.div`
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;   /* ✅ 제목 가운데 */
-  margin-bottom: 8px;
+  margin-bottom: 18px;
+  margin-top:18px;
 `;
 
 const ModalTitle = styled.h2`
@@ -569,9 +578,7 @@ const CardDeleteBtn = styled.button`
   padding: 4px 10px;
   cursor: pointer;
 
-  &:hover {
-    background: #fee2e2;
-  }
+
 `;
 
 
@@ -615,6 +622,7 @@ const FormCard = styled.section`
         p.flat ? "none" : "0 10px 26px rgba(15, 23, 42, 0.05)"};
   display: grid;
   gap: 16px;
+  margin-bottom: 100px;
 `;
 
 
@@ -682,7 +690,7 @@ const GenderRow = styled.div`
 
 
 const InputBox = styled.input`
-  height: 40px;
+  height: 50px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   padding: 0 10px;
@@ -695,7 +703,8 @@ const InputBox = styled.input`
 `;
 
 const SelectBox = styled.select`
-  height: 40px;
+  height: 50px;
+  
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   padding: 0 10px;
@@ -712,6 +721,7 @@ const LabelRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top:15px;
 `;
 
 const RequiredMark = styled.span`
@@ -722,7 +732,7 @@ const RequiredMark = styled.span`
 
 const PhotoBox = styled.div`
   width: 100%;
-  max-width: 160px;
+  max-width: 140px;
   height: 140px;
   border-radius: 20px;
   border: 1px dashed #d1d5db;
@@ -745,13 +755,14 @@ const ButtonRow = styled.div`
 
 const Btn = styled.button`
   height: 40px;
-  padding: 0 14px;
+  padding: 0px 14px;
   border-radius: 999px;
   border: 1px solid ${(p) => (p.outline ? "#e5e7eb" : "#e47b2c")};
-  background: ${(p) => (p.outline ? "#ffffff" : "#e47b2c")};
+  background: #F35B05;
   color: ${(p) => (p.outline ? "#374151" : "#ffffff")};
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
+  width:100%;
   cursor: pointer;
   white-space: nowrap;
 
@@ -885,7 +896,7 @@ function SavedChildrenList({ items = [], onSelect, onDelete }) {
                                             const label = c.name || c.childId || "해당 자녀";
                                             if (
                                                 window.confirm(
-                                                    `정말 '${label}'을(를) 삭제할까요?\n삭제 후 되돌릴 수 없습니다.`
+                                                    `정말 '${label}'을(를) 삭제할까요?\n삭제 후 되돌릴 수 없습니다.\n보유 멤버십은 자동 해지되며 삭제 후 되돌릴 수 없습니다.  `
                                                 )
                                             ) {
                                                 onDelete && onDelete(c);
@@ -984,6 +995,7 @@ function ChildFormCard({
                     <RadioLabel>
                         <input
                             type="radio"
+                            style={{height:'50px'}}
                             name={`gender-${model.id}`}
                             value="male"
                             checked={model.gender === "male"}
@@ -1084,25 +1096,14 @@ function ChildFormCard({
 
             <ButtonRow>
                 {isEdit && (
-                    <Btn type="button" outline onClick={onCancel} disabled={saving}>
+                    <Btn type="button"  onClick={onCancel} >
                         취소
                     </Btn>
                 )}
                 <Btn
                     type="button"
                     onClick={onSave}
-                    disabled={
-                        saving ||
-                        !model.name ||
-                        !model.gender ||
-                        !model.birthYear ||
-                        !model.birthMonth ||
-                        !model.birthDay ||
-                        !model.school ||
-                        !model.grade ||
-                        !model.classroom ||
-                        !model.photo
-                    }
+               
                 >
                     {saving ? (isEdit ? "수정 중…" : "저장 중…") : isEdit ? "수정 완료" : "저장"}
                 </Btn>
@@ -1286,11 +1287,11 @@ export default function AccountChildrenPage() {
             return;
         }
 
-        const guard = await hasBlockingMembership(phoneE164, childId);
-        if (guard.block) {
-            alert(guard.reason || "연결된 멤버십/정액권 상태 때문에 삭제할 수 없습니다.");
-            return;
-        }
+        // const guard = await hasBlockingMembership(phoneE164, childId);
+        // if (guard.block) {
+        //     alert(guard.reason || "연결된 멤버십/정액권 상태 때문에 삭제할 수 없습니다.");
+        //     return;
+        // }
 
         try {
             await deleteChild(phoneE164, childId);
@@ -1328,10 +1329,7 @@ export default function AccountChildrenPage() {
     return (
         <Page>
             <Container>
-                <HeaderBar>
-                    <BackButton onClick={onBack}>‹</BackButton>
-                    <HeaderTitle>자녀 정보 관리</HeaderTitle>
-                </HeaderBar>
+               
 
                 <SectionCard>
                     <SavedChildrenList
